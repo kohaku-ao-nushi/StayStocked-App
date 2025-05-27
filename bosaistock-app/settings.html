@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>家族・ペット構成の設定</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <h2>現在の構成</h2>
+  <div id="currentSettings" style="background: #f8f8f8; padding: 10px; margin-bottom: 20px;">
+  <!-- ここに構成が表示されます -->
+  </div>
+
+  <h1>家族とペットの構成</h1>
+
+  <label>大人（13歳以上）</label>
+  <input type="number" id="adultCount" min="0" value="2">
+
+  <label>子ども（1〜12歳）</label>
+  <input type="number" id="childCount" min="0" value="0">
+
+  <label>乳幼児（0歳）</label>
+  <input type="number" id="infantCount" min="0" value="0">
+
+  <label>高齢者（75歳以上）</label>
+  <input type="checkbox" id="hasElderly"> 高齢者がいる
+
+  <hr>
+
+  <label>ペットの種類</label>
+  <select id="petType">
+    <option value="none">なし</option>
+    <option value="dog">犬</option>
+    <option value="cat">猫</option>
+    <option value="other">その他</option>
+  </select>
+
+  <label>ペットの頭数</label>
+  <input type="number" id="petCount" min="0" value="0">
+
+  <button onclick="saveSettings()">設定を保存する</button>
+  <a href="index.html">← 戻る</a>
+
+  <script src="js/settings.js"></script>
+</body>
+</html>
