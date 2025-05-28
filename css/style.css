@@ -41,15 +41,35 @@ header {
   width: 100%;
   height: auto;
 }
+.menu-overlay {
+  display: none;
+  position: absolute;
+  top: 56px;
+  right: 16px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 20;
+}
+.menu-overlay a {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #4a6fa5;
+  font-weight: bold;
+}
+.menu-overlay a:hover {
+  background-color: #f1f1f1;
+}
 
-/* メインメニューグリッド */
+/* グリッドメニュー */
 .grid-menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-top: 16px;
 }
-
 .grid-menu a {
   text-align: center;
   background-color: white;
@@ -62,26 +82,25 @@ header {
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
 .grid-menu img {
   width: 48px;
   height: 48px;
   margin-bottom: 6px;
 }
 
-/* 下部ナビ */
+/* 下部ナビ中央揃え */
 .navbar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  max-width: 480px;
   background-color: white;
   border-top: 1px solid #ddd;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 40px;
   padding: 8px 0;
+  z-index: 10;
 }
-
 .navbar a {
   text-decoration: none;
   color: #666;
@@ -89,12 +108,7 @@ header {
   flex-direction: column;
   align-items: center;
 }
-
 .navbar img {
   width: 28px;
   height: 28px;
-}
-
-.navbar a.active {
-  color: #4a6fa5;
 }
