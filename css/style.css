@@ -1,71 +1,125 @@
+/* 共通リセット */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 全体 */
 body {
   font-family: system-ui, sans-serif;
-  padding: 16px;
-  margin: 0;
-  background-color: #fafafa;
+  background-color: #f4f6f8;
   color: #333;
-  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding-bottom: 60px; /* 下部ナビ用マージン */
+}
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
-h1, h2 {
-  font-size: 1.4em;
-  margin-bottom: 12px;
-  color: #2c3e50;
+/* ヘッダー */
+header {
+  background-color: #4caf50;
+  color: white;
+  padding: 16px;
+  text-align: center;
+  font-size: 1.2em;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
+/* ボタン */
+button, .btn {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 1em;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+button:hover, .btn:hover {
+  background-color: #43a047;
+}
+
+/* 入力フォーム */
 label {
   display: block;
   margin: 12px 0 4px;
   font-weight: bold;
 }
-
-input, select, button {
+input, select {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   font-size: 1em;
   border: 1px solid #ccc;
-  border-radius: 12px;
-  box-sizing: border-box;
-  margin-bottom: 12px;
+  border-radius: 8px;
 }
 
-button {
-  background-color: #3498db;
-  color: white;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
-a {
-  display: inline-block;
-  margin-top: 20px;
-  color: #3498db;
-  text-decoration: none;
-  font-size: 0.9em;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-#itemList > div {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-#currentSettings p, #suggestions p {
+/* カードリスト */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 12px;
   margin: 8px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card .info {
+  flex: 1;
+}
+.card .info p {
+  margin: 4px 0;
+}
+.card .actions button {
+  width: auto;
+  margin-left: 8px;
 }
 
+/* アラート色 */
+.alert-expired { color: #e53935; }
+.alert-soon    { color: #fb8c00; }
+
+/* 下部ナビゲーション */
+.navbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+}
+.navbar a {
+  text-decoration: none;
+  color: #555;
+  font-size: 0.9em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.navbar a.active { color: #4caf50; }
+
+/* アイコン用 */
+.icon {
+  font-size: 1.2em;
+  margin-bottom: 4px;
+}
+
+/* レスポンシブ補足 */
 @media (hover: none) and (pointer: coarse) {
-  input, select, button {
-    font-size: 18px;
+  button, input, select {
+    font-size: 1.1em;
+    padding: 14px;
   }
 }
