@@ -5,52 +5,15 @@
   <title>防災備蓄アプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
-  <script>
-    function toggleMenu() {
-      var menu = document.getElementById("menuOverlay");
-      menu.style.display = (menu.style.display === "block") ? "none" : "block";
-    }
-    window.onclick = function(e) {
-      var menu = document.getElementById("menuOverlay");
-      if (!e.target.closest('.menu-button') && !e.target.closest('#menuOverlay')) {
-        menu.style.display = "none";
-      }
-    }
-  </script>
 </head>
 <body>
-  <header>
-    防災備蓄アプリ
-    <div class="menu-button" onclick="toggleMenu()">
-      <img src="icons/menu.png" alt="menu">
-    </div>
-    <div id="menuOverlay" class="menu-overlay">
-      <a href="index.html">ホーム</a>
-      <a href="family.html">家族構成</a>
-      <a href="stock.html">在庫管理</a>
-      <a href="suggest.html">備蓄提案</a>
-      <a href="#">ヘルプ</a>
-      <a href="#">設定</a>
-      <a href="#">使い方</a>
-    </div>
-  </header>
-
+  <header>防災備蓄アプリ</header>
   <div class="container">
     <div class="grid-menu">
-      <a href="family.html"><img src="icons/family.png"><br>家族構成</a>
-      <a href="stock.html"><img src="icons/stock.png"><br>在庫管理</a>
-      <a href="suggest.html"><img src="icons/suggest.png"><br>備蓄提案</a>
-      <a href="#"><img src="icons/help.png"><br>ヘルプ</a>
-      <a href="#"><img src="icons/setting.png"><br>設定</a>
-      <a href="#"><img src="icons/manual.png"><br>使い方</a>
+      <a href="lifestyle.html"><img src="icons/lifestyle.png"><br>あなたのくらし方</a>
+      <a href="todo.html"><img src="icons/todo.png"><br>ToDo備蓄</a>
+      <a href="stock.html"><img src="icons/stock.png"><br>備蓄管理</a>
     </div>
   </div>
-
-  <nav class="navbar">
-    <a href="family.html"><img src="icons/family.png"></a>
-    <a href="stock.html"><img src="icons/stock.png"></a>
-    <a href="suggest.html"><img src="icons/suggest.png"></a>
-    <a href="#"><img src="icons/setting.png"></a>
-  </nav>
 </body>
 </html>
