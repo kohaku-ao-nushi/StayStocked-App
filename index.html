@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>防災備蓄アプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
@@ -19,6 +19,37 @@
       text-align: center;
       font-size: 1.2em;
       font-weight: bold;
+      position: relative;
+    }
+    .menu-button {
+      position: absolute;
+      right: 16px;
+      top: 12px;
+      cursor: pointer;
+    }
+    .menu-button img {
+      width: 28px;
+      height: 28px;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 56px;
+      right: 8px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+    .dropdown-menu a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #333;
+    }
+    .dropdown-menu a:hover {
+      background-color: #f0f0f0;
     }
     .container {
       max-width: 480px;
@@ -48,16 +79,70 @@
       height: 48px;
       margin-bottom: 6px;
     }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #fff;
+      border-top: 1px solid #ccc;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0;
+      z-index: 10;
+    }
+    .bottom-nav a {
+      text-align: center;
+      color: #333;
+      font-size: 10px;
+      text-decoration: none;
+    }
+    .bottom-nav img {
+      width: 24px;
+      height: 24px;
+      display: block;
+      margin: auto;
+    }
   </style>
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("dropdown");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+  </script>
 </head>
 <body>
-  <header>防災備蓄アプリ</header>
+  <header>
+    防災備蓄アプリ
+    <div class="menu-button" onclick="toggleMenu()">
+      <img src="icons/menu.png" alt="menu">
+    </div>
+    <div class="dropdown-menu" id="dropdown">
+      <a href="lifestyle.html">あなたのくらし方</a>
+      <a href="todo.html">ToDo備蓄</a>
+      <a href="stock.html">備蓄管理</a>
+      <a href="help.html">ヘルプ</a>
+      <a href="setting.html">設定</a>
+      <a href="manual.html">使い方</a>
+    </div>
+  </header>
+
   <div class="container">
     <div class="grid-menu">
       <a href="lifestyle.html"><img src="icons/lifestyle.png"><br>あなたのくらし方</a>
-      <a href="todo.html"><img src="icons/todo.png"><br>ToDo備蓄</a>
       <a href="stock.html"><img src="icons/stock.png"><br>備蓄管理</a>
+      <a href="todo.html"><img src="icons/todo.png"><br>ToDo備蓄</a>
+      <a href="help.html"><img src="icons/help.png"><br>ヘルプ</a>
+      <a href="setting.html"><img src="icons/setting.png"><br>設定</a>
+      <a href="manual.html"><img src="icons/manual.png"><br>使い方</a>
     </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="lifestyle.html"><img src="icons/lifestyle.png"><div></div></a>
+    <a href="todo.html"><img src="icons/todo.png"><div></div></a>
+    <a href="stock.html"><img src="icons/stock.png"><div></div></a>
+    <a href="setting.html"><img src="icons/setting.png"><div></div></a>
   </div>
 </body>
 </html>
