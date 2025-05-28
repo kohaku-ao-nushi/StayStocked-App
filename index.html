@@ -2,8 +2,40 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>bosaistock-app</title>
+  <title>防災備蓄アプリ｜メニュー</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    .menu a {
+      display: block;
+      background-color: #4caf50;
+      color: white;
+      padding: 12px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 18px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .menu a:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
   <script>
@@ -11,6 +43,13 @@
       location.href = "login.html";
     }
   </script>
-  <h1>ようこそ、防災備蓄アプリへ！</h1>
+
+  <h1>防災備蓄アプリ</h1>
+  <div class="menu">
+    <a href="family.html">👪 家族・ペット構成の入力</a>
+    <a href="stock.html">📦 現在の備蓄在庫</a>
+    <a href="suggest.html">📝 備蓄提案を見る</a>
+    <a href="about.html">ℹ️ このアプリについて</a>
+  </div>
 </body>
 </html>
