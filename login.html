@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>認証画面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; text-align: center; padding-top: 20%; }
+    input { padding: 8px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>このサイトはパスワードで保護されています</h2>
+  <input type="password" id="pw" placeholder="パスワードを入力">
+  <button onclick="check()">ログイン</button>
+  <p id="err" style="color:red;"></p>
+
+  <script>
+    const PASSWORD = "bousai123"; // 任意のパスワードに変更可
+
+    function check() {
+      const input = document.getElementById("pw").value;
+      if (input === PASSWORD) {
+        localStorage.setItem("auth", "ok");
+        location.href = "index.html";
+      } else {
+        document.getElementById("err").textContent = "パスワードが違います";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -2,16 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>うちの備え - 備蓄一覧</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/style.css">
+  <title>bosaistock-app</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <h1>備蓄一覧</h1>
-  <div id="itemList">ここに備蓄品が表示されます</div>
-  <a href="register.html">＋ 備蓄品を登録する</a>
-
-  <script src="js/storage.js"></script>
-  <script src="js/render.js"></script>
+  <script>
+    if (localStorage.getItem("auth") !== "ok") {
+      location.href = "login.html";
+    }
+  </script>
+  <h1>ようこそ、防災備蓄アプリへ！</h1>
 </body>
 </html>
