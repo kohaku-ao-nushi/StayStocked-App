@@ -1,6 +1,6 @@
+
 /* 共通リセット */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 /* 全体 */
 body {
   font-family: system-ui, sans-serif;
@@ -8,14 +8,13 @@ body {
   color: #333;
   line-height: 1.6;
   min-height: 100vh;
-  padding-bottom: 60px; /* 下部ナビ用マージン */
+  padding-bottom: 60px;
 }
 .container {
   max-width: 480px;
   margin: 0 auto;
   padding: 16px;
 }
-
 /* ヘッダー */
 header {
   background-color: #4caf50;
@@ -28,7 +27,6 @@ header {
   top: 0;
   z-index: 10;
 }
-
 /* ボタン */
 button, .btn {
   display: inline-block;
@@ -47,7 +45,6 @@ button, .btn {
 button:hover, .btn:hover {
   background-color: #43a047;
 }
-
 /* 入力フォーム */
 label {
   display: block;
@@ -61,7 +58,6 @@ input, select {
   border: 1px solid #ccc;
   border-radius: 8px;
 }
-
 /* カードリスト */
 .card {
   background-color: white;
@@ -83,11 +79,9 @@ input, select {
   width: auto;
   margin-left: 8px;
 }
-
 /* アラート色 */
 .alert-expired { color: #e53935; }
 .alert-soon    { color: #fb8c00; }
-
 /* 下部ナビゲーション */
 .navbar {
   position: fixed;
@@ -109,13 +103,11 @@ input, select {
   align-items: center;
 }
 .navbar a.active { color: #4caf50; }
-
 /* アイコン用 */
 .icon {
   font-size: 1.2em;
   margin-bottom: 4px;
 }
-
 /* レスポンシブ補足 */
 @media (hover: none) and (pointer: coarse) {
   button, input, select {

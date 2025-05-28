@@ -1,90 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>備蓄在庫管理</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #fff; }
-    h1 { font-size: 22px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #eee; }
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>在庫管理</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <script>
-    if (localStorage.getItem("auth") !== "ok") {
-      location.href = "login.html";
-    }
-  </script>
+  <header>在庫管理</header>
+  <div class="container">
+    
+<p>備蓄品の在庫を管理します（UIは後ほど補完）</p>
 
-  <h1>備蓄在庫管理</h1>
-  <table id="stockTable">
-    <tr>
-      <th>品名</th>
-      <th>数量</th>
-      <th>期限</th>
-      <th>操作</th>
-    </tr>
-  </table>
-  <h3>新しい在庫を追加</h3>
-  <input type="text" id="itemName" placeholder="品名">
-  <input type="number" id="itemQty" placeholder="数量">
-  <input type="text" id="itemDate" placeholder="賞味期限 (例: 2025-12)">
-  <button onclick="addItem()">追加</button>
-
-  <script>
-    const table = document.getElementById("stockTable");
-    let stock = JSON.parse(localStorage.getItem("stock") || "[]");
-
-    function render() {
-      // 古い行を削除
-      table.innerHTML = '<tr><th>品名</th><th>数量</th><th>期限</th><th>操作</th></tr>';
-      stock.forEach((item, i) => {
-        const row = table.insertRow();
-        row.insertCell(0).textContent = item.name;
-        row.insertCell(1).textContent = item.qty;
-        row.insertCell(2).textContent = item.date;
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "削除";
-        delBtn.onclick = () => {
-          stock.splice(i, 1);
-          save();
-        };
-        row.insertCell(3).appendChild(delBtn);
-      });
-    }
-
-    function addItem() {
-      const name = document.getElementById("itemName").value;
-      const qty = document.getElementById("itemQty").value;
-      const date = document.getElementById("itemDate").value;
-      if (name && qty && date) {
-        stock.push({ name, qty, date });
-        save();
-        document.getElementById("itemName").value = "";
-        document.getElementById("itemQty").value = "";
-        document.getElementById("itemDate").value = "";
-      }
-    }
-
-    function save() {
-      localStorage.setItem("stock", JSON.stringify(stock));
-      render();
-    }
-
-    render();
-  </script>
+  </div>
+  <nav class="navbar">
+    <a href="index.html"><span class="icon">🏠</span>メニュー</a>
+    <a href="family.html"><span class="icon">👪</span>構成</a>
+    <a href="stock.html"><span class="icon">📦</span>在庫</a>
+    <a href="suggest.html"><span class="icon">📝</span>提案</a>
+  </nav>
 </body>
 </html>
