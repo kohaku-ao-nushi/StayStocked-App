@@ -272,6 +272,9 @@ header h1 {
     color: #888;
     margin-top: 4px;
 }
+.stock-item-custom .category-badge {
+    margin-top: 4px;
+}
 
 .item-actions {
     display: flex;
