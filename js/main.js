@@ -37,9 +37,11 @@ const templates = {
   `,
   lifestyle: `
     <h2>あなたのくらし方</h2>
-    <p>一緒に住んでいる人数を選んでください：</p>
-    <div class="number-pad">
-      ${[1,2,3,4,5,6,7,8,9].map(n => `<div class="number-btn" data-number="${n}">${n}</div>`).join('')}
+    <div class="form-group">
+      <label for="peopleCountSelect">一緒に住んでいる人数を選んでください：</label>
+      <select id="peopleCountSelect">
+        ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="${n}">${n}人</option>`).join('')}
+      </select>
     </div>
     <div id="profiles-container"></div>
     <hr>
@@ -105,7 +107,7 @@ const pages = {
   lifestyle() {
     const data = storage.getAppData();
     const profilesContainer = document.getElementById('profiles-container');
-    const numberPad = document.querySelector('.number-pad');
+    const peopleCountSelect = document.getElementById('peopleCountSelect');
     const petCountInput = document.getElementById('petCount');
 
     // プロフィールカードを生成する関数
@@ -138,25 +140,15 @@ const pages = {
       }
     };
     
-    // 数字パッドのクリックイベント
-    numberPad.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('number-btn')) return;
-      
-      document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('is-active'));
-      e.target.classList.add('is-active');
-      
-      const num = parseInt(e.target.dataset.number);
+    // 人数選択リストボックスの変更イベント
+    peopleCountSelect.addEventListener('change', (e) => {
+      const num = parseInt(e.target.value);
       renderProfileCards(num, storage.getAppData().profiles);
     });
 
     // 保存ボタンのクリックイベント
     document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
-        const activeBtn = document.querySelector('.number-btn.is-active');
-        if (!activeBtn) {
-            alert('人数を選択してください。');
-            return;
-        }
-        const numPeople = parseInt(activeBtn.dataset.number);
+        const numPeople = parseInt(peopleCountSelect.value);
         const newProfiles = [];
         const profileCards = document.querySelectorAll('.profile-card');
         
@@ -176,13 +168,10 @@ const pages = {
         window.location.hash = '#home';
     });
 
-    // 初期表示
+    // 初期表示処理
     petCountInput.value = data.pets.count || 0;
     const initialNum = data.profiles.length || 1;
-    const initialBtn = document.querySelector(`.number-btn[data-number="${initialNum}"]`);
-    if(initialBtn) {
-        initialBtn.classList.add('is-active');
-    }
+    peopleCountSelect.value = initialNum;
     renderProfileCards(initialNum, data.profiles);
   },
 
@@ -216,7 +205,7 @@ const pages = {
       todoHTML += `<li class="stock-item">🍼 ミルク・おむつ類：乳幼児 <strong>${totalInfants}人分</strong></li>`;
     }
     if (data.pets.count > 0) {
-      todoHTML += `<li class="stock-item">🐾 ペットフード・水：<strong>${data.pets.count}匹分</strong></li>`;
+      todoHTML += `<li class="stock-item">🐾 ペットフード・水：<strong>${data.pets.count}頭分</strong></li>`;
     }
     todoHTML += '</ul>';
     output.innerHTML = todoHTML;
