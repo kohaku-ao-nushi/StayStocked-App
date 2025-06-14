@@ -129,8 +129,7 @@ const pages = {
               <label>年代</label>
               <select class="age-group-select">
                 <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
-                <option value="子ども(小学生以下)" ${profile.ageGroup === '子ども(小学生以下)' ? 'selected' : ''}>子ども(小学生以下)</option>
-                <option value="子ども(18歳未満)" ${profile.ageGroup === '子ども(18歳未満)' ? 'selected' : ''}>子ども(18歳未満)</option>
+                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
                 <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
                 <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
               </select>
@@ -149,7 +148,6 @@ const pages = {
 
     // 保存ボタンのクリックイベント
     document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
-        const numPeople = parseInt(peopleCountSelect.value);
         const newProfiles = [];
         const profileCards = document.querySelectorAll('.profile-card');
         
@@ -185,15 +183,32 @@ const pages = {
       return;
     }
     
-    let totalAdults = 0, totalChildren = 0, totalInfants = 0;
+    // 年代ごとの人数を初期化
+    let totalAdults = 0;
+    let totalChildren = 0;
+    let totalInfants = 0;
+
+    // プロフィールから各年代の人数を計算
     data.profiles.forEach(p => {
-        if (p.ageGroup === '乳幼児') totalInfants++;
-        else if (p.ageGroup === '子ども') totalChildren++;
-        else totalAdults++;
+        switch (p.ageGroup) {
+            case '乳幼児':
+                totalInfants++;
+                break;
+            case '子ども':
+                totalChildren++;
+                break;
+            case '成人':
+            case '高齢者':
+                totalAdults++;
+                break;
+            default: // 想定外のカテゴリは大人としてカウント
+                totalAdults++;
+        }
     });
 
     const totalPeople = totalAdults + totalChildren + totalInfants;
     const waterNeeded = totalPeople * 3 * 3; // 1人1日3L × 3日分
+    // 食料は乳幼児を除く
     const foodMealsNeeded = (totalAdults + totalChildren) * 3 * 3;
 
     let todoHTML = `
