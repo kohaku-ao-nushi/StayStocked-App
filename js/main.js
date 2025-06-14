@@ -237,7 +237,6 @@ const pages = {
     const data = storage.getAppData();
     const output = document.getElementById('todo-output');
     
-    // モードセレクターを描画
     this.renderStockpileModeSelector(() => this.todo());
 
     if (data.profiles.length === 0) {
@@ -247,15 +246,20 @@ const pages = {
     
     const params = this.getCalculationParams(data);
     const days = data.settings.stockpileDays || 3;
+    const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
 
     const categories = {};
-    todoMasterList.forEach(item => {
-        if (item.isNeeded(params)) {
-            const quantity = item.calc(params, days);
-            if (quantity > 0) {
-                if (!categories[item.category]) categories[item.category] = [];
-                categories[item.category].push({ ...item, quantity });
-            }
+    combinedMasterList.forEach(item => {
+        let quantity = null;
+        if (item.calc && item.isNeeded(params)) {
+            quantity = item.calc(params, days);
+        } else if (item.id.startsWith('custom-')) {
+            quantity = '—'; // カスタム品目は計算しない
+        }
+
+        if (quantity !== null && quantity !== 0) {
+            if (!categories[item.category]) categories[item.category] = [];
+            categories[item.category].push({ ...item, quantity });
         }
     });
 
@@ -263,10 +267,11 @@ const pages = {
     for (const categoryName in categories) {
         todoHTML += `<div class="todo-category"><h3>${categoryName}</h3><ul class="stock-list">`;
         categories[categoryName].forEach(item => {
+            const qtyDisplay = (typeof item.quantity === 'number') ? `<strong>${item.quantity.toLocaleString()}</strong> ${item.unit}` : '（任意）';
             todoHTML += `
                 <li class="todo-item" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">
                     <span class="item-name">${item.name}</span>
-                    <span class="item-qty"><strong>${item.quantity.toLocaleString()}</strong> ${item.unit}</span>
+                    <span class="item-qty">${qtyDisplay}</span>
                 </li>
             `;
         });
@@ -278,7 +283,8 @@ const pages = {
         const todoItem = e.target.closest('.todo-item');
         if (todoItem) {
             const { id, name, unit } = todoItem.dataset;
-            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId: id, name, unit }));
+            const masterId = id.startsWith('custom-') ? null : id;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId: masterId, customId: id, name, unit }));
             window.location.hash = '#register';
         }
     });
@@ -289,7 +295,6 @@ const pages = {
     const summaryOutput = document.getElementById('stock-summary-output');
     const itemsOutput = document.getElementById('stock-items-output');
 
-    // モードセレクターを描画
     this.renderStockpileModeSelector(() => this.stock());
     
     summaryOutput.innerHTML = '';
@@ -349,7 +354,11 @@ const pages = {
     summaryOutput.innerHTML = summaryHTML;
     
     if (data.stockItems.length > 0) {
+        const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
         data.stockItems.forEach(item => {
+            const masterInfo = combinedMasterList.find(m => m.id === (item.masterId || item.customId));
+            const category = masterInfo ? masterInfo.category : 'その他';
+
             const li = document.createElement('li');
             li.className = 'stock-item-custom';
             let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
@@ -357,6 +366,7 @@ const pages = {
                 <div class="item-details">
                     <span class="item-name">${item.name}</span>
                     <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
+                    <span class="category-badge">${category}</span>
                     <span class="item-expiry">${expiryText}</span>
                 </div>
                 <div class="item-actions">
@@ -379,7 +389,7 @@ const pages = {
                 const currentData = storage.getAppData();
                 currentData.stockItems = currentData.stockItems.filter(item => item.id !== e.target.dataset.id);
                 storage.saveAppData(currentData);
-                this.stock(); // ページを再描画
+                this.stock();
             }
         }
     });
@@ -397,11 +407,13 @@ const pages = {
     const itemUnitInput = document.getElementById('itemUnit');
     const itemExpiryInput = document.getElementById('itemExpiry');
     let masterId = null;
+    let customId = null;
 
     if (itemToEdit) {
         titleEl.textContent = '備蓄品を編集';
         saveBtn.textContent = 'この内容で更新する';
         masterId = itemToEdit.masterId;
+        customId = itemToEdit.customId;
         itemNameInput.value = itemToEdit.name;
         itemQtyInput.value = itemToEdit.qty;
         itemUnitInput.value = itemToEdit.unit;
@@ -411,10 +423,13 @@ const pages = {
         if (newItemData) {
             const item = JSON.parse(newItemData);
             masterId = item.masterId;
+            customId = item.customId;
             itemNameInput.value = item.name;
             itemUnitInput.value = item.unit;
-            itemUnitInput.readOnly = true;
-            itemUnitInput.style.backgroundColor = '#f0f0f0';
+            if (item.masterId) {
+                itemUnitInput.readOnly = true;
+                itemUnitInput.style.backgroundColor = '#f0f0f0';
+            }
             sessionStorage.removeItem('newItemFromTodo');
         }
     }
@@ -437,7 +452,7 @@ const pages = {
               currentData.stockItems[itemIndex] = { ...itemToEdit, name, qty, unit, expiry };
           }
       } else {
-          const newItem = { id: Date.now().toString(), masterId, name, qty, unit, expiry };
+          const newItem = { id: Date.now().toString(), masterId, customId, name, qty, unit, expiry };
           currentData.stockItems.push(newItem);
       }
 
@@ -492,15 +507,9 @@ const pages = {
               return;
           }
 
-          const newItem = {
-              id: `custom-${Date.now()}`,
-              name,
-              category,
-              unit
-          };
-
+          const newItem = { id: `custom-${Date.now()}`, name, category, unit };
           data.customMasterItems.push(newItem);
-          storage.saveAppData(data);
+storage.saveAppData(data);
           
           document.getElementById('customItemName').value = '';
           document.getElementById('customItemCategory').value = '';
@@ -511,10 +520,12 @@ const pages = {
       
       output.addEventListener('click', e => {
           if (e.target.classList.contains('delete-custom-item-btn')) {
-              const itemId = e.target.dataset.id;
               if (confirm('この品目をリストから削除しますか？')) {
-                  data.customMasterItems = data.customMasterItems.filter(item => item.id !== itemId);
-                  storage.saveAppData(data);
+                  const currentData = storage.getAppData();
+                  currentData.customMasterItems = currentData.customMasterItems.filter(item => item.id !== e.target.dataset.id);
+                  // 関連する在庫も削除
+                  currentData.stockItems = currentData.stockItems.filter(stock => stock.customId !== e.target.dataset.id);
+                  storage.saveAppData(currentData);
                   renderCustomList();
               }
           }
@@ -561,7 +572,7 @@ const pages = {
             const currentData = storage.getAppData();
             currentData.settings.stockpileDays = selectedDays;
             storage.saveAppData(currentData);
-            onchangeCallback(); // ページを再描画
+            onchangeCallback();
         }
     });
   }
