@@ -188,7 +188,7 @@ const pages = {
     let totalAdults = 0, totalChildren = 0, totalInfants = 0;
     data.profiles.forEach(p => {
         if (p.ageGroup === '乳幼児') totalInfants++;
-        else if (p.ageGroup === '子供') totalChildren++;
+        else if (p.ageGroup === '子ども') totalChildren++;
         else totalAdults++;
     });
 
@@ -218,7 +218,10 @@ const pages = {
     output.innerHTML = '';
 
     if (data.stockItems.length === 0) {
-      output.innerHTML = '<p>登録されている備蓄品はありません。</p>';
+      output.innerHTML = `
+        <p>登録されている備蓄品はありません。</p>
+        <a href="#register" class="btn">最初の備蓄品を登録してみる</a>
+      `;
       return;
     }
 
@@ -229,15 +232,19 @@ const pages = {
       let expiryText = '';
       if (item.expiry) {
         const expiryDate = new Date(item.expiry);
-        const diff = (expiryDate - new Date()) / (1000 * 60 * 60 * 24);
+        const diff = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)); // 切り上げで日数計算
+        
         if (diff < 0) {
           li.classList.add('is-expired');
+          expiryText = ` (期限切れ)`;
         } else if (diff <= 30) {
           li.classList.add('is-near-expiry');
+          expiryText = ` (残り${diff}日)`;
+        } else {
+          expiryText = ` (期限: ${item.expiry})`;
         }
-        expiryText = ` (期限: ${item.expiry})`;
       }
-
+      
       li.textContent = `・${item.name} (${item.qty}個)${expiryText}`;
       output.appendChild(li);
     });
