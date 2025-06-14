@@ -8,7 +8,14 @@
 const storage = {
   getAppData() {
     const data = localStorage.getItem('bosaistockApp');
-    return data ? JSON.parse(data) : { profiles: [], pets: { count: 0 }, stockItems: [], settings: {} };
+    // settingsにstockpileDaysの初期値を追加
+    const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3 } };
+    if (data) {
+        const parsedData = JSON.parse(data);
+        // 古いデータ形式との互換性のためのマージ
+        return { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
+    }
+    return defaults;
   },
   saveAppData(data) {
     localStorage.setItem('bosaistockApp', JSON.stringify(data));
@@ -18,30 +25,29 @@ const storage = {
 /**
  * =================================================================
  * ToDo備蓄のマスターデータ
- * 品目、カテゴリ、計算ロジック、単位を定義します。
  * =================================================================
  */
 const todoMasterList = [
   // 食品・飲料
-  { id: 'water', name: '水', category: '食品・飲料', unit: 'L', calc: p => p.totalPeople * 3 * 3, isNeeded: p => p.totalPeople > 0 },
-  { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
-  { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
-  { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: p => p.infants * 3, isNeeded: p => p.infants > 0 },
-  { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  { id: 'water', name: '水', category: '食品・飲料', unit: 'L', calc: (p, days) => p.totalPeople * 3 * days, isNeeded: p => p.totalPeople > 0 },
+  { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
+  { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
+  { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
+  { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: (p, days) => p.totalPeople * Math.ceil(days / 3), isNeeded: p => p.totalPeople > 0 },
   // 衛生用品
-  { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: p => p.totalPeople * 5 * 3, isNeeded: p => p.totalPeople > 0 },
-  { id: 'wet_tissue', name: '除菌ウェットティッシュ', category: '衛生用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
-  { id: 'diapers', name: 'おむつ', category: '衛生用品', unit: '日分', calc: p => p.infants * 3, isNeeded: p => p.infants > 0 },
-  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: p => p.females * 3, isNeeded: p => p.females > 0 },
+  { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: (p, days) => p.totalPeople * 5 * days, isNeeded: p => p.totalPeople > 0 },
+  { id: 'wet_tissue', name: '除菌ウェットティッシュ', category: '衛生用品', unit: '個', calc: (p, days) => p.totalPeople * Math.ceil(days / 3), isNeeded: p => p.totalPeople > 0 },
+  { id: 'diapers', name: 'おむつ', category: '衛生用品', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
+  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: (p, days) => p.females * days, isNeeded: p => p.females > 0 },
   // 生活用品
-  { id: 'cassette_stove', name: 'カセットコンロ', category: '生活用品', unit: '台', calc: p => 1, isNeeded: p => p.totalPeople > 0 },
-  { id: 'cassette_gas', name: 'カセットボンベ', category: '生活用品', unit: '本', calc: p => 6, isNeeded: p => p.totalPeople > 0 },
+  { id: 'cassette_stove', name: 'カセットコンロ', category: '生活用品', unit: '台', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
+  { id: 'cassette_gas', name: 'カセットボンベ', category: '生活用品', unit: '本', calc: (p, days) => Math.ceil(days * 2), isNeeded: p => p.totalPeople > 0 },
   { id: 'flashlight', name: '懐中電灯・ランタン', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
-  { id: 'batteries', name: '乾電池', category: '生活用品', unit: 'セット', calc: p => 1, isNeeded: p => p.totalPeople > 0 },
+  { id: 'batteries', name: '乾電池', category: '生活用品', unit: 'セット', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'mobile_battery', name: '携帯充電器', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
   // ペット用品
-  { id: 'pet_food', name: 'ペットフード', category: 'ペット用品', unit: '日分', calc: p => p.pets * 3, isNeeded: p => p.pets > 0 },
-  { id: 'pet_toilet', name: 'ペット用トイレ用品', category: 'ペット用品', unit: '日分', calc: p => p.pets * 3, isNeeded: p => p.pets > 0 },
+  { id: 'pet_food', name: 'ペットフード', category: 'ペット用品', unit: '日分', calc: (p, days) => p.pets * days, isNeeded: p => p.pets > 0 },
+  { id: 'pet_toilet', name: 'ペット用トイレ用品', category: 'ペット用品', unit: '日分', calc: (p, days) => p.pets * days, isNeeded: p => p.pets > 0 },
 ];
 
 /**
@@ -81,25 +87,28 @@ const templates = {
   `,
   todo: `
     <h2>ToDo備蓄</h2>
+    <div id="mode-selector-container"></div>
     <div id="todo-output"></div>
   `,
   stock: `
     <h2>備蓄管理</h2>
-    <div id="stock-list-output"></div>
+    <div id="mode-selector-container"></div>
+    <h3>サマリー</h3>
+    <div id="stock-summary-output"></div>
     <hr>
-    <h3>その他の備蓄品</h3>
-    <div id="custom-stock-list-output" class="stock-list"></div>
-    <a href="#register" class="btn">その他の品目を追加する</a>
+    <h3>登録済み備蓄品リスト (個別管理)</h3>
+    <div id="stock-items-output" class="stock-list"></div>
+    <a href="#register" class="btn">新しく備蓄品を登録する</a>
   `,
   register: `
-    <h2>備蓄品を登録</h2>
+    <h2 id="register-title">備蓄品を登録</h2>
     <div class="form-group">
       <label for="itemName">品名</label>
       <input type="text" id="itemName" placeholder="例：水 2L">
     </div>
     <div class="form-group">
       <label for="itemQty">数量</label>
-      <input type="number" id="itemQty" min="0" value="1">
+      <input type="number" id="itemQty" min="0" value="1" step="any">
     </div>
     <div class="form-group">
       <label for="itemUnit">単位</label>
@@ -203,32 +212,22 @@ const pages = {
   todo() {
     const data = storage.getAppData();
     const output = document.getElementById('todo-output');
+    
+    // モードセレクターを描画
+    this.renderStockpileModeSelector(() => this.todo());
 
     if (data.profiles.length === 0) {
       output.innerHTML = '<p>先に「くらし方」で家族構成を設定してください。</p><a href="#lifestyle" class="btn">設定ページへ</a>';
       return;
     }
     
-    const params = {
-      adults: 0, children: 0, infants: 0,
-      totalPeople: data.profiles.length,
-      females: 0, elderly: 0, pets: data.pets.count || 0
-    };
-    
-    data.profiles.forEach(p => {
-        if (p.gender === '女性') params.females++;
-        switch (p.ageGroup) {
-            case '乳幼児': params.infants++; break;
-            case '子ども': params.children++; break;
-            case '成人': params.adults++; break;
-            case '高齢者': params.elderly++; params.adults++; break;
-        }
-    });
+    const params = this.getCalculationParams(data);
+    const days = data.settings.stockpileDays || 3;
 
     const categories = {};
     todoMasterList.forEach(item => {
         if (item.isNeeded(params)) {
-            const quantity = item.calc(params);
+            const quantity = item.calc(params, days);
             if (quantity > 0) {
                 if (!categories[item.category]) categories[item.category] = [];
                 categories[item.category].push({ ...item, quantity });
@@ -236,14 +235,14 @@ const pages = {
         }
     });
 
-    let todoHTML = '<p>あなたの世帯で推奨される備蓄リストです。項目をタップして備蓄品を登録しましょう。</p>';
+    let todoHTML = `<p>あなたの世帯で推奨される備蓄リストです（<strong>${days}日分</strong>）。項目をタップして備蓄品を登録しましょう。</p>`;
     for (const categoryName in categories) {
         todoHTML += `<div class="todo-category"><h3>${categoryName}</h3><ul class="stock-list">`;
         categories[categoryName].forEach(item => {
             todoHTML += `
                 <li class="todo-item" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">
                     <span class="item-name">${item.name}</span>
-                    <span class="item-qty"><strong>${item.quantity}</strong> ${item.unit}</span>
+                    <span class="item-qty"><strong>${item.quantity.toLocaleString()}</strong> ${item.unit}</span>
                 </li>
             `;
         });
@@ -263,16 +262,181 @@ const pages = {
   
   stock() {
     const data = storage.getAppData();
-    const stockListOutput = document.getElementById('stock-list-output');
-    const customListOutput = document.getElementById('custom-stock-list-output');
-    stockListOutput.innerHTML = '';
-    customListOutput.innerHTML = '';
+    const summaryOutput = document.getElementById('stock-summary-output');
+    const itemsOutput = document.getElementById('stock-items-output');
+
+    // モードセレクターを描画
+    this.renderStockpileModeSelector(() => this.stock());
+    
+    summaryOutput.innerHTML = '';
+    itemsOutput.innerHTML = '';
 
     if (data.profiles.length === 0) {
-      stockListOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
+      summaryOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
       return;
     }
 
+    const params = this.getCalculationParams(data);
+    const days = data.settings.stockpileDays || 3;
+    
+    const currentStockByMasterId = {};
+    data.stockItems.forEach(item => {
+        if(item.masterId) {
+            if(!currentStockByMasterId[item.masterId]) currentStockByMasterId[item.masterId] = 0;
+            currentStockByMasterId[item.masterId] += parseFloat(item.qty) || 0;
+        }
+    });
+
+    const categories = {};
+    todoMasterList.forEach(item => {
+        if(item.isNeeded(params)) {
+            const required = item.calc(params, days);
+            if (required > 0) {
+                if (!categories[item.category]) categories[item.category] = [];
+                const current = currentStockByMasterId[item.id] || 0;
+                categories[item.category].push({ ...item, required, current });
+            }
+        }
+    });
+    
+    let summaryHTML = '';
+    for (const categoryName in categories) {
+        summaryHTML += `<div class="todo-category"><h3>${categoryName}</h3>`;
+        categories[categoryName].forEach(item => {
+            const percentage = Math.min((item.current / item.required) * 100, 100);
+            let statusBarClass = 'is-low';
+            if (percentage >= 100) statusBarClass = 'is-sufficient';
+            else if (percentage >= 50) statusBarClass = 'is-medium';
+
+            summaryHTML += `
+                <div class="stock-progress-item">
+                    <div class="item-info">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                    </div>
+                </div>
+            `;
+        });
+        summaryHTML += `</div>`;
+    }
+    summaryOutput.innerHTML = summaryHTML;
+    
+    if (data.stockItems.length > 0) {
+        data.stockItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'stock-item-custom';
+            let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
+            li.innerHTML = `
+                <div class="item-details">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
+                    <span class="item-expiry">${expiryText}</span>
+                </div>
+                <div class="item-actions">
+                    <button class="edit-btn" data-id="${item.id}">編集</button>
+                    <button class="delete-btn" data-id="${item.id}">削除</button>
+                </div>
+            `;
+            itemsOutput.appendChild(li);
+        });
+    } else {
+        itemsOutput.innerHTML = '<p>登録されている備蓄品はありません。</p>';
+    }
+
+    itemsOutput.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            sessionStorage.setItem('editItemId', e.target.dataset.id);
+            window.location.hash = '#register';
+        } else if (e.target.classList.contains('delete-btn')) {
+            if (confirm('この備蓄品を削除しますか？')) {
+                const currentData = storage.getAppData();
+                currentData.stockItems = currentData.stockItems.filter(item => item.id !== e.target.dataset.id);
+                storage.saveAppData(currentData);
+                this.stock(); // ページを再描画
+            }
+        }
+    });
+  },
+
+  register() {
+    const editItemId = sessionStorage.getItem('editItemId');
+    const data = storage.getAppData();
+    const itemToEdit = editItemId ? data.stockItems.find(item => item.id === editItemId) : null;
+
+    const titleEl = document.getElementById('register-title');
+    const saveBtn = document.getElementById('saveItemBtn');
+    const itemNameInput = document.getElementById('itemName');
+    const itemQtyInput = document.getElementById('itemQty');
+    const itemUnitInput = document.getElementById('itemUnit');
+    const itemExpiryInput = document.getElementById('itemExpiry');
+    let masterId = null;
+
+    if (itemToEdit) {
+        titleEl.textContent = '備蓄品を編集';
+        saveBtn.textContent = 'この内容で更新する';
+        masterId = itemToEdit.masterId;
+        itemNameInput.value = itemToEdit.name;
+        itemQtyInput.value = itemToEdit.qty;
+        itemUnitInput.value = itemToEdit.unit;
+        itemExpiryInput.value = itemToEdit.expiry || '';
+    } else {
+        const newItemData = sessionStorage.getItem('newItemFromTodo');
+        if (newItemData) {
+            const item = JSON.parse(newItemData);
+            masterId = item.masterId;
+            itemNameInput.value = item.name;
+            itemUnitInput.value = item.unit;
+            itemUnitInput.readOnly = true;
+            itemUnitInput.style.backgroundColor = '#f0f0f0';
+            sessionStorage.removeItem('newItemFromTodo');
+        }
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const name = itemNameInput.value;
+      const qty = parseFloat(itemQtyInput.value);
+      const unit = itemUnitInput.value;
+      const expiry = itemExpiryInput.value;
+
+      if (!name || isNaN(qty) || !unit) {
+        alert('品名、数量、単位は必須です。');
+        return;
+      }
+
+      const currentData = storage.getAppData();
+      if (itemToEdit) {
+          const itemIndex = currentData.stockItems.findIndex(item => item.id === itemToEdit.id);
+          if (itemIndex > -1) {
+              currentData.stockItems[itemIndex] = { ...itemToEdit, name, qty, unit, expiry };
+          }
+      } else {
+          const newItem = { id: Date.now().toString(), masterId, name, qty, unit, expiry };
+          currentData.stockItems.push(newItem);
+      }
+
+      storage.saveAppData(currentData);
+      sessionStorage.removeItem('editItemId');
+      alert(itemToEdit ? '更新しました！' : '登録しました！');
+      window.location.hash = '#stock';
+    });
+  },
+
+  settings() {
+      document.getElementById('resetDataBtn').addEventListener('click', () => {
+          if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
+              localStorage.removeItem('bosaistockApp');
+              alert('データをリセットしました');
+              window.location.hash = '#home';
+              location.reload();
+          }
+      });
+  },
+
+  // --- ヘルパー関数 ---
+  getCalculationParams(data) {
     const params = {
       adults: 0, children: 0, infants: 0,
       totalPeople: data.profiles.length,
@@ -287,105 +451,31 @@ const pages = {
             case '高齢者': params.elderly++; params.adults++; break;
         }
     });
-    
-    const currentStock = {};
-    const customStock = [];
-    data.stockItems.forEach(item => {
-        if(item.masterId) {
-            if(!currentStock[item.masterId]) currentStock[item.masterId] = 0;
-            currentStock[item.masterId] += parseFloat(item.qty) || 0;
-        } else {
-            customStock.push(item);
-        }
-    });
-
-    todoMasterList.forEach(item => {
-        if(item.isNeeded(params)) {
-            const required = item.calc(params);
-            if (required > 0) {
-                const current = currentStock[item.id] || 0;
-                const percentage = Math.min((current / required) * 100, 100);
-                
-                let statusBarClass = 'is-low';
-                if (percentage >= 100) statusBarClass = 'is-sufficient';
-                else if (percentage >= 50) statusBarClass = 'is-medium';
-
-                const div = document.createElement('div');
-                div.className = 'stock-progress-item';
-                div.innerHTML = `
-                    <div class="item-info">
-                        <span class="item-name">${item.name}</span>
-                        <span class="item-amount">${current}${item.unit} / ${required}${item.unit}</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
-                    </div>
-                `;
-                stockListOutput.appendChild(div);
-            }
-        }
-    });
-    
-    if (customStock.length > 0) {
-        customStock.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'stock-item';
-            let expiryText = item.expiry ? ` (期限: ${item.expiry})` : '';
-            li.textContent = `・${item.name} (${item.qty} ${item.unit})${expiryText}`;
-            customListOutput.appendChild(li);
-        });
-    } else {
-        customListOutput.innerHTML = '<p>その他の備蓄品はありません。</p>';
-    }
-
+    return params;
   },
 
-  register() {
-    const itemNameInput = document.getElementById('itemName');
-    const itemQtyInput = document.getElementById('itemQty');
-    const itemUnitInput = document.getElementById('itemUnit');
-    let masterId = null;
+  renderStockpileModeSelector(onchangeCallback) {
+    const data = storage.getAppData();
+    const container = document.getElementById('mode-selector-container');
+    const currentDays = data.settings.stockpileDays || 3;
+    
+    container.innerHTML = `
+      <div class="stockpile-mode-selector">
+        <button class="mode-btn ${currentDays === 3 ? 'is-active' : ''}" data-days="3">3日分</button>
+        <button class="mode-btn ${currentDays === 7 ? 'is-active' : ''}" data-days="7">1週間</button>
+        <button class="mode-btn ${currentDays === 14 ? 'is-active' : ''}" data-days="14">2週間</button>
+      </div>
+    `;
 
-    const newItemData = sessionStorage.getItem('newItemFromTodo');
-    if (newItemData) {
-        const item = JSON.parse(newItemData);
-        masterId = item.masterId;
-        itemNameInput.value = item.name;
-        itemUnitInput.value = item.unit;
-        itemUnitInput.readOnly = true;
-        sessionStorage.removeItem('newItemFromTodo');
-    }
-
-    document.getElementById('saveItemBtn').addEventListener('click', () => {
-      const name = itemNameInput.value;
-      const qty = parseFloat(itemQtyInput.value);
-      const unit = itemUnitInput.value;
-      const expiry = document.getElementById('itemExpiry').value;
-
-      if (!name || !qty || !unit) {
-        alert('品名、数量、単位は必須です。');
-        return;
-      }
-      
-      const currentData = storage.getAppData();
-      const newItem = { id: Date.now().toString(), masterId, name, qty, unit, expiry };
-      currentData.stockItems.push(newItem);
-      storage.saveAppData(currentData);
-      
-      alert('登録しました！');
-      window.location.hash = '#stock';
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mode-btn')) {
+            const selectedDays = parseInt(e.target.dataset.days);
+            const currentData = storage.getAppData();
+            currentData.settings.stockpileDays = selectedDays;
+            storage.saveAppData(currentData);
+            onchangeCallback(); // ページを再描画
+        }
     });
-  },
-
-  settings() {
-      document.getElementById('resetDataBtn').addEventListener('click', () => {
-          if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
-              localStorage.removeItem('bosaistockApp');
-              alert('データをリセットしました');
-              window.location.hash = '#home';
-              location.reload();
-          }
-      });
   }
 };
 
@@ -435,4 +525,3 @@ const router = {
  */
 document.addEventListener('DOMContentLoaded', () => router.render());
 window.addEventListener('hashchange', () => router.render());
-
