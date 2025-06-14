@@ -190,11 +190,129 @@ const templates = {
  */
 const pages = {
   lifestyle() {
-    // ... (This function remains unchanged from the previous version)
+    const data = storage.getAppData();
+    const profilesContainer = document.getElementById('profiles-container');
+    const peopleCountSelect = document.getElementById('peopleCountSelect');
+    const petCountInput = document.getElementById('petCount');
+
+    const renderProfileCards = (num, profiles = []) => {
+      profilesContainer.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const profile = profiles[i] || {};
+        const cardHTML = `
+          <div class="profile-card" data-index="${i}">
+            <h4>${i + 1}人目の情報</h4>
+            <div class="form-group">
+              <label>性別</label>
+              <select class="gender-select">
+                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年代</label>
+              <select class="age-group-select">
+                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
+                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
+                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
+      }
+    };
+    
+    peopleCountSelect.addEventListener('change', (e) => {
+      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
+    });
+
+    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
+        const newProfiles = [];
+        document.querySelectorAll('.profile-card').forEach(card => {
+            newProfiles.push({
+                gender: card.querySelector('.gender-select').value,
+                ageGroup: card.querySelector('.age-group-select').value
+            });
+        });
+        
+        const currentData = storage.getAppData();
+        currentData.profiles = newProfiles;
+        currentData.pets.count = parseInt(petCountInput.value) || 0;
+        storage.saveAppData(currentData);
+        
+        alert('くらし方を保存しました！');
+        window.location.hash = '#home';
+    });
+
+    petCountInput.value = data.pets.count || 0;
+    const initialNum = data.profiles.length || 1;
+    peopleCountSelect.value = initialNum;
+    renderProfileCards(initialNum, data.profiles);
   },
 
   todo() {
-    // ... (This function remains unchanged from the previous version)
+    const data = storage.getAppData();
+    const output = document.getElementById('todo-output');
+    
+    this.renderStockpileModeSelector(() => this.todo());
+
+    if (data.profiles.length === 0) {
+      output.innerHTML = '<p>先に「くらし方」で家族構成を設定してください。</p><a href="#lifestyle" class="btn">設定ページへ</a>';
+      return;
+    }
+    
+    const params = this.getCalculationParams(data);
+    const days = data.settings.stockpileDays || 3;
+    const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
+
+    const categories = {};
+    combinedMasterList.forEach(item => {
+        let quantity = null;
+        let isNeeded = false;
+        
+        if (item.calc) { // calc関数を持つ（デフォルトまたは目標設定済みカスタム品）
+            if (item.isNeeded && item.isNeeded(params)) {
+                quantity = item.calc(params, days);
+                isNeeded = true;
+            }
+        } else if (item.id.startsWith('custom-')) { // 目標量なしのカスタム品目
+            quantity = '—';
+            isNeeded = true;
+        }
+
+        if (isNeeded && quantity !== 0) {
+            if (!categories[item.category]) categories[item.category] = [];
+            categories[item.category].push({ ...item, quantity });
+        }
+    });
+
+    let todoHTML = `<p>あなたの世帯で推奨される備蓄リストです（<strong>${days}日分</strong>）。項目をタップして備蓄品を登録しましょう。</p>`;
+    for (const categoryName in categories) {
+        todoHTML += `<div class="todo-category"><h3>${categoryName}</h3><ul class="stock-list">`;
+        categories[categoryName].forEach(item => {
+            const qtyDisplay = (typeof item.quantity === 'number') ? `<strong>${item.quantity.toLocaleString()}</strong> ${item.unit}` : '（任意）';
+            todoHTML += `
+                <li class="todo-item" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-qty">${qtyDisplay}</span>
+                </li>
+            `;
+        });
+        todoHTML += `</ul></div>`;
+    }
+    output.innerHTML = todoHTML;
+
+    output.addEventListener('click', (e) => {
+        const todoItem = e.target.closest('.todo-item');
+        if (todoItem) {
+            const { id, name, unit } = todoItem.dataset;
+            const masterId = id.startsWith('custom-') ? null : id;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId: masterId, customId: id, name, unit }));
+            window.location.hash = '#register';
+        }
+    });
   },
   
   stock() {
@@ -216,12 +334,12 @@ const pages = {
     const days = data.settings.stockpileDays || 3;
     const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
     
-    const currentStockByMasterId = {};
+    const currentStockById = {};
     data.stockItems.forEach(item => {
         const id = item.masterId || item.customId;
         if(id) {
-            if(!currentStockByMasterId[id]) currentStockByMasterId[id] = 0;
-            currentStockByMasterId[id] += parseFloat(item.qty) || 0;
+            if(!currentStockById[id]) currentStockById[id] = 0;
+            currentStockById[id] += parseFloat(item.qty) || 0;
         }
     });
 
@@ -233,7 +351,7 @@ const pages = {
                 if (!categories[item.category]) {
                     categories[item.category] = { items: [], achieved: 0, total: 0 };
                 }
-                const current = currentStockByMasterId[item.id] || 0;
+                const current = currentStockById[item.id] || 0;
                 categories[item.category].items.push({ ...item, required, current });
                 categories[item.category].total++;
                 if (current >= required) {
@@ -317,7 +435,71 @@ const pages = {
   },
 
   register() {
-    // ... (This function remains unchanged from the previous version)
+    const editItemId = sessionStorage.getItem('editItemId');
+    const data = storage.getAppData();
+    const itemToEdit = editItemId ? data.stockItems.find(item => item.id === editItemId) : null;
+
+    const titleEl = document.getElementById('register-title');
+    const saveBtn = document.getElementById('saveItemBtn');
+    const itemNameInput = document.getElementById('itemName');
+    const itemQtyInput = document.getElementById('itemQty');
+    const itemUnitInput = document.getElementById('itemUnit');
+    const itemExpiryInput = document.getElementById('itemExpiry');
+    let masterId = null;
+    let customId = null;
+
+    if (itemToEdit) {
+        titleEl.textContent = '備蓄品を編集';
+        saveBtn.textContent = 'この内容で更新する';
+        masterId = itemToEdit.masterId;
+        customId = itemToEdit.customId;
+        itemNameInput.value = itemToEdit.name;
+        itemQtyInput.value = itemToEdit.qty;
+        itemUnitInput.value = itemToEdit.unit;
+        itemExpiryInput.value = itemToEdit.expiry || '';
+    } else {
+        const newItemData = sessionStorage.getItem('newItemFromTodo');
+        if (newItemData) {
+            const item = JSON.parse(newItemData);
+            masterId = item.masterId;
+            customId = item.customId;
+            itemNameInput.value = item.name;
+            itemUnitInput.value = item.unit;
+            if (item.masterId) {
+                itemUnitInput.readOnly = true;
+                itemUnitInput.style.backgroundColor = '#f0f0f0';
+            }
+            sessionStorage.removeItem('newItemFromTodo');
+        }
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const name = itemNameInput.value;
+      const qty = parseFloat(itemQtyInput.value);
+      const unit = itemUnitInput.value;
+      const expiry = itemExpiryInput.value;
+
+      if (!name || isNaN(qty) || !unit) {
+        alert('品名、数量、単位は必須です。');
+        return;
+      }
+
+      const currentData = storage.getAppData();
+      if (itemToEdit) {
+          const itemIndex = currentData.stockItems.findIndex(item => item.id === itemToEdit.id);
+          if (itemIndex > -1) {
+              currentData.stockItems[itemIndex] = { ...itemToEdit, name, qty, unit, expiry };
+          }
+      } else {
+          const newItem = { id: Date.now().toString(), masterId, customId, name, qty, unit, expiry };
+          currentData.stockItems.push(newItem);
+      }
+
+      storage.saveAppData(currentData);
+      sessionStorage.removeItem('editItemId');
+      alert(itemToEdit ? '更新しました！' : '登録しました！');
+      window.location.hash = '#stock';
+    });
   },
 
   settings() {
@@ -378,7 +560,7 @@ const pages = {
           storage.saveAppData(data);
           
           document.getElementById('customItemName').value = '';
-          document.getElementById('customItemCategory').value = '';
+          document.getElementById('customItemCategory').value = 'その他';
           document.getElementById('customItemUnit').value = '';
           document.getElementById('customItemDailyQty').value = '';
           
@@ -404,11 +586,45 @@ const pages = {
 
   // --- ヘルパー関数 ---
   getCalculationParams(data) {
-    // ... (This function remains unchanged)
+    const params = {
+      adults: 0, children: 0, infants: 0,
+      totalPeople: data.profiles.length,
+      females: 0, elderly: 0, pets: data.pets.count || 0
+    };
+    data.profiles.forEach(p => {
+        if (p.gender === '女性') params.females++;
+        switch (p.ageGroup) {
+            case '乳幼児': params.infants++; break;
+            case '子ども': params.children++; break;
+            case '成人': params.adults++; break;
+            case '高齢者': params.elderly++; params.adults++; break;
+        }
+    });
+    return params;
   },
 
   renderStockpileModeSelector(onchangeCallback) {
-    // ... (This function remains unchanged)
+    const data = storage.getAppData();
+    const container = document.getElementById('mode-selector-container');
+    const currentDays = data.settings.stockpileDays || 3;
+    
+    container.innerHTML = `
+      <div class="stockpile-mode-selector">
+        <button class="mode-btn ${currentDays === 3 ? 'is-active' : ''}" data-days="3">3日分</button>
+        <button class="mode-btn ${currentDays === 7 ? 'is-active' : ''}" data-days="7">1週間</button>
+        <button class="mode-btn ${currentDays === 14 ? 'is-active' : ''}" data-days="14">2週間</button>
+      </div>
+    `;
+
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mode-btn')) {
+            const selectedDays = parseInt(e.target.dataset.days);
+            const currentData = storage.getAppData();
+            currentData.settings.stockpileDays = selectedDays;
+            storage.saveAppData(currentData);
+            onchangeCallback();
+        }
+    });
   }
 };
 
@@ -418,18 +634,39 @@ const pages = {
  * =================================================================
  */
 const router = {
-    // ... (The router object remains unchanged from the previous version)
+  render() {
+    const hash = window.location.hash || '#home';
+    const pageKey = hash.substring(1);
+    
+    const appRoot = document.getElementById('app-root');
+    const headerTitle = document.getElementById('header-title');
+
+    if (templates[pageKey]) {
+      appRoot.innerHTML = templates[pageKey];
+      headerTitle.textContent = this.getHeaderTitle(pageKey);
+      if (pages[pageKey]) {
+        pages[pageKey]();
+      }
+    } else {
+      window.location.hash = '#home';
+    }
+  },
+  
+  getHeaderTitle(key) {
+    const titles = {
+      home: 'bosaistock ホーム',
+      lifestyle: 'くらし方',
+      todo: 'ToDo備蓄',
+      stock: '備蓄管理',
+      register: '備蓄品登録',
+      settings: '設定',
+      'how-to': '使い方',
+      help: 'ヘルプ',
+      'custom-list-editor': '品目リストの編集'
+    };
+    return titles[key] || 'bosaistock';
+  }
 };
-
-// --- ここから下は、変更がないため省略したページごとのロジックです ---
-// (実際のファイルでは省略せずにすべて含めてください)
-pages.lifestyle = function() { /* ... */ };
-pages.register = function() { /* ... */ };
-pages.getCalculationParams = function(data) { /* ... */ };
-pages.renderStockpileModeSelector = function(onchangeCallback) { /* ... */ };
-router.render = function() { /* ... */ };
-router.getHeaderTitle = function(key) { /* ... */ };
-
 
 /**
  * =================================================================
