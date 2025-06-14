@@ -1,0 +1,156 @@
+/* --- 基本設定 --- */
+body {
+  background-color: #fef9f5;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  margin: 0 0 80px 0; /* フッターナビの高さ分、下の余白を確保 */
+  padding: 0;
+  color: #333;
+}
+
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* --- 共通コンポーネント --- */
+header {
+  background-color: #4a6fa5;
+  color: white;
+  padding: 16px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0;
+  z-index: 10;
+}
+
+.bottom-nav a {
+  text-align: center;
+  color: #555;
+  font-size: 10px;
+  text-decoration: none;
+  padding: 2px 4px;
+}
+
+.bottom-nav img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  margin: auto;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background-color: #4a6fa5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* --- フォーム関連 --- */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; /* paddingを含めてwidth100%にする */
+  font-size: 16px;
+}
+
+/* --- ホーム画面 --- */
+.grid-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.grid-menu a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: white;
+  border: 2px solid #4a6fa5;
+  border-radius: 12px;
+  padding: 20px 8px;
+  text-decoration: none;
+  color: #4a6fa5;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.grid-menu img {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+/* --- 在庫リスト --- */
+.stock-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 16px;
+}
+
+.stock-item {
+  background: #fff;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.stock-item.is-expired { /* 期限切れ */
+  color: #d9534f;
+  border-left: 4px solid #d9534f;
+  font-weight: bold;
+}
+
+.stock-item.is-near-expiry { /* 期限間近 */
+  color: #f0ad4e;
+  border-left: 4px solid #f0ad4e;
+}
