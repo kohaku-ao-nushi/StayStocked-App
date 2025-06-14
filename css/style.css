@@ -174,11 +174,22 @@ header h1 {
 .todo-category {
     margin-top: 24px;
 }
-.todo-category h3 {
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 8px;
     padding-bottom: 4px;
     border-bottom: 1px solid #ddd;
+}
+.category-header h3 {
+    margin: 0;
+    border: none;
+}
+.category-achievement {
     font-size: 1.1em;
+    font-weight: bold;
+    color: var(--primary-color);
 }
 .todo-item {
     display: flex;
@@ -355,6 +366,11 @@ header h1 {
 }
 .master-list.is-custom li {
     border-left: 4px solid var(--sufficient-color);
+}
+.master-list .item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 .delete-custom-item-btn {
     background: none;
