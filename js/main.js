@@ -18,8 +18,37 @@ const storage = {
 
 /**
  * =================================================================
+ * ToDo備蓄のマスターデータ
+ * 東京備蓄ナビを参考に、品目、カテゴリ、計算ロジックを定義します。
+ * =================================================================
+ */
+const todoMasterList = [
+  // 食品・飲料
+  { id: 'water', name: '水', category: '食品・飲料', unit: 'L', calc: p => p.totalPeople * 3 * 3, isNeeded: p => p.totalPeople > 0 },
+  { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
+  { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
+  { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: p => p.infants * 3, isNeeded: p => p.infants > 0 },
+  { id: 'baby_bottle', name: '哺乳瓶', category: '衛生用品', unit: '本', calc: p => p.infants > 0 ? 1 : 0, isNeeded: p => p.infants > 0 },
+  { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  // 衛生用品
+  { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: p => p.totalPeople * 5 * 3, isNeeded: p => p.totalPeople > 0 },
+  { id: 'wet_tissue', name: '除菌ウェットティッシュ', category: '衛生用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  { id: 'diapers', name: 'おむつ', category: '衛生用品', unit: '日分', calc: p => p.infants * 3, isNeeded: p => p.infants > 0 },
+  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: p => p.females * 3, isNeeded: p => p.females > 0 },
+  // 生活用品
+  { id: 'cassette_stove', name: 'カセットコンロ', category: '生活用品', unit: '台', calc: p => 1, isNeeded: p => p.totalPeople > 0 },
+  { id: 'cassette_gas', name: 'カセットボンベ', category: '生活用品', unit: '本', calc: p => 6, isNeeded: p => p.totalPeople > 0 },
+  { id: 'flashlight', name: '懐中電灯・ランタン', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  { id: 'batteries', name: '乾電池', category: '生活用品', unit: 'セット', calc: p => 1, isNeeded: p => p.totalPeople > 0 },
+  { id: 'mobile_battery', name: '携帯充電器', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  // ペット用品
+  { id: 'pet_food', name: 'ペットフード', category: 'ペット用品', unit: '日分', calc: p => p.pets * 3, isNeeded: p => p.pets > 0 },
+  { id: 'pet_toilet', name: 'ペット用トイレ用品', category: 'ペット用品', unit: '日分', calc: p => p.pets * 3, isNeeded: p => p.pets > 0 },
+];
+
+/**
+ * =================================================================
  * 各ページのHTMLテンプレート
- * ページの内容を文字列として保持します。
  * =================================================================
  */
 const templates = {
@@ -86,7 +115,7 @@ const templates = {
     <h2>使い方</h2>
     <p>1. 「くらし方」で家族構成を設定します。</p>
     <p>2. 「ToDo備蓄」で必要な備蓄量の目安を確認します。</p>
-    <p>3. 購入した備蓄品を「備蓄管理」から登録します。</p>
+    <p>3. ToDoリストの項目をタップして、「備蓄管理」に登録します。</p>
     <p>定期的にリストを見直して、いざという時に備えましょう！</p>
   `,
   help: `
@@ -100,7 +129,6 @@ const templates = {
 /**
  * =================================================================
  * ページごとのロジック (コントローラー層)
- * ページの描画後にイベントを設定したり、データを表示したりします。
  * =================================================================
  */
 const pages = {
@@ -110,7 +138,6 @@ const pages = {
     const peopleCountSelect = document.getElementById('peopleCountSelect');
     const petCountInput = document.getElementById('petCount');
 
-    // プロフィールカードを生成する関数
     const renderProfileCards = (num, profiles = []) => {
       profilesContainer.innerHTML = '';
       for (let i = 0; i < num; i++) {
@@ -140,23 +167,21 @@ const pages = {
       }
     };
     
-    // 人数選択リストボックスの変更イベント
     peopleCountSelect.addEventListener('change', (e) => {
       const num = parseInt(e.target.value);
       renderProfileCards(num, storage.getAppData().profiles);
     });
 
-    // 保存ボタンのクリックイベント
     document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
         const newProfiles = [];
         const profileCards = document.querySelectorAll('.profile-card');
         
-        for (let i = 0; i < profileCards.length; i++) {
+        profileCards.forEach(card => {
             newProfiles.push({
-                gender: profileCards[i].querySelector('.gender-select').value,
-                ageGroup: profileCards[i].querySelector('.age-group-select').value
+                gender: card.querySelector('.gender-select').value,
+                ageGroup: card.querySelector('.age-group-select').value
             });
-        }
+        });
         
         const currentData = storage.getAppData();
         currentData.profiles = newProfiles;
@@ -167,7 +192,6 @@ const pages = {
         window.location.hash = '#home';
     });
 
-    // 初期表示処理
     petCountInput.value = data.pets.count || 0;
     const initialNum = data.profiles.length || 1;
     peopleCountSelect.value = initialNum;
@@ -183,48 +207,61 @@ const pages = {
       return;
     }
     
-    // 年代ごとの人数を初期化
-    let totalAdults = 0;
-    let totalChildren = 0;
-    let totalInfants = 0;
-
-    // プロフィールから各年代の人数を計算
+    const params = {
+      adults: 0, children: 0, infants: 0,
+      totalPeople: data.profiles.length,
+      females: 0, elderly: 0, pets: data.pets.count || 0
+    };
+    
     data.profiles.forEach(p => {
+        if (p.gender === '女性') params.females++;
         switch (p.ageGroup) {
-            case '乳幼児':
-                totalInfants++;
-                break;
-            case '子ども':
-                totalChildren++;
-                break;
-            case '成人':
-            case '高齢者':
-                totalAdults++;
-                break;
-            default: // 想定外のカテゴリは大人としてカウント
-                totalAdults++;
+            case '乳幼児': params.infants++; break;
+            case '子ども': params.children++; break;
+            case '成人': params.adults++; break;
+            case '高齢者': params.elderly++; params.adults++; break;
         }
     });
 
-    const totalPeople = totalAdults + totalChildren + totalInfants;
-    const waterNeeded = totalPeople * 3 * 3; // 1人1日3L × 3日分
-    // 食料は乳幼児を除く
-    const foodMealsNeeded = (totalAdults + totalChildren) * 3 * 3;
+    const categories = {};
+    todoMasterList.forEach(item => {
+        if (item.isNeeded(params)) {
+            const quantity = item.calc(params);
+            if (quantity > 0) {
+                if (!categories[item.category]) {
+                    categories[item.category] = [];
+                }
+                categories[item.category].push({ ...item, quantity });
+            }
+        }
+    });
 
-    let todoHTML = `
-      <p>あなたの家族構成に基づくと、最低でも以下の備蓄が推奨されます（3日分目安）。</p>
-      <ul class="stock-list">
-        <li class="stock-item">💧 飲料水：約 <strong>${waterNeeded}L</strong></li>
-        <li class="stock-item">🍱 食料：約 <strong>${foodMealsNeeded}食</strong></li>
-    `;
-    if (totalInfants > 0) {
-      todoHTML += `<li class="stock-item">🍼 ミルク・おむつ類：乳幼児 <strong>${totalInfants}人分</strong></li>`;
+    let todoHTML = '<p>あなたの世帯で推奨される備蓄リストです。項目をタップして備蓄品を登録しましょう。</p>';
+    for (const categoryName in categories) {
+        todoHTML += `<div class="todo-category"><h3>${categoryName}</h3><ul class="stock-list">`;
+        categories[categoryName].forEach(item => {
+            todoHTML += `
+                <li class="todo-item" data-name="${item.name}" data-qty="${item.quantity}">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-qty"><strong>${item.quantity}</strong> ${item.unit}</span>
+                </li>
+            `;
+        });
+        todoHTML += `</ul></div>`;
     }
-    if (data.pets.count > 0) {
-      todoHTML += `<li class="stock-item">🐾 ペットフード・水：<strong>${data.pets.count}頭分</strong></li>`;
-    }
-    todoHTML += '</ul>';
     output.innerHTML = todoHTML;
+
+    // イベントリスナーを設定
+    output.addEventListener('click', (e) => {
+        const todoItem = e.target.closest('.todo-item');
+        if (todoItem) {
+            const itemName = todoItem.dataset.name;
+            const itemQty = todoItem.dataset.qty;
+            
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ name: itemName, qty: itemQty }));
+            window.location.hash = '#register';
+        }
+    });
   },
   
   stock() {
@@ -247,7 +284,7 @@ const pages = {
       let expiryText = '';
       if (item.expiry) {
         const expiryDate = new Date(item.expiry);
-        const diff = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)); // 切り上げで日数計算
+        const diff = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
         
         if (diff < 0) {
           li.classList.add('is-expired');
@@ -266,9 +303,21 @@ const pages = {
   },
 
   register() {
+    const itemNameInput = document.getElementById('itemName');
+    const itemQtyInput = document.getElementById('itemQty');
+
+    // ToDoページから渡されたデータがあればフォームに設定
+    const newItemData = sessionStorage.getItem('newItemFromTodo');
+    if (newItemData) {
+        const item = JSON.parse(newItemData);
+        itemNameInput.value = item.name;
+        itemQtyInput.value = item.qty;
+        sessionStorage.removeItem('newItemFromTodo'); // 使ったら消す
+    }
+
     document.getElementById('saveItemBtn').addEventListener('click', () => {
-      const name = document.getElementById('itemName').value;
-      const qty = parseInt(document.getElementById('itemQty').value);
+      const name = itemNameInput.value;
+      const qty = parseInt(itemQtyInput.value);
       const expiry = document.getElementById('itemExpiry').value;
 
       if (!name || !qty) {
@@ -277,7 +326,6 @@ const pages = {
       }
       
       const currentData = storage.getAppData();
-      // 簡単なIDを生成
       const newItem = { id: Date.now().toString(), name, qty, expiry };
       currentData.stockItems.push(newItem);
       storage.saveAppData(currentData);
@@ -293,7 +341,7 @@ const pages = {
               localStorage.removeItem('bosaistockApp');
               alert('データをリセットしました。');
               window.location.hash = '#home';
-              location.reload(); // ページをリロードして完全に初期化
+              location.reload();
           }
       });
   }
@@ -302,7 +350,6 @@ const pages = {
 /**
  * =================================================================
  * SPAルーター機能
- * URLのハッシュに応じてページを切り替えます。
  * =================================================================
  */
 const router = {
@@ -344,6 +391,5 @@ const router = {
  * アプリケーションの初期化
  * =================================================================
  */
-// DOMの読み込み完了時とURLハッシュ変更時にルーターを実行
 document.addEventListener('DOMContentLoaded', () => router.render());
 window.addEventListener('hashchange', () => router.render());
