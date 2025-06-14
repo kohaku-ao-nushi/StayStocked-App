@@ -129,8 +129,9 @@ const pages = {
               <label>年代</label>
               <select class="age-group-select">
                 <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
-                <option value="子供" ${profile.ageGroup === '子供' ? 'selected' : ''}>子供 (3-12歳)</option>
-                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (13-64歳)</option>
+                <option value="子ども(小学生以下)" ${profile.ageGroup === '子ども(小学生以下)' ? 'selected' : ''}>子ども(小学生以下)</option>
+                <option value="子ども(18歳未満)" ${profile.ageGroup === '子ども(18歳未満)' ? 'selected' : ''}>子ども(18歳未満)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
                 <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
               </select>
             </div>
