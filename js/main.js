@@ -3,7 +3,6 @@
 /**
  * =================================================================
  * アプリケーションのデータ管理 (ストレージ層)
- * localStorageへのデータの読み書きを抽象化します。
  * =================================================================
  */
 const storage = {
@@ -19,7 +18,7 @@ const storage = {
 /**
  * =================================================================
  * ToDo備蓄のマスターデータ
- * 東京備蓄ナビを参考に、品目、カテゴリ、計算ロジックを定義します。
+ * 品目、カテゴリ、計算ロジック、単位を定義します。
  * =================================================================
  */
 const todoMasterList = [
@@ -28,7 +27,6 @@ const todoMasterList = [
   { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
   { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: p => (p.adults + p.children) * 3 * 3, isNeeded: p => (p.adults + p.children) > 0 },
   { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: p => p.infants * 3, isNeeded: p => p.infants > 0 },
-  { id: 'baby_bottle', name: '哺乳瓶', category: '衛生用品', unit: '本', calc: p => p.infants > 0 ? 1 : 0, isNeeded: p => p.infants > 0 },
   { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
   // 衛生用品
   { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: p => p.totalPeople * 5 * 3, isNeeded: p => p.totalPeople > 0 },
@@ -87,8 +85,11 @@ const templates = {
   `,
   stock: `
     <h2>備蓄管理</h2>
-    <a href="#register" class="btn">新しく備蓄品を登録する</a>
-    <div id="stock-list-output" class="stock-list"></div>
+    <div id="stock-list-output"></div>
+    <hr>
+    <h3>その他の備蓄品</h3>
+    <div id="custom-stock-list-output" class="stock-list"></div>
+    <a href="#register" class="btn">その他の品目を追加する</a>
   `,
   register: `
     <h2>備蓄品を登録</h2>
@@ -98,7 +99,11 @@ const templates = {
     </div>
     <div class="form-group">
       <label for="itemQty">数量</label>
-      <input type="number" id="itemQty" min="1" value="1">
+      <input type="number" id="itemQty" min="0" value="1">
+    </div>
+    <div class="form-group">
+      <label for="itemUnit">単位</label>
+      <input type="text" id="itemUnit" placeholder="例：個, 本, L">
     </div>
     <div class="form-group">
       <label for="itemExpiry">賞味期限（任意）</label>
@@ -168,15 +173,12 @@ const pages = {
     };
     
     peopleCountSelect.addEventListener('change', (e) => {
-      const num = parseInt(e.target.value);
-      renderProfileCards(num, storage.getAppData().profiles);
+      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
     });
 
     document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
         const newProfiles = [];
-        const profileCards = document.querySelectorAll('.profile-card');
-        
-        profileCards.forEach(card => {
+        document.querySelectorAll('.profile-card').forEach(card => {
             newProfiles.push({
                 gender: card.querySelector('.gender-select').value,
                 ageGroup: card.querySelector('.age-group-select').value
@@ -228,9 +230,7 @@ const pages = {
         if (item.isNeeded(params)) {
             const quantity = item.calc(params);
             if (quantity > 0) {
-                if (!categories[item.category]) {
-                    categories[item.category] = [];
-                }
+                if (!categories[item.category]) categories[item.category] = [];
                 categories[item.category].push({ ...item, quantity });
             }
         }
@@ -241,7 +241,7 @@ const pages = {
         todoHTML += `<div class="todo-category"><h3>${categoryName}</h3><ul class="stock-list">`;
         categories[categoryName].forEach(item => {
             todoHTML += `
-                <li class="todo-item" data-name="${item.name}" data-qty="${item.quantity}">
+                <li class="todo-item" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">
                     <span class="item-name">${item.name}</span>
                     <span class="item-qty"><strong>${item.quantity}</strong> ${item.unit}</span>
                 </li>
@@ -251,14 +251,11 @@ const pages = {
     }
     output.innerHTML = todoHTML;
 
-    // イベントリスナーを設定
     output.addEventListener('click', (e) => {
         const todoItem = e.target.closest('.todo-item');
         if (todoItem) {
-            const itemName = todoItem.dataset.name;
-            const itemQty = todoItem.dataset.qty;
-            
-            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ name: itemName, qty: itemQty }));
+            const { id, name, unit } = todoItem.dataset;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId: id, name, unit }));
             window.location.hash = '#register';
         }
     });
@@ -266,67 +263,112 @@ const pages = {
   
   stock() {
     const data = storage.getAppData();
-    const output = document.getElementById('stock-list-output');
-    output.innerHTML = '';
+    const stockListOutput = document.getElementById('stock-list-output');
+    const customListOutput = document.getElementById('custom-stock-list-output');
+    stockListOutput.innerHTML = '';
+    customListOutput.innerHTML = '';
 
-    if (data.stockItems.length === 0) {
-      output.innerHTML = `
-        <p>登録されている備蓄品はありません。</p>
-        <a href="#register" class="btn">最初の備蓄品を登録してみる</a>
-      `;
+    if (data.profiles.length === 0) {
+      stockListOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
       return;
     }
 
-    data.stockItems.forEach((item) => {
-      const li = document.createElement('li');
-      li.className = 'stock-item';
-      
-      let expiryText = '';
-      if (item.expiry) {
-        const expiryDate = new Date(item.expiry);
-        const diff = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
-        
-        if (diff < 0) {
-          li.classList.add('is-expired');
-          expiryText = ` (期限切れ)`;
-        } else if (diff <= 30) {
-          li.classList.add('is-near-expiry');
-          expiryText = ` (残り${diff}日)`;
-        } else {
-          expiryText = ` (期限: ${item.expiry})`;
+    const params = {
+      adults: 0, children: 0, infants: 0,
+      totalPeople: data.profiles.length,
+      females: 0, elderly: 0, pets: data.pets.count || 0
+    };
+    data.profiles.forEach(p => {
+        if (p.gender === '女性') params.females++;
+        switch (p.ageGroup) {
+            case '乳幼児': params.infants++; break;
+            case '子ども': params.children++; break;
+            case '成人': params.adults++; break;
+            case '高齢者': params.elderly++; params.adults++; break;
         }
-      }
-      
-      li.textContent = `・${item.name} (${item.qty}個)${expiryText}`;
-      output.appendChild(li);
     });
+    
+    const currentStock = {};
+    const customStock = [];
+    data.stockItems.forEach(item => {
+        if(item.masterId) {
+            if(!currentStock[item.masterId]) currentStock[item.masterId] = 0;
+            currentStock[item.masterId] += parseFloat(item.qty) || 0;
+        } else {
+            customStock.push(item);
+        }
+    });
+
+    todoMasterList.forEach(item => {
+        if(item.isNeeded(params)) {
+            const required = item.calc(params);
+            if (required > 0) {
+                const current = currentStock[item.id] || 0;
+                const percentage = Math.min((current / required) * 100, 100);
+                
+                let statusBarClass = 'is-low';
+                if (percentage >= 100) statusBarClass = 'is-sufficient';
+                else if (percentage >= 50) statusBarClass = 'is-medium';
+
+                const div = document.createElement('div');
+                div.className = 'stock-progress-item';
+                div.innerHTML = `
+                    <div class="item-info">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-amount">${current}${item.unit} / ${required}${item.unit}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                    </div>
+                `;
+                stockListOutput.appendChild(div);
+            }
+        }
+    });
+    
+    if (customStock.length > 0) {
+        customStock.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'stock-item';
+            let expiryText = item.expiry ? ` (期限: ${item.expiry})` : '';
+            li.textContent = `・${item.name} (${item.qty} ${item.unit})${expiryText}`;
+            customListOutput.appendChild(li);
+        });
+    } else {
+        customListOutput.innerHTML = '<p>その他の備蓄品はありません。</p>';
+    }
+
   },
 
   register() {
     const itemNameInput = document.getElementById('itemName');
     const itemQtyInput = document.getElementById('itemQty');
+    const itemUnitInput = document.getElementById('itemUnit');
+    let masterId = null;
 
-    // ToDoページから渡されたデータがあればフォームに設定
     const newItemData = sessionStorage.getItem('newItemFromTodo');
     if (newItemData) {
         const item = JSON.parse(newItemData);
+        masterId = item.masterId;
         itemNameInput.value = item.name;
-        itemQtyInput.value = item.qty;
-        sessionStorage.removeItem('newItemFromTodo'); // 使ったら消す
+        itemUnitInput.value = item.unit;
+        itemUnitInput.readOnly = true;
+        sessionStorage.removeItem('newItemFromTodo');
     }
 
     document.getElementById('saveItemBtn').addEventListener('click', () => {
       const name = itemNameInput.value;
-      const qty = parseInt(itemQtyInput.value);
+      const qty = parseFloat(itemQtyInput.value);
+      const unit = itemUnitInput.value;
       const expiry = document.getElementById('itemExpiry').value;
 
-      if (!name || !qty) {
-        alert('品名と数量は必須です。');
+      if (!name || !qty || !unit) {
+        alert('品名、数量、単位は必須です。');
         return;
       }
       
       const currentData = storage.getAppData();
-      const newItem = { id: Date.now().toString(), name, qty, expiry };
+      const newItem = { id: Date.now().toString(), masterId, name, qty, unit, expiry };
       currentData.stockItems.push(newItem);
       storage.saveAppData(currentData);
       
@@ -339,7 +381,7 @@ const pages = {
       document.getElementById('resetDataBtn').addEventListener('click', () => {
           if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
               localStorage.removeItem('bosaistockApp');
-              alert('データをリセットしました。');
+              alert('データをリセットしました');
               window.location.hash = '#home';
               location.reload();
           }
@@ -393,3 +435,4 @@ const router = {
  */
 document.addEventListener('DOMContentLoaded', () => router.render());
 window.addEventListener('hashchange', () => router.render());
+
