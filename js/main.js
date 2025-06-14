@@ -11,6 +11,7 @@ const storage = {
     const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3 }, customMasterItems: [] };
     if (data) {
         const parsedData = JSON.parse(data);
+        // 古いデータ形式との互換性のためのマージ
         return { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
     }
     return defaults;
@@ -251,13 +252,21 @@ const pages = {
     const categories = {};
     combinedMasterList.forEach(item => {
         let quantity = null;
-        if (item.calc && item.isNeeded(params)) {
-            quantity = item.calc(params, days);
-        } else if (item.id.startsWith('custom-')) {
-            quantity = '—'; // カスタム品目は計算しない
+        let isNeeded = false;
+        // デフォルト品目の場合
+        if (item.calc && item.isNeeded) {
+            if (item.isNeeded(params)) {
+                quantity = item.calc(params, days);
+                isNeeded = true;
+            }
+        } 
+        // カスタム品目の場合
+        else if (item.id.startsWith('custom-')) {
+            quantity = '—'; // 計算不要のカスタム品目
+            isNeeded = true;
         }
 
-        if (quantity !== null && quantity !== 0) {
+        if (isNeeded && quantity !== 0) {
             if (!categories[item.category]) categories[item.category] = [];
             categories[item.category].push({ ...item, quantity });
         }
@@ -520,7 +529,7 @@ storage.saveAppData(data);
       
       output.addEventListener('click', e => {
           if (e.target.classList.contains('delete-custom-item-btn')) {
-              if (confirm('この品目をリストから削除しますか？')) {
+              if (confirm('この品目をリストから削除しますか？\n関連する在庫もすべて削除されます。')) {
                   const currentData = storage.getAppData();
                   currentData.customMasterItems = currentData.customMasterItems.filter(item => item.id !== e.target.dataset.id);
                   // 関連する在庫も削除
