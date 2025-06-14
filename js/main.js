@@ -3,17 +3,14 @@
 /**
  * =================================================================
  * アプリケーションのデータ管理 (ストレージ層)
- * localStorageへのデータの読み書きを抽象化する
+ * localStorageへのデータの読み書きを抽象化します。
  * =================================================================
  */
 const storage = {
-  // アプリのデータを一元的に取得する
   getAppData() {
     const data = localStorage.getItem('bosaistockApp');
-    // データがなければ初期値を返す
-    return data ? JSON.parse(data) : { settings: {}, items: [] };
+    return data ? JSON.parse(data) : { profiles: [], pets: { count: 0 }, stockItems: [], settings: {} };
   },
-  // アプリのデータを保存する
   saveAppData(data) {
     localStorage.setItem('bosaistockApp', JSON.stringify(data));
   }
@@ -22,7 +19,7 @@ const storage = {
 /**
  * =================================================================
  * 各ページのHTMLテンプレート
- * ページの内容を文字列として保持する
+ * ページの内容を文字列として保持します。
  * =================================================================
  */
 const templates = {
@@ -30,39 +27,35 @@ const templates = {
     <h2>ホーム</h2>
     <p>日々の備えを、ここから始めましょう。</p>
     <div class="grid-menu">
-      <a href="#suggest"><img src="icons/todo.png" alt="">備蓄提案</a>
+      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">あなたのくらし方</a>
+      <a href="#todo"><img src="icons/todo.png" alt="">ToDo備蓄</a>
       <a href="#stock"><img src="icons/stock.png" alt="">備蓄管理</a>
-      <a href="#settings"><img src="icons/setting.png" alt="">家族設定</a>
-      <a href="#register"><img src="icons/register.png" alt="">備蓄品登録</a>
+      <a href="#settings"><img src="icons/setting.png" alt="">設定</a>
+      <a href="#how-to"><img src="icons/manual.png" alt="">使い方</a>
+      <a href="#help"><img src="icons/help.png" alt="">ヘルプ</a>
     </div>
   `,
-  settings: `
-    <h2>家族・ペット構成の設定</h2>
-    <p>備蓄提案の精度を上げるために、家族構成を入力してください。</p>
-    <div class="form-group">
-      <label for="adultCount">大人（13歳以上）</label>
-      <input type="number" id="adultCount" min="0" value="1">
+  lifestyle: `
+    <h2>あなたのくらし方</h2>
+    <p>一緒に住んでいる人数を選んでください：</p>
+    <div class="number-pad">
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<div class="number-btn" data-number="${n}">${n}</div>`).join('')}
     </div>
-    <div class="form-group">
-      <label for="childCount">子ども（3〜12歳）</label>
-      <input type="number" id="childCount" min="0" value="0">
-    </div>
-    <div class="form-group">
-      <label for="infantCount">乳幼児（0〜2歳）</label>
-      <input type="number" id="infantCount" min="0" value="0">
-    </div>
+    <div id="profiles-container"></div>
+    <hr>
+    <h3>ペットについて</h3>
     <div class="form-group">
       <label for="petCount">ペットの頭数</label>
       <input type="number" id="petCount" min="0" value="0">
     </div>
-    <button id="saveSettingsBtn" class="btn">この内容で保存する</button>
+    <button id="saveLifestyleBtn" class="btn">この内容で保存する</button>
   `,
-  suggest: `
-    <h2>備蓄提案</h2>
-    <div id="suggestions-output"></div>
+  todo: `
+    <h2>ToDo備蓄</h2>
+    <div id="todo-output"></div>
   `,
   stock: `
-    <h2>備蓄品リスト</h2>
+    <h2>備蓄管理</h2>
     <a href="#register" class="btn">新しく備蓄品を登録する</a>
     <div id="stock-list-output" class="stock-list"></div>
   `,
@@ -81,83 +74,165 @@ const templates = {
       <input type="date" id="itemExpiry">
     </div>
     <button id="saveItemBtn" class="btn">＋ この内容で登録する</button>
+  `,
+  settings: `
+    <h2>設定</h2>
+    <p>アプリケーションのデータを管理します。</p>
+    <button id="resetDataBtn" class="btn" style="background-color: #d9534f;">全データをリセットする</button>
+  `,
+  'how-to': `
+    <h2>使い方</h2>
+    <p>1. 「あなたのくらし方」で家族構成を設定します。</p>
+    <p>2. 「ToDo備蓄」で必要な備蓄量の目安を確認します。</p>
+    <p>3. 購入した備蓄品を「備蓄管理」から登録します。</p>
+    <p>定期的にリストを見直して、いざという時に備えましょう！</p>
+  `,
+  help: `
+    <h2>ヘルプ</h2>
+    <p>このアプリは、あなたの防災備蓄をサポートするためのツールです。</p>
+    <p>データはすべてお使いのブラウザ内（localStorage）に保存され、外部に送信されることはありません。</p>
+    <p>お問い合わせや不具合の報告は、〇〇までお願いします。（連絡先を記載）</p>
   `
 };
 
 /**
  * =================================================================
  * ページごとのロジック (コントローラー層)
- * ページの描画後にイベントを設定したり、データを表示したりする
+ * ページの描画後にイベントを設定したり、データを表示したりします。
  * =================================================================
  */
 const pages = {
-  // 設定ページの処理
-  settings() {
+  lifestyle() {
     const data = storage.getAppData();
-    // 保存されている値をフォームに設定
-    document.getElementById('adultCount').value = data.settings.adults || 1;
-    document.getElementById('childCount').value = data.settings.children || 0;
-    document.getElementById('infantCount').value = data.settings.infants || 0;
-    document.getElementById('petCount').value = data.settings.pets || 0;
-    
-    // 保存ボタンにクリックイベントを設定
-    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-      const adults = parseInt(document.getElementById('adultCount').value);
-      const children = parseInt(document.getElementById('childCount').value);
-      const infants = parseInt(document.getElementById('infantCount').value);
-      const pets = parseInt(document.getElementById('petCount').value);
+    const profilesContainer = document.getElementById('profiles-container');
+    const numberPad = document.querySelector('.number-pad');
+    const petCountInput = document.getElementById('petCount');
 
-      const currentData = storage.getAppData();
-      currentData.settings = { adults, children, infants, pets };
-      storage.saveAppData(currentData);
-      alert('設定を保存しました。');
-      window.location.hash = '#home'; // ホームに戻る
+    // プロフィールカードを生成する関数
+    const renderProfileCards = (num, profiles = []) => {
+      profilesContainer.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const profile = profiles[i] || {};
+        const cardHTML = `
+          <div class="profile-card" data-index="${i}">
+            <h4>${i + 1}人目の情報</h4>
+            <div class="form-group">
+              <label>性別</label>
+              <select class="gender-select">
+                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年代</label>
+              <select class="age-group-select">
+                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
+                <option value="子供" ${profile.ageGroup === '子供' ? 'selected' : ''}>子供 (3-12歳)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (13-64歳)</option>
+                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
+      }
+    };
+    
+    // 数字パッドのクリックイベント
+    numberPad.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('number-btn')) return;
+      
+      document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('is-active'));
+      e.target.classList.add('is-active');
+      
+      const num = parseInt(e.target.dataset.number);
+      renderProfileCards(num, storage.getAppData().profiles);
     });
+
+    // 保存ボタンのクリックイベント
+    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
+        const activeBtn = document.querySelector('.number-btn.is-active');
+        if (!activeBtn) {
+            alert('人数を選択してください。');
+            return;
+        }
+        const numPeople = parseInt(activeBtn.dataset.number);
+        const newProfiles = [];
+        const profileCards = document.querySelectorAll('.profile-card');
+        
+        for (let i = 0; i < profileCards.length; i++) {
+            newProfiles.push({
+                gender: profileCards[i].querySelector('.gender-select').value,
+                ageGroup: profileCards[i].querySelector('.age-group-select').value
+            });
+        }
+        
+        const currentData = storage.getAppData();
+        currentData.profiles = newProfiles;
+        currentData.pets.count = parseInt(petCountInput.value) || 0;
+        storage.saveAppData(currentData);
+        
+        alert('くらし方を保存しました！');
+        window.location.hash = '#home';
+    });
+
+    // 初期表示
+    petCountInput.value = data.pets.count || 0;
+    const initialNum = data.profiles.length || 1;
+    const initialBtn = document.querySelector(`.number-btn[data-number="${initialNum}"]`);
+    if(initialBtn) {
+        initialBtn.classList.add('is-active');
+    }
+    renderProfileCards(initialNum, data.profiles);
   },
 
-  // 提案ページの処理
-  suggest() {
+  todo() {
     const data = storage.getAppData();
-    const settings = data.settings;
-    const output = document.getElementById('suggestions-output');
+    const output = document.getElementById('todo-output');
 
-    if (!settings || Object.keys(settings).length === 0) {
-      output.innerHTML = '<p>先に「家族設定」を行ってください。</p><a href="#settings" class="btn">設定ページへ</a>';
+    if (data.profiles.length === 0) {
+      output.innerHTML = '<p>先に「あなたのくらし方」で家族構成を設定してください。</p><a href="#lifestyle" class="btn">設定ページへ</a>';
       return;
     }
     
-    const totalPeople = (settings.adults || 0) + (settings.children || 0) + (settings.infants || 0);
-    const waterNeeded = totalPeople * 3 * 3; // 1人1日3L × 3日分
-    const foodMealsNeeded = ((settings.adults || 0) + (settings.children || 0)) * 3 * 3;
+    let totalAdults = 0, totalChildren = 0, totalInfants = 0;
+    data.profiles.forEach(p => {
+        if (p.ageGroup === '乳幼児') totalInfants++;
+        else if (p.ageGroup === '子供') totalChildren++;
+        else totalAdults++;
+    });
 
-    let suggestionsHTML = `
+    const totalPeople = totalAdults + totalChildren + totalInfants;
+    const waterNeeded = totalPeople * 3 * 3; // 1人1日3L × 3日分
+    const foodMealsNeeded = (totalAdults + totalChildren) * 3 * 3;
+
+    let todoHTML = `
       <p>あなたの家族構成に基づくと、最低でも以下の備蓄が推奨されます（3日分目安）。</p>
       <ul class="stock-list">
         <li class="stock-item">💧 飲料水：約 <strong>${waterNeeded}L</strong></li>
         <li class="stock-item">🍱 食料：約 <strong>${foodMealsNeeded}食</strong></li>
     `;
-    if (settings.infants > 0) {
-      suggestionsHTML += `<li class="stock-item">🍼 ミルク・おむつ類：乳幼児 <strong>${settings.infants}人分</strong></li>`;
+    if (totalInfants > 0) {
+      todoHTML += `<li class="stock-item">🍼 ミルク・おむつ類：乳幼児 <strong>${totalInfants}人分</strong></li>`;
     }
-    if (settings.pets > 0) {
-      suggestionsHTML += `<li class="stock-item">🐾 ペットフード・水：<strong>${settings.pets}匹分</strong></li>`;
+    if (data.pets.count > 0) {
+      todoHTML += `<li class="stock-item">🐾 ペットフード・水：<strong>${data.pets.count}匹分</strong></li>`;
     }
-    suggestionsHTML += '</ul>';
-    output.innerHTML = suggestionsHTML;
+    todoHTML += '</ul>';
+    output.innerHTML = todoHTML;
   },
   
-  // 在庫リストページの処理
   stock() {
     const data = storage.getAppData();
     const output = document.getElementById('stock-list-output');
-    output.innerHTML = ''; // いったん空にする
+    output.innerHTML = '';
 
-    if (data.items.length === 0) {
+    if (data.stockItems.length === 0) {
       output.innerHTML = '<p>登録されている備蓄品はありません。</p>';
       return;
     }
 
-    data.items.forEach((item) => {
+    data.stockItems.forEach((item) => {
       const li = document.createElement('li');
       li.className = 'stock-item';
       
@@ -167,7 +242,7 @@ const pages = {
         const diff = (expiryDate - new Date()) / (1000 * 60 * 60 * 24);
         if (diff < 0) {
           li.classList.add('is-expired');
-        } else if (diff < 30) { // 30日以内
+        } else if (diff <= 30) {
           li.classList.add('is-near-expiry');
         }
         expiryText = ` (期限: ${item.expiry})`;
@@ -178,7 +253,6 @@ const pages = {
     });
   },
 
-  // 登録ページの処理
   register() {
     document.getElementById('saveItemBtn').addEventListener('click', () => {
       const name = document.getElementById('itemName').value;
@@ -191,54 +265,63 @@ const pages = {
       }
       
       const currentData = storage.getAppData();
-      currentData.items.push({ name, qty, expiry });
+      // 簡単なIDを生成
+      const newItem = { id: Date.now().toString(), name, qty, expiry };
+      currentData.stockItems.push(newItem);
       storage.saveAppData(currentData);
       
       alert('登録しました！');
-      window.location.hash = '#stock'; // 在庫リストページに移動
+      window.location.hash = '#stock';
     });
+  },
+
+  settings() {
+      document.getElementById('resetDataBtn').addEventListener('click', () => {
+          if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
+              localStorage.removeItem('bosaistockApp');
+              alert('データをリセットしました。');
+              window.location.hash = '#home';
+              location.reload(); // ページをリロードして完全に初期化
+          }
+      });
   }
 };
-
 
 /**
  * =================================================================
  * SPAルーター機能
- * URLのハッシュに応じてページを切り替える
+ * URLのハッシュに応じてページを切り替えます。
  * =================================================================
  */
 const router = {
   render() {
-    // URLの#以降を取得 (なければ'#home'をデフォルトとする)
     const hash = window.location.hash || '#home';
-    const pageKey = hash.substring(1); // #を取り除く
+    const pageKey = hash.substring(1);
     
     const appRoot = document.getElementById('app-root');
     const headerTitle = document.getElementById('header-title');
 
-    // テンプレートが存在すればページを描画
     if (templates[pageKey]) {
       appRoot.innerHTML = templates[pageKey];
       headerTitle.textContent = this.getHeaderTitle(pageKey);
-      
-      // ページごとの初期化処理があれば呼び出す
       if (pages[pageKey]) {
         pages[pageKey]();
       }
     } else {
-      // 存在しないページの場合はホームへ
       window.location.hash = '#home';
     }
   },
   
-  // ページごとのヘッダータイトルを返す
   getHeaderTitle(key) {
     const titles = {
-      home: 'bosaistock',
-      settings: '家族設定',
-      suggest: '備蓄提案',
+      home: 'bosaistock ホーム',
+      lifestyle: 'あなたのくらし方',
+      todo: 'ToDo備蓄',
       stock: '備蓄管理',
-      register: '備蓄品登録'
+      register: '備蓄品登録',
+      settings: '設定',
+      'how-to': '使い方',
+      help: 'ヘルプ'
     };
     return titles[key] || 'bosaistock';
   }
@@ -249,7 +332,6 @@ const router = {
  * アプリケーションの初期化
  * =================================================================
  */
-// DOMの読み込みが完了したら、ルーターを初期化
+// DOMの読み込み完了時とURLハッシュ変更時にルーターを実行
 document.addEventListener('DOMContentLoaded', () => router.render());
-// URLのハッシュが変わったら、再度ページを描画
 window.addEventListener('hashchange', () => router.render());

@@ -2,11 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>防災備蓄アプリ bosaistock</title>
+  <title>bosaistock - 防災備蓄管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
   <!-- PWA対応のためのマニフェストファイル（将来用） -->
   <!-- <link rel="manifest" href="manifest.json"> -->
+  <link rel="icon" href="icons/favicon.ico">
 </head>
 <body>
 
@@ -18,7 +19,7 @@
 
   <!-- ▼▼▼ 各ページのコンテンツはここに描画される ▼▼▼ -->
   <main id="app-root" class="container">
-    <!-- JavaScriptによって内容が動的に変わる -->
+    <!-- JavaScriptによって内容が動的に変わります -->
   </main>
   <!-- ▲▲▲ 各ページのコンテンツはここに描画される ▲▲▲ -->
 
@@ -26,13 +27,13 @@
   <!-- ▼▼▼ アプリの共通フッターナビゲーション ▼▼▼ -->
   <nav class="bottom-nav">
     <a href="#home"><img src="icons/home.png" alt="ホーム"><div>ホーム</div></a>
-    <a href="#suggest"><img src="icons/todo.png" alt="備蓄提案"><div>備蓄提案</div></a>
+    <a href="#lifestyle"><img src="icons/lifestyle.png" alt="くらし方"><div>くらし方</div></a>
+    <a href="#todo"><img src="icons/todo.png" alt="ToDo備蓄"><div>ToDo備蓄</div></a>
     <a href="#stock"><img src="icons/stock.png" alt="備蓄管理"><div>備蓄管理</div></a>
-    <a href="#settings"><img src="icons/setting.png" alt="家族設定"><div>家族設定</div></a>
   </nav>
   <!-- ▲▲▲ アプリの共通フッターナビゲーション ▲▲▲ -->
 
-  <!-- アプリの動作に必要なJavaScriptはこれ一つだけ -->
+  <!-- アプリの動作に必要なJavaScriptはこれ一つだけです -->
   <script src="js/main.js" type="module"></script>
 </body>
 </html>

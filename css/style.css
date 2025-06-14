@@ -1,10 +1,18 @@
 /* --- 基本設定 --- */
+:root {
+  --primary-color: #4a6fa5;
+  --background-color: #fef9f5;
+  --text-color: #333;
+  --expired-color: #d9534f;
+  --near-expiry-color: #f0ad4e;
+}
+
 body {
-  background-color: #fef9f5;
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  background-color: var(--background-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
   margin: 0 0 80px 0; /* フッターナビの高さ分、下の余白を確保 */
   padding: 0;
-  color: #333;
+  color: var(--text-color);
 }
 
 .container {
@@ -13,9 +21,16 @@ body {
   padding: 16px;
 }
 
+h2 {
+  font-size: 1.4em;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 8px;
+}
+
 /* --- 共通コンポーネント --- */
 header {
-  background-color: #4a6fa5;
+  background-color: var(--primary-color);
   color: white;
   padding: 16px;
   text-align: center;
@@ -37,6 +52,7 @@ header h1 {
   justify-content: space-around;
   padding: 6px 0;
   z-index: 10;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
 }
 
 .bottom-nav a {
@@ -58,11 +74,12 @@ header h1 {
   display: block;
   width: 100%;
   padding: 14px;
-  background-color: #4a6fa5;
+  background-color: var(--primary-color);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
@@ -112,20 +129,60 @@ header h1 {
   justify-content: center;
   text-align: center;
   background-color: white;
-  border: 2px solid #4a6fa5;
+  border: 2px solid var(--primary-color);
   border-radius: 12px;
   padding: 20px 8px;
   text-decoration: none;
-  color: #4a6fa5;
+  color: var(--primary-color);
   font-weight: bold;
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.grid-menu a:hover {
+    transform: scale(1.03);
 }
 
 .grid-menu img {
   width: 48px;
   height: 48px;
   margin-bottom: 8px;
+}
+
+/* --- あなたのくらし方画面 --- */
+.number-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.number-btn {
+  background-color: #fff;
+  border: 2px solid var(--primary-color);
+  border-radius: 50%;
+  padding: 12px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.number-btn.is-active { /* 選択中のスタイル */
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.profile-card {
+  background-color: #fff;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* --- 在庫リスト --- */
@@ -145,12 +202,12 @@ header h1 {
 }
 
 .stock-item.is-expired { /* 期限切れ */
-  color: #d9534f;
-  border-left: 4px solid #d9534f;
+  color: var(--expired-color);
+  border-left: 4px solid var(--expired-color);
   font-weight: bold;
 }
 
 .stock-item.is-near-expiry { /* 期限間近 */
-  color: #f0ad4e;
-  border-left: 4px solid #f0ad4e;
+  color: var(--near-expiry-color);
+  border-left: 4px solid var(--near-expiry-color);
 }
