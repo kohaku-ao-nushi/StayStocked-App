@@ -27,7 +27,7 @@ const templates = {
     <h2>ホーム</h2>
     <p>日々の備えを、ここから始めましょう。</p>
     <div class="grid-menu">
-      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">あなたのくらし方</a>
+      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">くらし方</a>
       <a href="#todo"><img src="icons/todo.png" alt="">ToDo備蓄</a>
       <a href="#stock"><img src="icons/stock.png" alt="">備蓄管理</a>
       <a href="#settings"><img src="icons/setting.png" alt="">設定</a>
@@ -36,7 +36,7 @@ const templates = {
     </div>
   `,
   lifestyle: `
-    <h2>あなたのくらし方</h2>
+    <h2>くらし方</h2>
     <div class="form-group">
       <label for="peopleCountSelect">一緒に住んでいる人数を選んでください：</label>
       <select id="peopleCountSelect">
@@ -84,7 +84,7 @@ const templates = {
   `,
   'how-to': `
     <h2>使い方</h2>
-    <p>1. 「あなたのくらし方」で家族構成を設定します。</p>
+    <p>1. 「くらし方」で家族構成を設定します。</p>
     <p>2. 「ToDo備蓄」で必要な備蓄量の目安を確認します。</p>
     <p>3. 購入した備蓄品を「備蓄管理」から登録します。</p>
     <p>定期的にリストを見直して、いざという時に備えましょう！</p>
@@ -179,7 +179,7 @@ const pages = {
     const output = document.getElementById('todo-output');
 
     if (data.profiles.length === 0) {
-      output.innerHTML = '<p>先に「あなたのくらし方」で家族構成を設定してください。</p><a href="#lifestyle" class="btn">設定ページへ</a>';
+      output.innerHTML = '<p>先に「くらし方」で家族構成を設定してください。</p><a href="#lifestyle" class="btn">設定ページへ</a>';
       return;
     }
     
@@ -327,7 +327,7 @@ const router = {
   getHeaderTitle(key) {
     const titles = {
       home: 'bosaistock ホーム',
-      lifestyle: 'あなたのくらし方',
+      lifestyle: 'くらし方',
       todo: 'ToDo備蓄',
       stock: '備蓄管理',
       register: '備蓄品登録',
