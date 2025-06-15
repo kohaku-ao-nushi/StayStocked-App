@@ -226,43 +226,20 @@ header h1 {
 .stock-accordion summary::-webkit-details-marker {
     display: none;
 }
-/* --- 備蓄リストのアイテム全体を管理 --- */
 .stock-progress-item {
-    display: flex; /* 親要素をflexに設定 */
-    justify-content: space-between; /* 両端に要素を配置 */
-    align-items: center; /* 子要素を縦方向中央に揃える */
     padding: 12px 16px;
-    /* ...その他の既存スタイル... */
+    position: relative;
+    display: flex;
+    align-items: center; /* 修正: flex-startからcenterに変更 */
+    gap: 12px;
 }
-
-/* --- アイコンと品目名をまとめる左側のラッパー --- */
-.item-left {
-  display: flex;
-  align-items: center; /* この中の要素も縦方向中央に */
-  gap: 12px; /* アイコンと品目名の間のスペース */
-}
-
-/* --- アイコンのスタイル --- */
 .accordion-icon {
-  font-size: 24px; /* アイコンのサイズを少し調整 */
-  font-weight: bold;
-  color: var(--primary-color);
-  line-height: 1; /* 行の高さをフォントサイズに合わせる */
+    width: 20px;
+    height: 20px;
+    position: relative;
+    flex-shrink: 0;
+    /* margin-top: 4px; 削除: align-items:centerで不要に */
 }
-
-/* --- 品目名のスタイル --- */
-.item-name {
-  font-weight: bold;
-}
-
-/* --- 右側の数量情報のスタイル --- */
-.item-amount {
-  font-size: 0.9em;
-  color: #555;
-  white-space: nowrap; /* 折り返しを防ぐ */
-  margin-left: 16px; /* 左側の要素との間に最低限のスペースを確保 */
-}
-
 .accordion-icon::before,
 .accordion-icon::after {
     content: '';
@@ -287,28 +264,27 @@ header h1 {
 .stock-accordion[open] > summary .accordion-icon::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
+
 .progress-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    width: 100%;
 }
+
 .stock-accordion[open] > summary.stock-progress-item {
     border-bottom: 1px solid #eee;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
-.item-info {
+.stock-progress-item .item-info {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* ユーザー指定: baselineからcenterに変更して縦中央揃え */
+    align-items: baseline;
+    margin-bottom: 8px;
 }
-.item-name {
+.stock-progress-item .item-name {
     font-weight: bold;
-    font-size: 14px; /* ユーザー指定 */
 }
-.item-amount {
-    font-size: 12px; /* ユーザー指定 */
+.stock-progress-item .item-amount {
+    font-size: 0.9em;
     color: #555;
 }
 .progress-bar {
