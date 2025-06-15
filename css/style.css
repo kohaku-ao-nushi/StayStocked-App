@@ -94,7 +94,7 @@ header h1 {
   text-align: center;
   text-decoration: none;
   margin-top: 20px;
-  box-sizing: border-box; /* 追加: paddingが幅に影響しないようにする */
+  box-sizing: border-box; /* paddingが幅に影響しないようにする */
 }
 
 .btn:hover {
@@ -103,6 +103,10 @@ header h1 {
 
 .btn.btn-danger {
     background-color: var(--expired-color);
+}
+
+.btn.btn-secondary {
+    background-color: #6c757d;
 }
 
 
@@ -132,6 +136,10 @@ header h1 {
 
 .readonly-input {
     background-color: #f0f0f0;
+}
+
+.form-actions {
+    margin-top: 24px;
 }
 
 /* --- ホーム画面 --- */
