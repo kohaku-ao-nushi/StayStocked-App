@@ -78,7 +78,7 @@ const templates = {
     <h2>ホーム</h2>
     <p>日々の備えを、ここから始めましょう。</p>
     <div class="grid-menu">
-      <a href="#lifestyle"><img src="icons/suggest.png" alt="">くらし方</a>
+      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">くらし方</a>
       <a href="#todo"><img src="icons/todo.png" alt="">ToDo備蓄</a>
       <a href="#stock"><img src="icons/stock.png" alt="">備蓄管理</a>
       <a href="#settings"><img src="icons/setting.png" alt="">設定</a>
@@ -98,8 +98,10 @@ const templates = {
     <hr>
     <h3>ペットについて</h3>
     <div class="form-group">
-      <label for="petCount">ペットの頭数</label>
-      <input type="number" id="petCount" min="0" value="0">
+      <label for="petCountSelect">ペットの頭数</label>
+      <select id="petCountSelect">
+        ${[0,1,2,3,4,5,6,7,8,9].map(n => `<option value="${n}">${n}頭</option>`).join('')}
+      </select>
     </div>
     <button id="saveLifestyleBtn" class="btn">この内容で保存する</button>
   `,
@@ -193,7 +195,7 @@ const pages = {
     const data = storage.getAppData();
     const profilesContainer = document.getElementById('profiles-container');
     const peopleCountSelect = document.getElementById('peopleCountSelect');
-    const petCountInput = document.getElementById('petCount');
+    const petCountSelect = document.getElementById('petCountSelect');
 
     const renderProfileCards = (num, profiles = []) => {
       profilesContainer.innerHTML = '';
@@ -239,14 +241,14 @@ const pages = {
         
         const currentData = storage.getAppData();
         currentData.profiles = newProfiles;
-        currentData.pets.count = parseInt(petCountInput.value) || 0;
+        currentData.pets.count = parseInt(petCountSelect.value) || 0;
         storage.saveAppData(currentData);
         
         alert('くらし方を保存しました！');
         window.location.hash = '#home';
     });
 
-    petCountInput.value = data.pets.count || 0;
+    petCountSelect.value = data.pets.count || 0;
     const initialNum = data.profiles.length || 1;
     peopleCountSelect.value = initialNum;
     renderProfileCards(initialNum, data.profiles);
@@ -272,12 +274,12 @@ const pages = {
         let quantity = null;
         let isNeeded = false;
         
-        if (item.calc) { // calc関数を持つ（デフォルトまたは目標設定済みカスタム品）
+        if (item.calc) {
             if (item.isNeeded && item.isNeeded(params)) {
                 quantity = item.calc(params, days);
                 isNeeded = true;
             }
-        } else if (item.id.startsWith('custom-')) { // 目標量なしのカスタム品目
+        } else if (item.id.startsWith('custom-')) {
             quantity = '—';
             isNeeded = true;
         }
@@ -560,7 +562,7 @@ const pages = {
           storage.saveAppData(data);
           
           document.getElementById('customItemName').value = '';
-          document.getElementById('customItemCategory').value = 'その他';
+          document.getElementById('customItemCategory').value = '';
           document.getElementById('customItemUnit').value = '';
           document.getElementById('customItemDailyQty').value = '';
           
@@ -575,7 +577,6 @@ const pages = {
                   data.customMasterItems = data.customMasterItems.filter(item => item.id !== itemIdToDelete);
                   data.stockItems = data.stockItems.filter(stock => stock.customId !== itemIdToDelete);
                   storage.saveAppData(data);
-                  // ページ全体を再描画して変更を反映
                   pages['custom-list-editor']();
               }
           }
