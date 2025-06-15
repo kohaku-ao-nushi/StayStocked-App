@@ -94,7 +94,7 @@ header h1 {
   text-align: center;
   text-decoration: none;
   margin-top: 20px;
-  box-sizing: border-box; /* paddingが幅に影響しないようにする */
+  box-sizing: border-box; 
 }
 
 .btn:hover {
@@ -130,7 +130,7 @@ header h1 {
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
-  box-sizing: border-box; /* paddingを含めてwidth100%にする */
+  box-sizing: border-box;
   font-size: 16px;
 }
 
@@ -225,23 +225,23 @@ header h1 {
 .stock-progress-item {
     background-color: #fff;
     border-radius: 8px;
-    padding: 12px 16px 12px 40px; /* 矢印の分、左のpaddingを確保 */
+    padding: 12px 40px 12px 16px; /* 矢印の分、右のpaddingを確保 */
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     position: relative;
 }
 /* 回転矢印 */
-.stock-progress-item::before {
-    content: '▶';
+.stock-progress-item::after {
+    content: '▼';
     position: absolute;
-    left: 16px;
+    right: 16px;
     top: 50%;
     transform: translateY(-50%) rotate(0deg);
     transition: transform 0.2s ease-in-out;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--primary-color);
 }
-.stock-accordion[open] > summary > .stock-progress-item::before {
-    transform: translateY(-50%) rotate(90deg);
+.stock-accordion[open] > summary > .stock-progress-item::after {
+    transform: translateY(-50%) rotate(180deg);
 }
 .stock-accordion[open] > summary.stock-progress-item {
     border-bottom-left-radius: 0;
