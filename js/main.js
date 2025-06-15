@@ -12,7 +12,6 @@ const storage = {
     if (data) {
         const parsedData = JSON.parse(data);
         const merged = { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
-        // 読み込んだカスタム品目に計算関数を再設定
         merged.customMasterItems.forEach(item => {
             if (item.dailyQty) {
                 item.calc = (p, days) => (p.totalPeople || 1) * item.dailyQty * days;
@@ -195,6 +194,191 @@ const templates = {
  */
 const pages = {
   lifestyle() {
+    // ... (This function remains unchanged.)
+  },
+  
+  stock() {
+    const data = storage.getAppData();
+    const listOutput = document.getElementById('stock-list-output');
+
+    this.renderStockpileModeSelector(() => this.stock());
+    
+    listOutput.innerHTML = '';
+
+    if (data.profiles.length === 0) {
+      listOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
+      return;
+    }
+
+    const params = this.getCalculationParams(data);
+    const days = data.settings.stockpileDays || 3;
+    const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
+    
+    const stockItemsById = {};
+    const otherItems = [];
+    data.stockItems.forEach(item => {
+        const id = item.masterId || item.customId;
+        if(id) {
+            if(!stockItemsById[id]) stockItemsById[id] = [];
+            stockItemsById[id].push(item);
+        } else {
+            otherItems.push(item);
+        }
+    });
+
+    const categories = {};
+    combinedMasterList.forEach(item => {
+        if(item.calc && item.isNeeded && item.isNeeded(params)) {
+            const required = item.calc(params, days);
+            if (required > 0) {
+                if (!categories[item.category]) {
+                    categories[item.category] = { items: [], achieved: 0, total: 0 };
+                }
+                const currentItems = stockItemsById[item.id] || [];
+                const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+                
+                categories[item.category].items.push({ ...item, required, current });
+                categories[item.category].total++;
+                if (current >= required) {
+                    categories[item.category].achieved++;
+                }
+            }
+        }
+    });
+    
+    let listHTML = '';
+    for (const categoryName in categories) {
+        const categoryData = categories[categoryName];
+        listHTML += `
+          <div class="todo-category">
+            <div class="category-header">
+              <h3>${categoryName}</h3>
+              <span class="category-achievement">${categoryData.achieved} / ${categoryData.total}</span>
+            </div>
+        `;
+        categoryData.items.forEach(item => {
+            const percentage = Math.min((item.current / item.required) * 100, 100);
+            let statusBarClass = 'is-low';
+            if (percentage >= 100) statusBarClass = 'is-sufficient';
+            else if (percentage >= 50) statusBarClass = 'is-medium';
+
+            const registeredItems = stockItemsById[item.id] || [];
+            const detailsHTML = registeredItems.length > 0
+              ? registeredItems.map(stock => `
+                  <li class="stock-sub-item" data-id="${stock.id}">
+                      <span class="product-name">${stock.productName || item.name}</span>
+                      <div class="sub-item-details">
+                          <span class="item-amount">${stock.qty} ${stock.unit}</span>
+                          <span class="item-expiry">${stock.expiry ? stock.expiry : '期限なし'}</span>
+                      </div>
+                  </li>
+                `).join('')
+              : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
+
+            listHTML += `
+                <details class="stock-accordion">
+                    <summary class="stock-progress-item">
+                        <div class="accordion-icon"></div>
+                        <div class="progress-container">
+                          <div class="item-info">
+                              <span class="item-name">${item.name}</span>
+                              <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
+                          </div>
+                          <div class="progress-bar">
+                              <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                          </div>
+                        </div>
+                    </summary>
+                    <div class="accordion-content">
+                        <ul class="stock-sub-list">${detailsHTML}</ul>
+                        <button class="add-item-btn" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">＋ この品目を追加</button>
+                    </div>
+                </details>
+            `;
+        });
+        listHTML += `</div>`;
+    }
+    listOutput.innerHTML = listHTML;
+    
+    const otherOutput = document.getElementById('other-stock-output');
+    if (otherOutput) {
+        otherOutput.innerHTML = '';
+        if (otherItems.length > 0) {
+            otherItems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'stock-item-custom';
+                let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
+                li.innerHTML = `
+                    <div class="item-details">
+                        <span class="item-name">${item.productName}</span>
+                        <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
+                        <span class="category-badge">${item.category || 'その他'}</span>
+                        <span class="item-expiry">${expiryText}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="edit-btn" data-id="${item.id}">編集</button>
+                        <button class="delete-btn" data-id="${item.id}">削除</button>
+                    </div>
+                `;
+                otherOutput.appendChild(li);
+            });
+        } else {
+            otherOutput.innerHTML = '<p>リストにない品目はまだ登録されていません。</p>';
+        }
+
+        otherOutput.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                sessionStorage.setItem('editItemId', e.target.dataset.id);
+                window.location.hash = '#register';
+            } else if (e.target.classList.contains('delete-btn')) {
+                if (confirm('この備蓄品を削除しますか？')) {
+                    const currentData = storage.getAppData();
+                    currentData.stockItems = currentData.stockItems.filter(item => item.id !== e.target.dataset.id);
+                    storage.saveAppData(currentData);
+                    this.stock();
+                }
+            }
+        });
+    }
+
+    listOutput.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-item-btn')) {
+            const { id, name, unit } = e.target.dataset;
+            const masterId = id.startsWith('custom-') ? null : id;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId, customId: id, name, unit }));
+            window.location.hash = '#register';
+        } else if (e.target.closest('.stock-sub-item')) {
+            const itemId = e.target.closest('.stock-sub-item').dataset.id;
+            sessionStorage.setItem('editItemId', itemId);
+            window.location.hash = '#register';
+        }
+    });
+  },
+
+  register() {
+    // This function remains unchanged.
+  },
+
+  settings() {
+    // This function remains unchanged.
+  },
+  
+  'custom-list-editor'() {
+    // This function remains unchanged.
+  },
+
+  // --- ヘルパー関数 ---
+  getCalculationParams(data) {
+    // This function remains unchanged.
+  },
+  renderStockpileModeSelector(onchangeCallback) {
+    // This function remains unchanged.
+  }
+};
+
+
+// --- Unchanged functions for brevity ---
+pages.lifestyle = function() {
     const data = storage.getAppData();
     const profilesContainer = document.getElementById('profiles-container');
     const peopleCountSelect = document.getElementById('peopleCountSelect');
@@ -255,162 +439,8 @@ const pages = {
     const initialNum = data.profiles.length || 1;
     peopleCountSelect.value = initialNum;
     renderProfileCards(initialNum, data.profiles);
-  },
-  
-  stock() {
-    const data = storage.getAppData();
-    const listOutput = document.getElementById('stock-list-output');
-
-    this.renderStockpileModeSelector(() => this.stock());
-    
-    listOutput.innerHTML = '';
-
-    if (data.profiles.length === 0) {
-      listOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
-      return;
-    }
-
-    const params = this.getCalculationParams(data);
-    const days = data.settings.stockpileDays || 3;
-    const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
-    
-    const stockItemsById = {};
-    data.stockItems.forEach(item => {
-        const id = item.masterId || item.customId;
-        if(id) {
-            if(!stockItemsById[id]) stockItemsById[id] = [];
-            stockItemsById[id].push(item);
-        }
-    });
-
-    const categories = {};
-    combinedMasterList.forEach(item => {
-        if(item.calc && item.isNeeded && item.isNeeded(params)) {
-            const required = item.calc(params, days);
-            if (required > 0) {
-                if (!categories[item.category]) {
-                    categories[item.category] = { items: [], achieved: 0, total: 0 };
-                }
-                const currentItems = stockItemsById[item.id] || [];
-                const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
-                
-                categories[item.category].items.push({ ...item, required, current });
-                categories[item.category].total++;
-                if (current >= required) {
-                    categories[item.category].achieved++;
-                }
-            }
-        }
-    });
-    
-    let listHTML = '';
-    for (const categoryName in categories) {
-        const categoryData = categories[categoryName];
-        listHTML += `
-          <div class="todo-category">
-            <div class="category-header">
-              <h3>${categoryName}</h3>
-              <span class="category-achievement">${categoryData.achieved} / ${categoryData.total}</span>
-            </div>
-        `;
-        categoryData.items.forEach(item => {
-            const percentage = Math.min((item.current / item.required) * 100, 100);
-            let statusBarClass = 'is-low';
-            if (percentage >= 100) statusBarClass = 'is-sufficient';
-            else if (percentage >= 50) statusBarClass = 'is-medium';
-
-            const registeredItems = stockItemsById[item.id] || [];
-            const detailsHTML = registeredItems.length > 0
-              ? registeredItems.map(stock => `
-                  <li class="stock-sub-item" data-id="${stock.id}">
-                      <div class="sub-item-main">
-                          <span class="product-name">${stock.productName || item.name}</span>
-                          <span class="item-amount">${stock.qty} ${stock.unit}</span>
-                      </div>
-                      <div class="sub-item-expiry">${stock.expiry ? `期限: ${stock.expiry}` : '期限なし'}</div>
-                  </li>
-                `).join('')
-              : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
-
-            listHTML += `
-                <details class="stock-accordion">
-                    <summary class="stock-progress-item">
-                        <div class="item-info">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
-                        </div>
-                    </summary>
-                    <div class="accordion-content">
-                        <ul class="stock-sub-list">${detailsHTML}</ul>
-                        <button class="add-item-btn" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">＋ この品目を追加</button>
-                    </div>
-                </details>
-            `;
-        });
-        listHTML += `</div>`;
-    }
-    listOutput.innerHTML = listHTML;
-    
-    const otherItems = data.stockItems.filter(item => !item.masterId && !item.customId);
-    const otherOutput = document.getElementById('other-stock-output');
-    if (otherOutput) {
-        otherOutput.innerHTML = '';
-        if (otherItems.length > 0) {
-            otherItems.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'stock-item-custom';
-                let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
-                li.innerHTML = `
-                    <div class="item-details">
-                        <span class="item-name">${item.productName}</span>
-                        <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
-                        <span class="category-badge">${item.category || 'その他'}</span>
-                        <span class="item-expiry">${expiryText}</span>
-                    </div>
-                    <div class="item-actions">
-                        <button class="edit-btn" data-id="${item.id}">編集</button>
-                        <button class="delete-btn" data-id="${item.id}">削除</button>
-                    </div>
-                `;
-                otherOutput.appendChild(li);
-            });
-        } else {
-            otherOutput.innerHTML = '<p>リストにない品目はまだ登録されていません。</p>';
-        }
-
-        otherOutput.addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                sessionStorage.setItem('editItemId', e.target.dataset.id);
-                window.location.hash = '#register';
-            } else if (e.target.classList.contains('delete-btn')) {
-                if (confirm('この備蓄品を削除しますか？')) {
-                    const currentData = storage.getAppData();
-                    currentData.stockItems = currentData.stockItems.filter(item => item.id !== e.target.dataset.id);
-                    storage.saveAppData(currentData);
-                    this.stock();
-                }
-            }
-        });
-    }
-
-    listOutput.addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-item-btn')) {
-            const { id, name, unit } = e.target.dataset;
-            const masterId = id.startsWith('custom-') ? null : id;
-            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId, customId: id, name, unit }));
-            window.location.hash = '#register';
-        } else if (e.target.closest('.stock-sub-item')) {
-            const itemId = e.target.closest('.stock-sub-item').dataset.id;
-            sessionStorage.setItem('editItemId', itemId);
-            window.location.hash = '#register';
-        }
-    });
-  },
-
-  register() {
+  };
+pages.register = function() {
     const editItemId = sessionStorage.getItem('editItemId');
     const data = storage.getAppData();
     const itemToEdit = editItemId ? data.stockItems.find(item => item.id === editItemId) : null;
@@ -429,7 +459,7 @@ const pages = {
     let customId = null;
     let itemName = '';
     
-    itemNameGroup.style.display = 'none';
+    itemNameGroup.style.display = 'block';
     itemCategoryGroup.style.display = 'none';
 
     if (itemToEdit) {
@@ -439,11 +469,10 @@ const pages = {
         customId = itemToEdit.customId;
         itemName = itemToEdit.itemName;
         productNameInput.value = itemToEdit.productName || '';
-        itemQtyInput.value = itemToToEdit.qty;
+        itemQtyInput.value = itemToEdit.qty;
         itemUnitInput.value = itemToEdit.unit;
         itemExpiryInput.value = itemToEdit.expiry || '';
         
-        itemNameGroup.style.display = 'block';
         itemNameInput.value = itemName;
         itemNameInput.readOnly = true;
 
@@ -455,8 +484,6 @@ const pages = {
             customId = item.customId;
             itemName = item.name;
             itemUnitInput.value = item.unit;
-
-            itemNameGroup.style.display = 'block';
             itemNameInput.value = itemName;
             itemNameInput.readOnly = true;
             itemUnitInput.readOnly = true;
@@ -474,9 +501,7 @@ const pages = {
       const qty = parseFloat(itemQtyInput.value);
       const unit = itemUnitInput.value;
       const expiry = itemExpiryInput.value;
-      
       const finalItemName = itemNameInput.value;
-      const finalCategory = itemCategorySelect.value;
       
       if (!productName || isNaN(qty) || !unit) {
         alert('商品名、数量、単位は必須です。');
@@ -484,9 +509,13 @@ const pages = {
       }
 
       const isCustomNew = !masterId && !customId && !itemToEdit;
-      if (isCustomNew && (!finalItemName || !finalCategory)) {
-        alert('品目名とカテゴリを入力してください。');
-        return;
+      let finalCategory = '';
+      if(isCustomNew){
+          finalCategory = itemCategorySelect.value;
+          if(!finalItemName || !finalCategory){
+               alert('品目名とカテゴリを入力または選択してください。');
+               return;
+          }
       }
 
       const currentData = storage.getAppData();
@@ -496,12 +525,9 @@ const pages = {
               currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry };
           }
       } else {
-          let category = '';
-          if(masterId || customId) {
-             const masterItem = [...todoMasterList, ...currentData.customMasterItems].find(i => i.id === (masterId || customId));
-             if(masterItem) category = masterItem.category;
-          } else {
-              category = finalCategory;
+          if(!isCustomNew) {
+            const masterItem = [...todoMasterList, ...currentData.customMasterItems].find(i => i.id === (masterId || customId));
+            if(masterItem) finalCategory = masterItem.category;
           }
           
           const newItem = { 
@@ -509,7 +535,7 @@ const pages = {
               masterId, 
               customId, 
               itemName: finalItemName,
-              category,
+              category: finalCategory,
               productName, 
               qty, 
               unit, 
@@ -523,26 +549,7 @@ const pages = {
       alert(itemToEdit ? '更新しました！' : '登録しました！');
       window.location.hash = '#stock';
     });
-  },
-
-  settings() {
-    // This function remains unchanged.
-  },
-  
-  'custom-list-editor'() {
-    // This function remains unchanged.
-  },
-
-  // --- ヘルパー関数 ---
-  getCalculationParams(data) {
-    // This function remains unchanged.
-  },
-  renderStockpileModeSelector(onchangeCallback) {
-    // This function remains unchanged.
-  }
-};
-
-// ... (All other functions like router and event listeners remain the same)
+  };
 pages.settings = function() {
       document.getElementById('resetDataBtn').addEventListener('click', () => {
           if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
@@ -662,6 +669,7 @@ pages.renderStockpileModeSelector = function(onchangeCallback) {
         }
     });
   };
+
 /**
  * =================================================================
  * SPAルーター機能
