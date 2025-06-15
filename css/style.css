@@ -204,12 +204,12 @@ header h1 {
 
 /* --- 備蓄リスト アコーディオン --- */
 .stock-accordion {
-    margin-bottom: 12px; /* 修正点②: アコーディオン間のスペースを確保 */
+    margin-bottom: 12px;
 }
 .stock-accordion summary {
-    list-style: none; /* 標準のマーカーを消す */
-    position: relative;
-    display: block; /* Firefoxでのマーカー非表示のため */
+    list-style: none;
+    display: block;
+    cursor: pointer;
 }
 .stock-accordion summary::-webkit-details-marker {
     display: none;
@@ -217,22 +217,22 @@ header h1 {
 .stock-progress-item {
     background-color: #fff;
     border-radius: 8px;
-    padding: 12px 40px 12px 16px; /* 矢印の分、右のpaddingを確保 */
+    padding: 12px 16px 12px 40px; /* 矢印の分、左のpaddingを確保 */
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    cursor: pointer;
+    position: relative;
 }
-/* 修正点①: 回転矢印を追加 */
-.stock-progress-item::after {
+/* 回転矢印 */
+.stock-progress-item::before {
     content: '▶';
     position: absolute;
-    right: 16px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%) rotate(0deg);
     transition: transform 0.2s ease-in-out;
     font-size: 12px;
     color: var(--primary-color);
 }
-.stock-accordion[open] > summary > .stock-progress-item::after {
+.stock-accordion[open] > summary > .stock-progress-item::before {
     transform: translateY(-50%) rotate(90deg);
 }
 .stock-accordion[open] > summary.stock-progress-item {
@@ -283,7 +283,7 @@ header h1 {
 }
 
 .stock-sub-item {
-    display: grid; /* 修正点②: グリッドレイアウトに変更 */
+    display: grid;
     grid-template-columns: 1fr auto;
     gap: 4px 16px;
     padding: 10px 4px;
