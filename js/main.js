@@ -15,7 +15,7 @@ const storage = {
         // 読み込んだカスタム品目に計算関数を再設定
         merged.customMasterItems.forEach(item => {
             if (item.dailyQty) {
-                item.calc = (p, days) => item.dailyQty * days;
+                item.calc = (p, days) => (p.totalPeople || 1) * item.dailyQty * days; // 人数ベースで計算
                 item.isNeeded = () => true;
             }
         });
@@ -24,7 +24,6 @@ const storage = {
     return defaults;
   },
   saveAppData(data) {
-    // 保存する前に、関数などJSONで保存できないプロパティを削除
     const dataToSave = JSON.parse(JSON.stringify(data));
     dataToSave.customMasterItems.forEach(item => {
         delete item.calc;
@@ -108,15 +107,12 @@ const templates = {
     <h2>備蓄リスト</h2>
     <div id="mode-selector-container"></div>
     <div id="stock-list-output"></div>
-    <hr>
-    <h3>その他・未分類の備蓄品</h3>
-    <div id="other-stock-output"></div>
-    <a href="#register" class="btn">その他の品目を追加する</a>
+    <a href="#register" class="btn">リストにない品目を追加する</a>
   `,
   register: `
     <h2 id="register-title">備蓄品を登録</h2>
     <div class="form-group">
-      <label for="itemName">品目（カテゴリ）</label>
+      <label for="itemName">品目</label>
       <input type="text" id="itemName" readonly class="readonly-input">
     </div>
     <div class="form-group">
@@ -194,12 +190,10 @@ const pages = {
   stock() {
     const data = storage.getAppData();
     const listOutput = document.getElementById('stock-list-output');
-    const otherOutput = document.getElementById('other-stock-output');
 
     this.renderStockpileModeSelector(() => this.stock());
     
     listOutput.innerHTML = '';
-    otherOutput.innerHTML = '';
 
     if (data.profiles.length === 0) {
       listOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
@@ -211,35 +205,37 @@ const pages = {
     const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
     
     const stockItemsByMasterId = {};
-    const otherStockItems = [];
-
     data.stockItems.forEach(item => {
         const id = item.masterId || item.customId;
         if(id) {
             if(!stockItemsByMasterId[id]) stockItemsByMasterId[id] = [];
             stockItemsByMasterId[id].push(item);
-        } else {
-            otherStockItems.push(item);
         }
     });
 
     const categories = {};
     combinedMasterList.forEach(item => {
-        if(item.calc && item.isNeeded && item.isNeeded(params)) {
-            const required = item.calc(params, days);
-            if (required > 0) {
-                if (!categories[item.category]) {
-                    categories[item.category] = { items: [], achieved: 0, total: 0 };
-                }
-                const currentItems = stockItemsByMasterId[item.id] || [];
-                const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
-                
-                categories[item.category].items.push({ ...item, required, current });
-                categories[item.category].total++;
-                if (current >= required) {
-                    categories[item.category].achieved++;
-                }
-            }
+        const isDefaultItem = item.calc && item.isNeeded;
+        const isCustomWithGoal = item.id.startsWith('custom-') && item.dailyQty > 0;
+
+        if (isDefaultItem && item.isNeeded(params)) {
+             const required = item.calc(params, days);
+             if (required > 0) {
+                 if (!categories[item.category]) categories[item.category] = { items: [], achieved: 0, total: 0 };
+                 const currentItems = stockItemsByMasterId[item.id] || [];
+                 const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+                 categories[item.category].items.push({ ...item, required, current });
+                 categories[item.category].total++;
+                 if (current >= required) categories[item.category].achieved++;
+             }
+        } else if (isCustomWithGoal) {
+             const required = item.calc(params, days);
+             if (!categories[item.category]) categories[item.category] = { items: [], achieved: 0, total: 0 };
+             const currentItems = stockItemsByMasterId[item.id] || [];
+             const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+             categories[item.category].items.push({ ...item, required, current });
+             categories[item.category].total++;
+             if (current >= required) categories[item.category].achieved++;
         }
     });
     
@@ -294,8 +290,11 @@ const pages = {
     }
     listOutput.innerHTML = summaryHTML;
     
-    if (otherStockItems.length > 0) {
-        otherStockItems.forEach(item => {
+    const otherItems = data.stockItems.filter(item => !item.masterId && !item.customId);
+    const otherOutput = document.getElementById('other-stock-output');
+    otherOutput.innerHTML = '';
+    if (otherItems.length > 0) {
+        otherItems.forEach(item => {
             const li = document.createElement('li');
             li.className = 'stock-item-custom';
             let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
@@ -314,13 +313,14 @@ const pages = {
             otherOutput.appendChild(li);
         });
     } else {
-        otherOutput.innerHTML = '<p>その他・未分類の備蓄品はありません。</p>';
+        otherOutput.innerHTML = '<p>リストにない品目はまだ登録されていません。</p>';
     }
 
     listOutput.addEventListener('click', (e) => {
         if (e.target.classList.contains('add-item-btn')) {
             const { id, name, unit } = e.target.dataset;
-            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId: id, customId: id, name, unit }));
+            const masterId = id.startsWith('custom-') ? null : id;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId, customId: id, name, unit }));
             window.location.hash = '#register';
         } else if (e.target.closest('.stock-sub-item')) {
             const itemId = e.target.closest('.stock-sub-item').dataset.id;
@@ -380,7 +380,7 @@ const pages = {
             itemUnitInput.value = item.unit;
             sessionStorage.removeItem('newItemFromTodo');
         } else {
-            itemName = "その他・未分類";
+            itemName = "リストにない品目";
         }
     }
 
@@ -388,11 +388,9 @@ const pages = {
     
     if (masterId || (itemToEdit && (itemToEdit.masterId || itemToEdit.customId))) {
         itemNameInput.readOnly = true;
-        itemNameInput.style.backgroundColor = '#f0f0f0';
     }
     if (masterId) {
         itemUnitInput.readOnly = true;
-        itemUnitInput.style.backgroundColor = '#f0f0f0';
     }
 
 
@@ -411,7 +409,7 @@ const pages = {
       if (itemToEdit) {
           const itemIndex = currentData.stockItems.findIndex(item => item.id === itemToEdit.id);
           if (itemIndex > -1) {
-              currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry };
+              currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry, itemName: itemName };
           }
       } else {
           const newItem = { id: Date.now().toString(), masterId, customId, itemName, productName, qty, unit, expiry };
