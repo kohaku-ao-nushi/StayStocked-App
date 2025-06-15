@@ -78,7 +78,7 @@ const templates = {
     <h2>ホーム</h2>
     <p>日々の備えを、ここから始めましょう。</p>
     <div class="grid-menu">
-      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">くらし方</a>
+      <a href="#lifestyle"><img src="icons/suggest.png" alt="">くらし方</a>
       <a href="#todo"><img src="icons/todo.png" alt="">ToDo備蓄</a>
       <a href="#stock"><img src="icons/stock.png" alt="">備蓄管理</a>
       <a href="#settings"><img src="icons/setting.png" alt="">設定</a>
