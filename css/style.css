@@ -130,6 +130,10 @@ header h1 {
   font-size: 16px;
 }
 
+.readonly-input {
+    background-color: #f0f0f0;
+}
+
 /* --- ホーム画面 --- */
 .grid-menu {
   display: grid;
@@ -176,7 +180,7 @@ header h1 {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* --- ToDo備蓄リスト --- */
+/* --- 備蓄リスト カテゴリ --- */
 .todo-category {
     margin-top: 24px;
 }
@@ -197,40 +201,25 @@ header h1 {
     font-weight: bold;
     color: var(--primary-color);
 }
-.todo-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #fff;
-    padding: 14px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.todo-item:hover {
-    background-color: #f4f8ff;
-}
-.todo-item .item-name {
-    font-weight: 500;
-}
-.todo-item .item-qty {
-    font-size: 0.9em;
-    color: #555;
-}
-.todo-item .item-qty strong {
-    font-size: 1.2em;
-    color: var(--primary-color);
-}
 
-/* --- 備蓄管理 進捗バー --- */
+/* --- 備蓄リスト アコーディオン --- */
+.stock-accordion summary::-webkit-details-marker {
+    display: none;
+}
+.stock-accordion summary {
+    list-style: none;
+}
 .stock-progress-item {
     background-color: #fff;
     border-radius: 8px;
     padding: 12px 16px;
-    margin-bottom: 12px;
+    margin-bottom: 1px; /* 連続した時の見た目調整 */
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+.stock-accordion[open] > summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 .stock-progress-item .item-info {
     display: flex;
@@ -260,7 +249,63 @@ header h1 {
 .progress-bar-inner.is-medium { background-color: var(--medium-color); }
 .progress-bar-inner.is-low { background-color: var(--low-color); }
 
-/* --- 備蓄管理 個別リスト --- */
+.accordion-content {
+    background-color: #fff;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.stock-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.stock-sub-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px dashed #eee;
+    cursor: pointer;
+}
+.stock-sub-item:last-child {
+    border-bottom: none;
+}
+.stock-sub-item:hover {
+    background-color: #f9f9f9;
+}
+.stock-sub-item .product-name {
+    font-weight: 500;
+}
+.stock-sub-item .item-amount {
+    font-size: 0.9em;
+    color: #333;
+}
+.stock-sub-item .item-expiry {
+    font-size: 0.8em;
+    color: #666;
+}
+.no-sub-item-message {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    padding: 8px 0;
+}
+.add-item-btn {
+    width: 100%;
+    margin-top: 16px; /* 修正点① */
+    padding: 10px;
+    font-size: 14px;
+    background-color: #e9ecef;
+    color: var(--primary-color);
+    border: 1px solid #ccc;
+}
+
+
+/* --- その他・未分類リスト --- */
 .stock-item-custom {
     display: flex;
     justify-content: space-between;
@@ -290,13 +335,13 @@ header h1 {
     color: #888;
 }
 .stock-item-custom .category-badge {
-    align-self: flex-start; /* 左寄せ */
+    align-self: flex-start;
 }
 
 .item-actions {
     display: flex;
     gap: 8px;
-    flex-shrink: 0; /* ボタンが縮まないようにする */
+    flex-shrink: 0;
 }
 
 .edit-btn, .delete-btn {
