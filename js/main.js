@@ -195,7 +195,66 @@ const templates = {
  */
 const pages = {
   lifestyle() {
-    // This function remains unchanged.
+    const data = storage.getAppData();
+    const profilesContainer = document.getElementById('profiles-container');
+    const peopleCountSelect = document.getElementById('peopleCountSelect');
+    const petCountSelect = document.getElementById('petCountSelect');
+
+    const renderProfileCards = (num, profiles = []) => {
+      profilesContainer.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const profile = profiles[i] || {};
+        const cardHTML = `
+          <div class="profile-card" data-index="${i}">
+            <h4>${i + 1}人目の情報</h4>
+            <div class="form-group">
+              <label>性別</label>
+              <select class="gender-select">
+                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年代</label>
+              <select class="age-group-select">
+                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
+                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
+                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
+      }
+    };
+    
+    peopleCountSelect.addEventListener('change', (e) => {
+      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
+    });
+
+    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
+        const newProfiles = [];
+        document.querySelectorAll('.profile-card').forEach(card => {
+            newProfiles.push({
+                gender: card.querySelector('.gender-select').value,
+                ageGroup: card.querySelector('.age-group-select').value
+            });
+        });
+        
+        const currentData = storage.getAppData();
+        currentData.profiles = newProfiles;
+        currentData.pets.count = parseInt(petCountSelect.value) || 0;
+        storage.saveAppData(currentData);
+        
+        alert('くらし方を保存しました！');
+        window.location.hash = '#home';
+    });
+
+    petCountSelect.value = data.pets.count || 0;
+    const initialNum = data.profiles.length || 1;
+    peopleCountSelect.value = initialNum;
+    renderProfileCards(initialNum, data.profiles);
   },
   
   stock() {
@@ -276,6 +335,7 @@ const pages = {
                 `).join('')
               : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
 
+            // ★★★ HTML構造を修正 ★★★
             listHTML += `
                 <details class="stock-accordion">
                     <summary class="stock-progress-item">
@@ -377,6 +437,8 @@ const pages = {
     
     itemNameGroup.style.display = 'block';
     itemCategoryGroup.style.display = 'none';
+    itemNameInput.readOnly = true;
+    itemNameInput.classList.add('readonly-input');
 
     if (itemToEdit) {
         titleEl.textContent = '備蓄品を編集';
@@ -388,10 +450,7 @@ const pages = {
         itemQtyInput.value = itemToEdit.qty;
         itemUnitInput.value = itemToEdit.unit;
         itemExpiryInput.value = itemToEdit.expiry || '';
-        
         itemNameInput.value = itemName;
-        itemNameInput.readOnly = true;
-
     } else {
         const newItemData = sessionStorage.getItem('newItemFromTodo');
         if (newItemData) {
@@ -401,14 +460,14 @@ const pages = {
             itemName = item.name;
             itemUnitInput.value = item.unit;
             itemNameInput.value = itemName;
-            itemNameInput.readOnly = true;
             itemUnitInput.readOnly = true;
+            itemUnitInput.classList.add('readonly-input');
             sessionStorage.removeItem('newItemFromTodo');
         } else {
             titleEl.textContent = '新しい備蓄品を登録';
-            itemNameGroup.style.display = 'block';
-            itemCategoryGroup.style.display = 'block';
             itemNameInput.readOnly = false;
+            itemNameInput.classList.remove('readonly-input');
+            itemCategoryGroup.style.display = 'block';
         }
     }
 
@@ -419,8 +478,8 @@ const pages = {
       const expiry = itemExpiryInput.value;
       const finalItemName = itemNameInput.value;
       
-      if (!productName || isNaN(qty) || !unit) {
-        alert('商品名、数量、単位は必須です。');
+      if (!finalItemName || !productName || isNaN(qty) || !unit) {
+        alert('品目名、商品名、数量、単位は必須です。');
         return;
       }
 
@@ -428,8 +487,8 @@ const pages = {
       let finalCategory = '';
       if(isCustomNew){
           finalCategory = itemCategorySelect.value;
-          if(!finalItemName || !finalCategory){
-               alert('品目名とカテゴリを入力または選択してください。');
+          if(!finalCategory){
+               alert('カテゴリを選択してください。');
                return;
           }
       }
@@ -438,7 +497,7 @@ const pages = {
       if (itemToEdit) {
           const itemIndex = currentData.stockItems.findIndex(item => item.id === itemToEdit.id);
           if (itemIndex > -1) {
-              currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry };
+              currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry, itemName: finalItemName };
           }
       } else {
           if(!isCustomNew) {
@@ -468,35 +527,21 @@ const pages = {
   },
 
   settings() {
-    // This function remains unchanged.
+    document.getElementById('resetDataBtn').addEventListener('click', () => {
+        if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
+            localStorage.removeItem('bosaistockApp');
+            alert('データをリセットしました');
+            window.location.hash = '#home';
+            location.reload();
+        }
+    });
+    document.querySelector('a[href="#custom-list-editor"]').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.hash = '#custom-list-editor';
+    });
   },
   
   'custom-list-editor'() {
-    // This function remains unchanged.
-  },
-
-  // --- ヘルパー関数 ---
-  getCalculationParams(data) {
-    // This function remains unchanged.
-  },
-  renderStockpileModeSelector(onchangeCallback) {
-    // This function remains unchanged.
-  }
-};
-
-
-// --- Unchanged functions for brevity ---
-pages.settings = function() {
-      document.getElementById('resetDataBtn').addEventListener('click', () => {
-          if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
-              localStorage.removeItem('bosaistockApp');
-              alert('データをリセットしました');
-              window.location.hash = '#home';
-              location.reload();
-          }
-      });
-  };
-pages['custom-list-editor'] = function() {
       const output = document.getElementById('custom-master-list-output');
       
       const renderCustomList = () => {
@@ -529,7 +574,7 @@ pages['custom-list-editor'] = function() {
           const dailyQty = parseFloat(document.getElementById('customItemDailyQty').value);
 
           if (!name || !category || !unit) {
-              alert('品名、カテゴリ、単位はすべて必須です。');
+              alert('品目名、カテゴリ、単位はすべて必須です。');
               return;
           }
 
@@ -564,8 +609,10 @@ pages['custom-list-editor'] = function() {
       });
 
       renderCustomList();
-  };
-pages.getCalculationParams = function(data) {
+  },
+
+  // --- ヘルパー関数 ---
+  getCalculationParams(data) {
     const params = {
       adults: 0, children: 0, infants: 0,
       totalPeople: data.profiles.length,
@@ -581,8 +628,8 @@ pages.getCalculationParams = function(data) {
         }
     });
     return params;
-  };
-pages.renderStockpileModeSelector = function(onchangeCallback) {
+  },
+  renderStockpileModeSelector(onchangeCallback) {
     const data = storage.getAppData();
     const container = document.getElementById('mode-selector-container');
     const currentDays = data.settings.stockpileDays || 3;
@@ -604,7 +651,9 @@ pages.renderStockpileModeSelector = function(onchangeCallback) {
             onchangeCallback();
         }
     });
-  };
+  }
+};
+
 /**
  * =================================================================
  * SPAルーター機能
