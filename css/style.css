@@ -94,11 +94,17 @@ header h1 {
   text-align: center;
   text-decoration: none;
   margin-top: 20px;
+  box-sizing: border-box; /* 追加: paddingが幅に影響しないようにする */
 }
 
 .btn:hover {
   opacity: 0.9;
 }
+
+.btn.btn-danger {
+    background-color: var(--expired-color);
+}
+
 
 /* --- フォーム関連 --- */
 .form-group {
