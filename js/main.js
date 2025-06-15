@@ -12,6 +12,7 @@ const storage = {
     if (data) {
         const parsedData = JSON.parse(data);
         const merged = { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
+        // 読み込んだカスタム品目に計算関数を再設定
         merged.customMasterItems.forEach(item => {
             if (item.dailyQty) {
                 item.calc = (p, days) => item.dailyQty * days;
@@ -23,6 +24,7 @@ const storage = {
     return defaults;
   },
   saveAppData(data) {
+    // 保存する前に、関数などJSONで保存できないプロパティを削除
     const dataToSave = JSON.parse(JSON.stringify(data));
     dataToSave.customMasterItems.forEach(item => {
         delete item.calc;
@@ -109,13 +111,13 @@ const templates = {
     <hr>
     <h3>その他・未分類の備蓄品</h3>
     <div id="other-stock-output"></div>
-    <a href="#register" class="btn">新しく備蓄品を登録する</a>
+    <a href="#register" class="btn">その他の品目を追加する</a>
   `,
   register: `
     <h2 id="register-title">備蓄品を登録</h2>
     <div class="form-group">
       <label for="itemName">品目（カテゴリ）</label>
-      <input type="text" id="itemName" readonly>
+      <input type="text" id="itemName" readonly class="readonly-input">
     </div>
     <div class="form-group">
       <label for="productName">商品名</label>
@@ -186,7 +188,66 @@ const templates = {
  */
 const pages = {
   lifestyle() {
-    // This function remains unchanged.
+    const data = storage.getAppData();
+    const profilesContainer = document.getElementById('profiles-container');
+    const peopleCountSelect = document.getElementById('peopleCountSelect');
+    const petCountSelect = document.getElementById('petCountSelect');
+
+    const renderProfileCards = (num, profiles = []) => {
+      profilesContainer.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const profile = profiles[i] || {};
+        const cardHTML = `
+          <div class="profile-card" data-index="${i}">
+            <h4>${i + 1}人目の情報</h4>
+            <div class="form-group">
+              <label>性別</label>
+              <select class="gender-select">
+                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年代</label>
+              <select class="age-group-select">
+                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
+                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
+                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
+      }
+    };
+    
+    peopleCountSelect.addEventListener('change', (e) => {
+      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
+    });
+
+    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
+        const newProfiles = [];
+        document.querySelectorAll('.profile-card').forEach(card => {
+            newProfiles.push({
+                gender: card.querySelector('.gender-select').value,
+                ageGroup: card.querySelector('.age-group-select').value
+            });
+        });
+        
+        const currentData = storage.getAppData();
+        currentData.profiles = newProfiles;
+        currentData.pets.count = parseInt(petCountSelect.value) || 0;
+        storage.saveAppData(currentData);
+        
+        alert('くらし方を保存しました！');
+        window.location.hash = '#home';
+    });
+
+    petCountSelect.value = data.pets.count || 0;
+    const initialNum = data.profiles.length || 1;
+    peopleCountSelect.value = initialNum;
+    renderProfileCards(initialNum, data.profiles);
   },
   
   stock() {
@@ -208,19 +269,14 @@ const pages = {
     const days = data.settings.stockpileDays || 3;
     const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
     
-    const currentStockByMasterId = {};
     const stockItemsByMasterId = {};
     const otherStockItems = [];
 
     data.stockItems.forEach(item => {
         const id = item.masterId || item.customId;
         if(id) {
-            if(!currentStockByMasterId[id]) currentStockByMasterId[id] = 0;
-            currentStockByMasterId[id] += parseFloat(item.qty) || 0;
-
             if(!stockItemsByMasterId[id]) stockItemsByMasterId[id] = [];
             stockItemsByMasterId[id].push(item);
-
         } else {
             otherStockItems.push(item);
         }
@@ -234,7 +290,9 @@ const pages = {
                 if (!categories[item.category]) {
                     categories[item.category] = { items: [], achieved: 0, total: 0 };
                 }
-                const current = currentStockByMasterId[item.id] || 0;
+                const currentItems = stockItemsByMasterId[item.id] || [];
+                const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+                
                 categories[item.category].items.push({ ...item, required, current });
                 categories[item.category].total++;
                 if (current >= required) {
@@ -300,6 +358,7 @@ const pages = {
                 <div class="item-details">
                     <span class="item-name">${item.productName}</span>
                     <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
+                    <span class="category-badge">その他</span>
                     <span class="item-expiry">${expiryText}</span>
                 </div>
                 <div class="item-actions">
@@ -310,7 +369,7 @@ const pages = {
             otherOutput.appendChild(li);
         });
     } else {
-        otherOutput.innerHTML = '<p>その他の備蓄品はありません。</p>';
+        otherOutput.innerHTML = '<p>その他・未分類の備蓄品はありません。</p>';
     }
 
     listOutput.addEventListener('click', (e) => {
@@ -354,13 +413,14 @@ const pages = {
     const itemExpiryInput = document.getElementById('itemExpiry');
     let masterId = null;
     let customId = null;
+    let itemName = '';
 
     if (itemToEdit) {
         titleEl.textContent = '備蓄品を編集';
         saveBtn.textContent = 'この内容で更新する';
         masterId = itemToEdit.masterId;
         customId = itemToEdit.customId;
-        itemNameInput.value = itemToEdit.itemName;
+        itemName = itemToEdit.itemName;
         productNameInput.value = itemToEdit.productName || '';
         itemQtyInput.value = itemToEdit.qty;
         itemUnitInput.value = itemToEdit.unit;
@@ -371,16 +431,25 @@ const pages = {
             const item = JSON.parse(newItemData);
             masterId = item.masterId;
             customId = item.customId;
-            itemNameInput.value = item.name;
+            itemName = item.name;
             itemUnitInput.value = item.unit;
             sessionStorage.removeItem('newItemFromTodo');
         } else {
-            itemNameInput.value = "その他・未分類";
+            itemName = "その他・未分類";
         }
     }
 
+    itemNameInput.value = itemName;
+    
+    if (masterId || (itemToEdit && itemToEdit.masterId)) {
+        itemNameInput.readOnly = true;
+        itemNameInput.style.backgroundColor = '#f0f0f0';
+        itemUnitInput.readOnly = true;
+        itemUnitInput.style.backgroundColor = '#f0f0f0';
+    }
+
+
     saveBtn.addEventListener('click', () => {
-      const itemName = itemNameInput.value;
       const productName = productNameInput.value;
       const qty = parseFloat(itemQtyInput.value);
       const unit = itemUnitInput.value;
@@ -410,101 +479,129 @@ const pages = {
   },
 
   settings() {
-    // This function remains unchanged.
+    document.getElementById('resetDataBtn').addEventListener('click', () => {
+        if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
+            localStorage.removeItem('bosaistockApp');
+            alert('データをリセットしました');
+            window.location.hash = '#home';
+            location.reload();
+        }
+    });
   },
   
   'custom-list-editor'() {
-    // This function remains unchanged.
+      const output = document.getElementById('custom-master-list-output');
+      
+      const renderCustomList = () => {
+          const data = storage.getAppData();
+          output.innerHTML = '';
+          if (data.customMasterItems.length === 0) {
+              output.innerHTML = '<p>あなたが追加した品目はまだありません。</p>';
+              return;
+          }
+          const list = document.createElement('ul');
+          list.className = 'master-list is-custom';
+          data.customMasterItems.forEach(item => {
+              const li = document.createElement('li');
+              li.innerHTML = `
+                  <div class="item-details">
+                    <span>${item.name} <span class="category-badge">${item.category}</span></span>
+                    <span class="item-expiry">${item.dailyQty ? `目標: 1人1日あたり ${item.dailyQty}${item.unit}` : '目標量なし'}</span>
+                  </div>
+                  <button class="delete-custom-item-btn" data-id="${item.id}">削除</button>
+              `;
+              list.appendChild(li);
+          });
+          output.appendChild(list);
+      };
+
+      document.getElementById('addCustomItemBtn').addEventListener('click', () => {
+          const name = document.getElementById('customItemName').value;
+          const category = document.getElementById('customItemCategory').value;
+          const unit = document.getElementById('customItemUnit').value;
+          const dailyQty = parseFloat(document.getElementById('customItemDailyQty').value);
+
+          if (!name || !category || !unit) {
+              alert('品名、カテゴリ、単位はすべて必須です。');
+              return;
+          }
+
+          const newItem = { id: `custom-${Date.now()}`, name, category, unit };
+          if (!isNaN(dailyQty) && dailyQty > 0) {
+              newItem.dailyQty = dailyQty;
+          }
+          
+          const data = storage.getAppData();
+          data.customMasterItems.push(newItem);
+          storage.saveAppData(data);
+          
+          document.getElementById('customItemName').value = '';
+          document.getElementById('customItemCategory').value = '';
+          document.getElementById('customItemUnit').value = '';
+          document.getElementById('customItemDailyQty').value = '';
+          
+          renderCustomList();
+      });
+      
+      output.addEventListener('click', e => {
+          if (e.target.classList.contains('delete-custom-item-btn')) {
+              const itemIdToDelete = e.target.dataset.id;
+              if (confirm('この品目をリストから削除しますか？\n関連する在庫もすべて削除されます。')) {
+                  const data = storage.getAppData();
+                  data.customMasterItems = data.customMasterItems.filter(item => item.id !== itemIdToDelete);
+                  data.stockItems = data.stockItems.filter(stock => stock.customId !== itemIdToDelete);
+                  storage.saveAppData(data);
+                  pages['custom-list-editor']();
+              }
+          }
+      });
+
+      renderCustomList();
   },
 
   // --- ヘルパー関数 ---
   getCalculationParams(data) {
-    // This function remains unchanged.
+    const params = {
+      adults: 0, children: 0, infants: 0,
+      totalPeople: data.profiles.length,
+      females: 0, elderly: 0, pets: data.pets.count || 0
+    };
+    data.profiles.forEach(p => {
+        if (p.gender === '女性') params.females++;
+        switch (p.ageGroup) {
+            case '乳幼児': params.infants++; break;
+            case '子ども': params.children++; break;
+            case '成人': params.adults++; break;
+            case '高齢者': params.elderly++; params.adults++; break;
+        }
+    });
+    return params;
   },
+
   renderStockpileModeSelector(onchangeCallback) {
-    // This function remains unchanged.
+    const data = storage.getAppData();
+    const container = document.getElementById('mode-selector-container');
+    const currentDays = data.settings.stockpileDays || 3;
+    
+    container.innerHTML = `
+      <div class="stockpile-mode-selector">
+        <button class="mode-btn ${currentDays === 3 ? 'is-active' : ''}" data-days="3">3日分</button>
+        <button class="mode-btn ${currentDays === 7 ? 'is-active' : ''}" data-days="7">1週間</button>
+        <button class="mode-btn ${currentDays === 14 ? 'is-active' : ''}" data-days="14">2週間</button>
+      </div>
+    `;
+
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mode-btn')) {
+            const selectedDays = parseInt(e.target.dataset.days);
+            const currentData = storage.getAppData();
+            currentData.settings.stockpileDays = selectedDays;
+            storage.saveAppData(currentData);
+            onchangeCallback();
+        }
+    });
   }
 };
-
-// ... (All other functions like router and event listeners remain the same)
-// The full, unchanged code for helper functions and the router would be here in a real file.
-// For brevity in this response, only the changed parts are shown in detail.
-// A simple copy-paste of the unchanged functions from the previous version completes the file.
-
-const unchangedFunctions = {
-  settings: pages.settings,
-  'custom-list-editor': pages['custom-list-editor'],
-  getCalculationParams: pages.getCalculationParams,
-  renderStockpileModeSelector: pages.renderStockpileModeSelector
-}
-
-pages.lifestyle = function() {
-    const data = storage.getAppData();
-    const profilesContainer = document.getElementById('profiles-container');
-    const peopleCountSelect = document.getElementById('peopleCountSelect');
-    const petCountSelect = document.getElementById('petCountSelect');
-
-    const renderProfileCards = (num, profiles = []) => {
-      profilesContainer.innerHTML = '';
-      for (let i = 0; i < num; i++) {
-        const profile = profiles[i] || {};
-        const cardHTML = `
-          <div class="profile-card" data-index="${i}">
-            <h4>${i + 1}人目の情報</h4>
-            <div class="form-group">
-              <label>性別</label>
-              <select class="gender-select">
-                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
-                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>年代</label>
-              <select class="age-group-select">
-                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
-                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
-                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
-                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
-              </select>
-            </div>
-          </div>
-        `;
-        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
-      }
-    };
-    
-    peopleCountSelect.addEventListener('change', (e) => {
-      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
-    });
-
-    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
-        const newProfiles = [];
-        document.querySelectorAll('.profile-card').forEach(card => {
-            newProfiles.push({
-                gender: card.querySelector('.gender-select').value,
-                ageGroup: card.querySelector('.age-group-select').value
-            });
-        });
-        
-        const currentData = storage.getAppData();
-        currentData.profiles = newProfiles;
-        currentData.pets.count = parseInt(petCountSelect.value) || 0;
-        storage.saveAppData(currentData);
-        
-        alert('くらし方を保存しました！');
-        window.location.hash = '#home';
-    });
-
-    petCountSelect.value = data.pets.count || 0;
-    const initialNum = data.profiles.length || 1;
-    peopleCountSelect.value = initialNum;
-    renderProfileCards(initialNum, data.profiles);
-  };
-pages.settings = unchangedFunctions.settings;
-pages['custom-list-editor'] = unchangedFunctions['custom-list-editor'];
-pages.getCalculationParams = unchangedFunctions.getCalculationParams;
-pages.renderStockpileModeSelector = unchangedFunctions.renderStockpileModeSelector;
-
 
 /**
  * =================================================================
