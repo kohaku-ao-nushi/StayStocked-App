@@ -234,6 +234,13 @@ header h1 {
   gap: 12px;
 }
 
+.item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
 .accordion-icon {
   font-size: 20px;
   line-height: 1;
