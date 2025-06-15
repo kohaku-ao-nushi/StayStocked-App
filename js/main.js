@@ -76,7 +76,7 @@ const templates = {
     <h2>ホーム</h2>
     <p>日々の備えを、ここから始めましょう。</p>
     <div class="grid-menu">
-      <a href="#lifestyle"><img src="icons/suggest.png" alt="">くらし方</a>
+      <a href="#lifestyle"><img src="icons/lifestyle.png" alt="">くらし方</a>
       <a href="#stock"><img src="icons/stock.png" alt="">備蓄リスト</a>
       <a href="#settings"><img src="icons/setting.png" alt="">設定</a>
       <a href="#how-to"><img src="icons/manual.png" alt="">使い方</a>
@@ -135,7 +135,7 @@ const templates = {
   settings: `
     <h2>設定</h2>
     <a href="#custom-list-editor" class="btn">品目リストの編集</a>
-    <button id="resetDataBtn" class="btn" style="background-color: #d9534f;">全データをリセットする</button>
+    <button id="resetDataBtn" class="btn btn-danger">全データをリセットする</button>
   `,
   'custom-list-editor': `
     <h2>品目リストの編集</h2>
