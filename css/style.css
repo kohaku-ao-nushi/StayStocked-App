@@ -230,7 +230,7 @@ header h1 {
     padding: 12px 16px;
     position: relative;
     display: flex;
-    align-items: center; /* ★★★ 修正点 ★★★ */
+    align-items: center; /* ★★★ 修正点: flex-startからcenterに変更 ★★★ */
     gap: 12px;
 }
 .accordion-icon {
