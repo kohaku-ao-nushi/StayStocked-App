@@ -12,6 +12,7 @@ const storage = {
     if (data) {
         const parsedData = JSON.parse(data);
         const merged = { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
+        // 読み込んだカスタム品目に計算関数を再設定
         merged.customMasterItems.forEach(item => {
             if (item.dailyQty) {
                 item.calc = (p, days) => (p.totalPeople || 1) * item.dailyQty * days;
@@ -194,7 +195,7 @@ const templates = {
  */
 const pages = {
   lifestyle() {
-    // ... (This function remains unchanged.)
+    // ... (This function remains unchanged)
   },
   
   stock() {
@@ -376,8 +377,7 @@ const pages = {
   }
 };
 
-
-// --- Unchanged functions for brevity ---
+// ... (All other functions like router and event listeners remain the same)
 pages.lifestyle = function() {
     const data = storage.getAppData();
     const profilesContainer = document.getElementById('profiles-container');
