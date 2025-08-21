@@ -217,7 +217,11 @@ header h1 {
     border-radius: 8px;
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    overflow: hidden; /* ★★★ 追加 ★★★ */
+    max-height: 0;
+    overflow: hidden;
+    /* transitionでスムーズな開閉アニメーションを追加 */
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 16px; /* 初期値を設定し、開閉時にアニメーションさせる */
 }
 .stock-accordion summary {
     list-style: none;
@@ -271,7 +275,12 @@ header h1 {
 .stock-accordion[open] > summary .accordion-icon::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
-
+/* アコーディオンがopen属性を持っているとき */
+.stock-accordion[open] .accordion-content {
+    /* 開いている時はコンテンツの高さに合わせる */
+    max-height: 500px; /* 十分に大きい値に設定 */
+    padding: 12px 16px 16px; /* 開いている時のパディング */
+}
 .stock-accordion[open] > summary.stock-progress-item {
     border-bottom: 1px solid #eee;
     border-bottom-left-radius: 0;
