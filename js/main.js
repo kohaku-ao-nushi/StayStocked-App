@@ -161,7 +161,7 @@ const templates = {
           <div class="master-item-details">
             <span>${item.name}</span>
             <div class="master-item-badges">
-              ${item.target ? `<span class="target-badge">${item.target}向け</span>` : ''}
+              ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
               <span class="category-badge">${item.category}</span>
             </div>
           </div>
