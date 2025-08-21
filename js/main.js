@@ -338,16 +338,14 @@ const pages = {
             // ★★★ HTML構造を修正 ★★★
             listHTML += `
                 <details class="stock-accordion">
-                    <summary class="stock-progress-item">
-                        <div class="accordion-icon"></div>
-                        <div class="progress-container">
-                          <div class="item-info">
-                              <span class="item-name">${item.name}</span>
-                              <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
-                          </div>
-                          <div class="progress-bar">
-                              <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
-                          </div>
+                    <summary class="stock-accordion stock-progress-item">
+                        <div class="accordion-icon"></div> <div class="progress-container">
+                            <div class="item-header"> <div class="item-name">${item.name}</div>
+                                <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                            </div>
                         </div>
                     </summary>
                     <div class="accordion-content">
