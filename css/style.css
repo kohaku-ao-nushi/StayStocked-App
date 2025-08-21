@@ -275,12 +275,7 @@ header h1 {
 .stock-accordion[open] > summary .accordion-icon::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
-/* アコーディオンがopen属性を持っているとき */
-.stock-accordion[open] .accordion-content {
-    /* 開いている時はコンテンツの高さに合わせる */
-    max-height: 500px; /* 十分に大きい値に設定 */
-    padding: 12px 16px 16px; /* 開いている時のパディング */
-}
+
 .stock-accordion[open] > summary.stock-progress-item {
     border-bottom: 1px solid #eee;
     border-bottom-left-radius: 0;
