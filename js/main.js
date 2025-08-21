@@ -54,7 +54,7 @@ const todoMasterList = [
   { id: 'wet_body_towel', name: 'ウェットボディタオル', category: '衛生用品', unit: '枚', calc: (p, days) => p.totalPeople * days, isNeeded: p => p.totalPeople > 0 }, // ★ 新規追加 [cite: 50]
   { id: 'mask', name: 'マスク', category: '衛生用品', unit: '枚', calc: (p, days) => p.totalPeople * days, isNeeded: p => p.totalPeople > 0 },
   { id: 'diapers', name: 'おむつ', category: '衛生用品', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
-  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: (p, days) => p.females * days * 10, isNeeded: p => p.females > 0 }, // ★ 計算量を1日あたり10個に変更 [cite: 94]
+  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '個', calc: (p, days) => p.females * days * 10, isNeeded: p => p.females > 0 }, // ★ 計算量を1日あたり10個に変更 [cite: 94]
   // 生活用品
   { id: 'first_aid_kit', name: '救急箱', category: '生活用品', unit: '箱', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'cassette_stove', name: 'カセットコンロ', category: '生活用品', unit: '台', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
