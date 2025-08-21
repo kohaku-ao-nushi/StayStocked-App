@@ -128,7 +128,7 @@ const templates = {
     </div>
     <div class="form-group">
       <label for="productName">商品名</label>
-      <input type="text" id="productName" placeholder="例：サントリー天然水">
+      <input type="text" id="productName" placeholder="例：天然水">
     </div>
     <div class="form-group">
       <label for="itemQty">数量</label>
@@ -156,7 +156,7 @@ const templates = {
     <h2>品目リストの編集</h2>
     <h3>デフォルトの推奨品目</h3>
     <ul class="master-list">
-      ${todoMasterList.map(item => `<li>${item.name} <span class="category-badge">${item.category}</span></li>`).join('')}
+      ${todoMasterList.map(item => `<li>${item.name} ${item.target ? `<span class="target-badge">${item.target}</span>` : ''} <span class="category-badge">${item.category}</span></li>`).join('')}
     </ul>
     <hr>
     <h3>あなたが追加した品目</h3>
@@ -347,7 +347,7 @@ const pages = {
                                 <div class="item-name">
                                     <div class="accordion-icon"></div>
                                     ${item.name}
-                                    ${item.target ? `<span class="target-badge">${item.target}向け</span>` : ''}
+                                    ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
                                 </div>
                                 <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
                             </div>
