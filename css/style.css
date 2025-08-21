@@ -459,7 +459,7 @@ header h1 {
 /* デフォルト推奨品目リストのスタイル */
 .master-list li {
     display: flex;
-    justify-content: space-between; /* 子要素を両端に配置 */
+    justify-content: space-between;
     align-items: center; /* 垂直方向の中央揃え */
     background: #fff;
     padding: 10px 12px;
@@ -468,18 +468,20 @@ header h1 {
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* 新規追加: 品目名とバッジを横並びにするコンテナ */
+/* 修正: 品目名とバッジを囲むコンテナ */
 .master-item-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; /* ★ 品目名とバッジを横並びにする */
+    align-items: center; /* 垂直方向の中央揃え */
+    gap: 8px; /* 品目名とバッジの間にスペースを追加 */
     width: 100%;
 }
-/* 新規追加: 複数のバッジを囲むコンテナ */
+/* 修正: 複数のバッジを囲むコンテナ */
 .master-item-badges {
     display: flex;
     align-items: center;
-    gap: 8px; /* バッジ間のスペース */
+    gap: 8px;
+    /* 新規: 親要素に対して右寄せ */
+    margin-left: auto;
 }
 
 .category-badge {
