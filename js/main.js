@@ -345,9 +345,11 @@ const pages = {
                                     <div class="accordion-icon"></div>
                                     ${item.name}
                                 </div>
-                                <span class="item-amount">...</span>
+                                <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
                             </div>
-                            <div class="progress-bar">...</div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                            </div>
                         </div>
                     </summary>
                     <div class="accordion-content">
