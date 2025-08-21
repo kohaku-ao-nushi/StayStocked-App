@@ -156,7 +156,17 @@ const templates = {
     <h2>品目リストの編集</h2>
     <h3>デフォルトの推奨品目</h3>
     <ul class="master-list">
-      ${todoMasterList.map(item => `<li>${item.name} ${item.target ? `<span class="target-badge">${item.target}</span>` : ''} <span class="category-badge">${item.category}</span></li>`).join('')}
+      ${todoMasterList.map(item => `
+        <li>
+          <div class="master-item-details">
+            <span>${item.name}</span>
+            <div class="master-item-badges">
+              ${item.target ? `<span class="target-badge">${item.target}向け</span>` : ''}
+              <span class="category-badge">${item.category}</span>
+            </div>
+          </div>
+        </li>
+      `).join('')}
     </ul>
     <hr>
     <h3>あなたが追加した品目</h3>
