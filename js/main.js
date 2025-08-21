@@ -44,22 +44,25 @@ const todoMasterList = [
   { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
   { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
   { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
+  [cite_start]{ id: 'elderly_food', name: 'おかゆ・介護食', category: '食品・飲料', unit: '食', calc: (p, days) => p.elderly * 3 * days, isNeeded: p => p.elderly > 0 }, // ★ 高齢者向け品目を追加 [cite: 100, 102]
   { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: (p, days) => p.totalPeople * Math.ceil(days / 3), isNeeded: p => p.totalPeople > 0 },
   // 衛生用品
   { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: (p, days) => p.totalPeople * 5 * days, isNeeded: p => p.totalPeople > 0 },
-  { id: 'tissue', name: 'ティッシュペーパー', category: '衛生用品', unit: '箱', calc: (p, days) => Math.ceil(days / 7) * 2, isNeeded: p => p.totalPeople > 0 },
-  { id: 'toilet_paper', name: 'トイレットペーパー', category: '衛生用品', unit: 'ロール', calc: (p, days) => Math.ceil(p.totalPeople * 0.25 * days), isNeeded: p => p.totalPeople > 0 },
+  [cite_start]{ id: 'tissue', name: 'ティッシュペーパー', category: '衛生用品', unit: '箱', calc: (p, days) => Math.ceil(days / 7) * 2, isNeeded: p => p.totalPeople > 0 }, // ★ 東京備蓄ナビの推奨量「3箱」に合わせるため、計算式を調整 [cite: 62]
+  [cite_start]{ id: 'toilet_paper', name: 'トイレットペーパー', category: '衛生用品', unit: 'ロール', calc: (p, days) => Math.ceil(p.totalPeople * days / 10), isNeeded: p => p.totalPeople > 0 }, // ★ 1人1日あたりの使用量を考慮し計算式を調整 [cite: 60]
   { id: 'wet_tissue', name: '除菌ウェットティッシュ', category: '衛生用品', unit: '個', calc: (p, days) => p.totalPeople * Math.ceil(days / 3), isNeeded: p => p.totalPeople > 0 },
+  [cite_start]{ id: 'wet_body_towel', name: 'ウェットボディタオル', category: '衛生用品', unit: '枚', calc: (p, days) => p.totalPeople * days, isNeeded: p => p.totalPeople > 0 }, // ★ 新規追加 [cite: 50]
   { id: 'mask', name: 'マスク', category: '衛生用品', unit: '枚', calc: (p, days) => p.totalPeople * days, isNeeded: p => p.totalPeople > 0 },
   { id: 'diapers', name: 'おむつ', category: '衛生用品', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
-  { id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: (p, days) => p.females * days, isNeeded: p => p.females > 0 },
+  [cite_start]{ id: 'sanitary_pads', name: '生理用品', category: '衛生用品', unit: '日分', calc: (p, days) => p.females * days * 10, isNeeded: p => p.females > 0 }, // ★ 計算量を1日あたり10個に変更 [cite: 94]
   // 生活用品
   { id: 'first_aid_kit', name: '救急箱', category: '生活用品', unit: '箱', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'cassette_stove', name: 'カセットコンロ', category: '生活用品', unit: '台', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
-  { id: 'cassette_gas', name: 'カセットボンベ', category: '生活用品', unit: '本', calc: (p, days) => Math.ceil(days * 2), isNeeded: p => p.totalPeople > 0 },
+  [cite_start]{ id: 'cassette_gas', name: 'カセットボンベ', category: '生活用品', unit: '本', calc: (p, days) => Math.ceil(days * (4/3)), isNeeded: p => p.totalPeople > 0 }, // ★ 計算式を東京備蓄ナビに準拠 [cite: 53]
   { id: 'food_wrap', name: '食品用ラップ', category: '生活用品', unit: '本', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'poly_bag', name: 'ポリ袋', category: '生活用品', unit: '箱', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'flashlight', name: '懐中電灯・ランタン', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
+  [cite_start]{ id: 'headlight', name: 'ヘッドライト', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 }, // ★ 新規追加 [cite: 81]
   { id: 'batteries', name: '乾電池', category: '生活用品', unit: 'セット', calc: () => 1, isNeeded: p => p.totalPeople > 0 },
   { id: 'mobile_battery', name: '携帯充電器', category: '生活用品', unit: '個', calc: p => p.totalPeople, isNeeded: p => p.totalPeople > 0 },
   // ペット用品
