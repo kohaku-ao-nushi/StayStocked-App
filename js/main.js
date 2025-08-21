@@ -41,10 +41,10 @@ const storage = {
 const todoMasterList = [
   // 食品・飲料
   { id: 'water', name: '水', category: '食品・飲料', unit: 'L', calc: (p, days) => p.totalPeople * 3 * days, isNeeded: p => p.totalPeople > 0 },
-  { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
+  { id: 'staple_food', name: 'レトルトご飯・乾麺など', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0, target: '成人・子ども向け' },
   { id: 'side_dish', name: '缶詰・レトルト食品', category: '食品・飲料', unit: '食', calc: (p, days) => (p.adults + p.children) * 3 * days, isNeeded: p => (p.adults + p.children) > 0 },
-  { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0 },
-  { id: 'elderly_food', name: 'おかゆ・介護食', category: '食品・飲料', unit: '食', calc: (p, days) => p.elderly * 3 * days, isNeeded: p => p.elderly > 0 }, // ★ 高齢者向け品目を追加 [cite: 100, 102]
+  { id: 'baby_food', name: '粉ミルク・液体ミルク', category: '食品・飲料', unit: '日分', calc: (p, days) => p.infants * days, isNeeded: p => p.infants > 0, target: '乳幼児向け' },
+  { id: 'elderly_food', name: 'おかゆ・介護食', category: '食品・飲料', unit: '食', calc: (p, days) => p.elderly * 3 * days, isNeeded: p => p.elderly > 0, target: '高齢者向け' },
   { id: 'sweets', name: 'お菓子類', category: '食品・飲料', unit: '袋', calc: (p, days) => p.totalPeople * Math.ceil(days / 3), isNeeded: p => p.totalPeople > 0 },
   // 衛生用品
   { id: 'portable_toilet', name: '携帯トイレ・簡易トイレ', category: '衛生用品', unit: '回分', calc: (p, days) => p.totalPeople * 5 * days, isNeeded: p => p.totalPeople > 0 },
