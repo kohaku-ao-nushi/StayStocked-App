@@ -347,6 +347,7 @@ const pages = {
                                 <div class="item-name">
                                     <div class="accordion-icon"></div>
                                     ${item.name}
+                                    ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
                                 </div>
                                 <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
                             </div>
