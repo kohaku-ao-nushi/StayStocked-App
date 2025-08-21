@@ -233,6 +233,12 @@ header h1 {
     align-items: center;
     gap: 12px;
 }
+/* ★★★ 新規追加 ★★★ */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
 /* プラス/クロス アイコン */
 .accordion-icon {
     width: 20px;
@@ -265,27 +271,25 @@ header h1 {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-.progress-container {
-    width: 100%;
-}
-
 .stock-accordion[open] > summary.stock-progress-item {
     border-bottom: 1px solid #eee;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
-.stock-progress-item .item-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-}
+/* ★★★ 既存の .item-info は削除し、このスタイルに変更 ★★★ */
 .stock-progress-item .item-name {
     font-weight: bold;
+    display: flex;
+    align-items: center; /* 品目名とアイコンの垂直方向を中央揃え */
+    gap: 8px; /* アイコンとテキストの間隔 */
 }
 .stock-progress-item .item-amount {
     font-size: 0.9em;
     color: #555;
+}
+/* プログレスバーのコンテナを品目名と別の行に配置 */
+.progress-container {
+    width: 100%;
 }
 .progress-bar {
     width: 100%;
