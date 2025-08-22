@@ -578,6 +578,7 @@ header h1 {
 
 .overall-progress-bar {
     height: 20px;
+    margin-bottom: 8px;
 }
 
 .overall-summary-text {
