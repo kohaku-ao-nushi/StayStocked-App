@@ -150,6 +150,25 @@ const templates = {
   settings: `
     <h2>設定</h2>
     <a href="#custom-list-editor" class="btn">品目リストの編集</a>
+    
+    <hr>
+    <h3>通知設定</h3>
+    <p>備蓄品の賞味期限が近づいた際の通知日数を設定します。</p>
+    <div class="form-group">
+      <label for="noticeDays3">3日分モードの通知日数（日）</label>
+      <input type="number" id="noticeDays3" min="1" value="7">
+    </div>
+    <div class="form-group">
+      <label for="noticeDays7">1週間モードの通知日数（日）</label>
+      <input type="number" id="noticeDays7" min="1" value="14">
+    </div>
+    <div class="form-group">
+      <label for="noticeDays14">2週間モードの通知日数（日）</label>
+      <input type="number" id="noticeDays14" min="1" value="30">
+    </div>
+    
+    <button id="saveSettingsBtn" class="btn">設定を保存する</button>
+    
     <button id="resetDataBtn" class="btn btn-danger">全データをリセットする</button>
   `,
   'custom-list-editor': `
