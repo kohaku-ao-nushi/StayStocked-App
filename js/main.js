@@ -391,23 +391,6 @@ const pages = {
                   </li>
                 `).join('')
               : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
-            // 期限切れ・期限間近の判定
-            // registeredItemsの重複宣言を削除
-            const expiringSoonItems = registeredItems.filter(stock => {
-                if (!stock.expiry) return false;
-                const expiryDate = new Date(stock.expiry);
-                const diffTime = expiryDate.getTime() - today.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays <= noticeDays;
-            });
-
-            // 強調表示のCSSクラスを付与
-            let highlightClass = '';
-            let openAccordion = false;
-            if (expiringSoonItems.length > 0) {
-                highlightClass = 'is-expiring';
-                openAccordion = true;
-            }
     
             // ★★★ HTML構造を修正 ★★★
             listHTML += `
