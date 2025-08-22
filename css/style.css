@@ -548,3 +548,37 @@ header h1 {
     color: #721c24;
     font-weight: bold;
 }
+/* 全体進捗カード */
+.overall-progress-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 24px 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.overall-progress-card h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    border-bottom: none;
+    color: var(--text-color);
+}
+
+.overall-progress-text {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.overall-progress-bar {
+    height: 20px;
+}
+
+.overall-summary-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 12px;
+}
