@@ -375,7 +375,7 @@ const pages = {
                 `).join('')
               : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
             // 期限切れ・期限間近の判定
-            const registeredItems = stockItemsById[item.id] || [];
+            // registeredItemsの重複宣言を削除
             const expiringSoonItems = registeredItems.filter(stock => {
                 if (!stock.expiry) return false;
                 const expiryDate = new Date(stock.expiry);
@@ -708,9 +708,10 @@ const pages = {
     });
     return params;
   },
-  renderStockpileModeSelector(onchangeCallback) {
+    renderStockpileModeSelector(onchangeCallback) {
     const data = storage.getAppData();
     const container = document.getElementById('mode-selector-container');
+    const currentDays = data.settings.stockpileDays || 3; // ★★★ この行を追加 ★★★
     
     container.innerHTML = `
       <div class="stockpile-mode-selector">
