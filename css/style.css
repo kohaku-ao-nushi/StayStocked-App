@@ -240,7 +240,6 @@ header h1 {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 /* プラス/クロス アイコン */
 .accordion-icon {
@@ -541,7 +540,7 @@ header h1 {
 .overall-progress-card {
     background-color: #fff;
     border-radius: 8px;
-    padding: 24px 16px;
+    padding: 20px 16px;
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
@@ -550,7 +549,7 @@ header h1 {
 .overall-progress-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    /* gap: 8px; */ 
 }
 
 .overall-progress-header {
