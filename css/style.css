@@ -555,7 +555,15 @@ header h1 {
     padding: 24px 16px;
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    text-align: center;
+    text-align: center; /* ヘッダー内のテキストを中央寄せにするため残す */
+}
+
+/* ★★★ 新規追加 ★★★ */
+.overall-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .overall-progress-card h3 {
@@ -566,11 +574,11 @@ header h1 {
 }
 
 .overall-progress-text {
-    font-size: 2em;
+    font-size: 1.2em; /* フォントサイズを小さく調整 */
     font-weight: bold;
     color: var(--primary-color);
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 0; /* ヘッダーのmargin-bottomで調整するため0に */
 }
 
 .overall-progress-bar {
@@ -578,7 +586,8 @@ header h1 {
 }
 
 .overall-summary-text {
-    font-size: 0.9em;
+    font-size: 1.2em; /* フォントサイズを小さく調整 */
     color: #666;
-    margin-top: 12px;
+    margin-top: 0;
+    white-space: nowrap; /* テキストの折り返しを防ぐ */
 }
