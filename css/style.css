@@ -37,7 +37,6 @@ h3 {
   margin-top: 24px;
 }
 
-
 /* --- 共通コンポーネント --- */
 header {
   background-color: var(--primary-color);
@@ -107,9 +106,7 @@ header h1 {
 
 .btn.btn-secondary {
     background-color: #6c757d;
-    margin-top: 10px;
 }
-
 
 /* --- フォーム関連 --- */
 .form-group {
@@ -143,16 +140,7 @@ header h1 {
     margin-top: 24px;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* ★★★ ボタン間のスペースをここで統一 ★★★ */
-}
-
-.btn.btn-secondary {
-    background-color: #6c757d;
-    margin-top: 0; /* ★★★ 既存のmarginを削除 ★★★ */
-}
-
-#deleteItemBtn {
-    margin-top: 0; /* ★★★ 既存のmarginを削除 ★★★ */
+    gap: 10px;
 }
 
 /* --- ホーム画面 --- */
@@ -229,6 +217,7 @@ header h1 {
     border-radius: 8px;
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    overflow: hidden;
 }
 .stock-accordion summary {
     list-style: none;
@@ -245,12 +234,10 @@ header h1 {
     align-items: center;
     gap: 12px;
 }
-/* ★★★ 新規追加 ★★★ */
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 8px;
+.stock-accordion[open] > summary.stock-progress-item {
+    border-bottom: 1px solid #eee;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 /* プラス/クロス アイコン */
 .accordion-icon {
@@ -283,13 +270,14 @@ header h1 {
 .stock-accordion[open] > summary .accordion-icon::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
-
-.stock-accordion[open] > summary.stock-progress-item {
-    border-bottom: 1px solid #eee;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+/* 品目名と備蓄量を囲むヘッダー部分 */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
 }
-/* ★★★ 既存の .item-info は削除し、このスタイルに変更 ★★★ */
 .stock-progress-item .item-name {
     font-weight: bold;
     display: flex;
@@ -300,7 +288,7 @@ header h1 {
     font-size: 0.9em;
     color: #555;
 }
-/* プログレスバーのコンテナを品目名と別の行に配置 */
+/* プログレスバーのコンテナ */
 .progress-container {
     width: 100%;
 }
@@ -320,7 +308,15 @@ header h1 {
 .progress-bar-inner.is-low { background-color: var(--low-color); }
 
 .accordion-content {
-    padding: 0 16px 16px 16px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 16px;
+}
+
+.stock-accordion[open] .accordion-content {
+    max-height: 500px;
+    padding: 12px 16px 16px;
 }
 
 .stock-sub-list {
@@ -328,7 +324,6 @@ header h1 {
     padding: 0;
     margin: 0;
 }
-
 .stock-sub-item {
     display: flex;
     justify-content: space-between;
@@ -387,13 +382,11 @@ header h1 {
     margin-bottom: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
 .stock-item-custom .item-details {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-
 .stock-item-custom .item-name {
     font-weight: 500;
 }
@@ -408,13 +401,11 @@ header h1 {
 .stock-item-custom .category-badge {
     align-self: flex-start;
 }
-
 .item-actions {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
 }
-
 .edit-btn, .delete-btn {
     padding: 6px 12px;
     font-size: 12px;
@@ -423,13 +414,11 @@ header h1 {
     border: 1px solid transparent;
     font-weight: bold;
 }
-
 .edit-btn {
     background-color: #f0f0f0;
     border-color: #ccc;
     color: #333;
 }
-
 .delete-btn {
     background-color: var(--expired-color);
     border-color: #c82333;
@@ -479,7 +468,6 @@ header h1 {
     margin-bottom: 6px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
-
 /* 修正: 品目名とバッジを囲むコンテナ */
 .master-item-details {
     display: flex; /* ★ 品目名とバッジを横並びにする */
@@ -502,7 +490,7 @@ header h1 {
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 12px;
-    margin-left: 8px;
+    white-space: nowrap;
 }
 .target-badge {
     background-color: #d1e7dd; /* category-badgeとは異なる色で区別 */
@@ -510,7 +498,6 @@ header h1 {
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 12px;
-    margin-left: 8px;
     white-space: nowrap;
 }
 .master-list.is-custom li {
@@ -548,6 +535,7 @@ header h1 {
     color: #721c24;
     font-weight: bold;
 }
+
 /* 全体進捗カード */
 .overall-progress-card {
     background-color: #fff;
@@ -591,3 +579,4 @@ header h1 {
     margin-top: 0;
     white-space: nowrap; /* テキストの折り返しを防ぐ */
 }
+
