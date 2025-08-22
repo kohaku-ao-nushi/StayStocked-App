@@ -791,7 +791,7 @@ const router = {
   
   getHeaderTitle(key) {
     const titles = {
-      home: 'StayStocked ホーム',
+      home: 'StayStocked',
       lifestyle: 'くらし方',
       stock: '備蓄リスト',
       register: '備蓄品登録',
