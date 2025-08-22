@@ -521,7 +521,7 @@ const pages = {
     if (itemToEdit) {
         titleEl.textContent = '備蓄品を編集';
         saveBtn.textContent = 'この内容で更新する';
-        deleteBtn.style.display = 'none';
+        deleteBtn.style.display = 'block';
         masterId = itemToEdit.masterId;
         customId = itemToEdit.customId;
         itemName = itemToEdit.itemName;
@@ -531,6 +531,9 @@ const pages = {
         itemExpiryInput.value = itemToEdit.expiry || '';
         itemNameInput.value = itemName;
     } else {
+        titleEl.textContent = '新しい備蓄品を登録';
+        saveBtn.textContent = '＋ この内容で登録する';
+        deleteBtn.style.display = 'none';
         const newItemData = sessionStorage.getItem('newItemFromTodo');
         if (newItemData) {
             const item = JSON.parse(newItemData);
