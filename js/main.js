@@ -6,7 +6,6 @@
  * =================================================================
  */
 const storage = {
-  // localStorageのキーを統一
   getAppData() {
     const data = localStorage.getItem('StayStockedApp');
     const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3, noticeDays: { '3': 7, '7': 14, '14': 30 } }, customMasterItems: [] };
