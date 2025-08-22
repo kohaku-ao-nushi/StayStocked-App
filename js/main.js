@@ -6,13 +6,13 @@
  * =================================================================
  */
 const storage = {
+  // localStorageのキーを統一
   getAppData() {
     const data = localStorage.getItem('StayStockedApp');
-    const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3 }, customMasterItems: [] };
+    const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3, noticeDays: { '3': 7, '7': 14, '14': 30 } }, customMasterItems: [] };
     if (data) {
         const parsedData = JSON.parse(data);
         const merged = { ...defaults, ...parsedData, settings: { ...defaults.settings, ...(parsedData.settings || {}) } };
-        // 読み込んだカスタム品目に計算関数を再設定
         merged.customMasterItems.forEach(item => {
             if (item.dailyQty) {
                 item.calc = (p, days) => (p.totalPeople || 1) * item.dailyQty * days;
@@ -357,22 +357,32 @@ const pages = {
     });
 
     // 全体の進捗率を計算 (品目数ベース)
-    const overallPercentage = totalRequired > 0 ? Math.min((achievedItems / totalItems) * 100, 100) : 0;
+    const overallPercentage = totalItems > 0 ? Math.min((achievedItems / totalItems) * 100, 100) : 0;
     let overallStatusBarClass = 'is-low';
     if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
     else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
 
     let listHTML = '';
+    listHTML += `
+        <div class="overall-progress-card">
+            <h3>全体の備蓄進捗</h3>
+            <div class="overall-progress-header">
+                <span class="overall-summary-text">達成品目数: ${achievedItems} / 推奨品目数: ${totalItems}</span>
+                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
+            </div>
+            <div class="overall-progress-bar progress-bar">
+                <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
+            </div>
+        </div>
+    `;
+
+    for (const categoryName in categories) {
+        const categoryData = categories[categoryName];
         listHTML += `
-            <div class="overall-progress-card">
-                <h3>全体の備蓄進捗</h3>
-                <div class="overall-progress-header">
-                    <span class="overall-summary-text">達成品目数: ${achievedItems} / 推奨品目数: ${totalItems}</span>
-                    <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
-                </div>
-                <div class="overall-progress-bar progress-bar">
-                    <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
-                </div>
+          <div class="todo-category">
+            <div class="category-header">
+              <h3>${categoryName}</h3>
+              <span class="category-achievement">${categoryData.achieved} / ${categoryData.total}</span>
             </div>
         `;
         categoryData.items.forEach(item => {
@@ -382,7 +392,7 @@ const pages = {
             else if (percentage >= 50) statusBarClass = 'is-medium';
 
             const registeredItems = stockItemsById[item.id] || [];
-            // ★★★ 期限の判定ロジックをここに挿入 ★★★
+            // ★★★ 賞味期限の判定ロジックをここに挿入 ★★★
             const expiringSoonItems = registeredItems.filter(stock => {
                 if (!stock.expiry) return false;
                 const expiryDate = new Date(stock.expiry);
