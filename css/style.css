@@ -141,6 +141,18 @@ header h1 {
 
 .form-actions {
     margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* ★★★ ボタン間のスペースをここで統一 ★★★ */
+}
+
+.btn.btn-secondary {
+    background-color: #6c757d;
+    margin-top: 0; /* ★★★ 既存のmarginを削除 ★★★ */
+}
+
+#deleteItemBtn {
+    margin-top: 0; /* ★★★ 既存のmarginを削除 ★★★ */
 }
 
 /* --- ホーム画面 --- */
