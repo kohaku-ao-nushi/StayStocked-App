@@ -139,7 +139,7 @@ const templates = {
       <input type="text" id="itemUnit" placeholder="例：個, 本, L">
     </div>
     <div class="form-group">
-      <label for="itemExpiry">賞味期限（任意）</label>
+      <label for="itemExpiry">期限（任意）</label>
       <input type="date" id="itemExpiry">
     </div>
     <div class="form-actions">
@@ -154,7 +154,7 @@ const templates = {
     
     <hr>
     <h3>通知設定</h3>
-    <p>備蓄品の賞味期限が近づいた際の通知日数を設定します。</p>
+    <p>備蓄品の期限が近づいた際の通知日数を設定します。</p>
     <div class="form-group">
       <label for="noticeDays3">3日分モードの通知日数（日）</label>
       <input type="number" id="noticeDays3" min="1" value="7">
@@ -364,7 +364,7 @@ const pages = {
             else if (percentage >= 50) statusBarClass = 'is-medium';
 
             const registeredItems = stockItemsById[item.id] || [];
-            // ★★★ 賞味期限の判定ロジックをここに挿入 ★★★
+            // ★★★ 期限の判定ロジックをここに挿入 ★★★
             const expiringSoonItems = registeredItems.filter(stock => {
                 if (!stock.expiry) return false;
                 const expiryDate = new Date(stock.expiry);
