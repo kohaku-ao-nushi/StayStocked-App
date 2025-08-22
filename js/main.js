@@ -363,6 +363,23 @@ const pages = {
             else if (percentage >= 50) statusBarClass = 'is-medium';
 
             const registeredItems = stockItemsById[item.id] || [];
+            // ★★★ 賞味期限の判定ロジックをここに挿入 ★★★
+            const expiringSoonItems = registeredItems.filter(stock => {
+                if (!stock.expiry) return false;
+                const expiryDate = new Date(stock.expiry);
+                const diffTime = expiryDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                // 通知日数以内かどうかを判定
+                return diffDays > 0 && diffDays <= noticeDays;
+            });
+            // 強調表示のCSSクラスを付与
+            let highlightClass = '';
+            let openAccordion = false;
+            if (expiringSoonItems.length > 0) {
+                highlightClass = 'is-expiring';
+                openAccordion = true; // 期限が近い備蓄品があればアコーディオンを開く
+            }
+          
             const detailsHTML = registeredItems.length > 0
               ? registeredItems.map(stock => `
                   <li class="stock-sub-item" data-id="${stock.id}">
