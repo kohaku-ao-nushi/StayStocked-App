@@ -328,6 +328,9 @@ const pages = {
     });
 
     const categories = {};
+    let totalRequired = 0;
+    let totalCurrent = 0;
+    
     combinedMasterList.forEach(item => {
         if(item.calc && item.isNeeded && item.isNeeded(params)) {
             const required = item.calc(params, days);
@@ -337,6 +340,13 @@ const pages = {
                 }
                 const currentItems = stockItemsById[item.id] || [];
                 const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+                // ★★★ 全体の合計を計算 ★★★
+                totalRequired += required;
+                totalCurrent += current;
+
+                if (!categories[item.category]) {
+                    categories[item.category] = { items: [], achieved: 0, total: 0 };
+                }
                 
                 categories[item.category].items.push({ ...item, required, current });
                 categories[item.category].total++;
@@ -346,11 +356,29 @@ const pages = {
             }
         }
     });
+
+    // 全体の進捗率を計算
+    const overallPercentage = totalRequired > 0 ? Math.min((totalCurrent / totalRequired) * 100, 100) : 0;
+    let overallStatusBarClass = 'is-low';
+    if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
+    else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
     
     let listHTML = '';
     for (const categoryName in categories) {
         const categoryData = categories[categoryName];
         listHTML += `
+            <div class="overall-progress-card">
+                <h3>全体の備蓄進捗</h3>
+                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
+                <div class="overall-progress-bar progress-bar">
+                    <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
+                </div>
+                <p class="overall-summary-text">
+                    <span>合計備蓄量: ${totalCurrent.toFixed(0)}</span>
+                    <span>/</span>
+                    <span>推奨合計量: ${totalRequired.toFixed(0)}</span>
+                </p>
+            </div>
           <div class="todo-category">
             <div class="category-header">
               <h3>${categoryName}</h3>
