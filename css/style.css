@@ -546,6 +546,13 @@ header h1 {
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+/* ★★★ 新規追加 ★★★ */
+.overall-progress-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .overall-progress-header {
     display: flex;
     justify-content: space-between;
