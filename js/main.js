@@ -362,17 +362,25 @@ const pages = {
     let overallStatusBarClass = 'is-low';
     if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
     else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
-    
+
+    // ★★★ 全体の推奨アイテム数を計算 ★★★
+    const overallItemCount = combinedMasterList.filter(item => item.isNeeded(params) && item.calc(params, days) > 0).length;
+
     let listHTML = '';
     for (const categoryName in categories) {
         const categoryData = categories[categoryName];
         listHTML += `
             <div class="overall-progress-card">
                 <h3>全体の備蓄進捗</h3>
-                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
+                <div class="overall-progress-header">
+                    <span class="overall-summary-text">合計アイテム数: ${overallItemCount}</span>
+                    <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
+                </div>
                 <div class="overall-progress-bar progress-bar">
                     <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
                 </div>
+            </div>
+
                 <p class="overall-summary-text">
                     <span>合計備蓄量: ${totalCurrent.toFixed(0)}</span>
                     <span>/</span>
