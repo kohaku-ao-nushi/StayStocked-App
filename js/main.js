@@ -328,26 +328,25 @@ const pages = {
     });
 
     const categories = {};
-    let totalRequired = 0;
-    let totalCurrent = 0;
-    
+    let achievedItems = 0; // ★★★ 達成品目数をカウントする変数
+    let totalItems = 0; // ★★★ 推奨品目数をカウントする変数
+
     combinedMasterList.forEach(item => {
-        if(item.calc && item.isNeeded && item.isNeeded(params)) {
+        if (item.calc && item.isNeeded && item.isNeeded(params)) {
             const required = item.calc(params, days);
             if (required > 0) {
-                if (!categories[item.category]) {
-                    categories[item.category] = { items: [], achieved: 0, total: 0 };
-                }
                 const currentItems = stockItemsById[item.id] || [];
                 const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
-                // ★★★ 全体の合計を計算 ★★★
-                totalRequired += required;
-                totalCurrent += current;
+            
+                // ★★★ 達成品目数と推奨品目数をカウント ★★★
+                totalItems++;
+                if (current >= required) {
+                    achievedItems++;
+                }
 
                 if (!categories[item.category]) {
                     categories[item.category] = { items: [], achieved: 0, total: 0 };
                 }
-                
                 categories[item.category].items.push({ ...item, required, current });
                 categories[item.category].total++;
                 if (current >= required) {
@@ -357,14 +356,11 @@ const pages = {
         }
     });
 
-    // 全体の進捗率を計算
-    const overallPercentage = totalRequired > 0 ? Math.min((totalCurrent / totalRequired) * 100, 100) : 0;
+    // 全体の進捗率を計算 (品目数ベース)
+    const overallPercentage = totalRequired > 0 ? Math.min((achievedItems / totalItems) * 100, 100) : 0;
     let overallStatusBarClass = 'is-low';
     if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
     else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
-
-    // ★★★ 全体の推奨アイテム数を計算 ★★★
-    const overallItemCount = combinedMasterList.filter(item => item.isNeeded(params) && item.calc(params, days) > 0).length;
 
     let listHTML = '';
     for (const categoryName in categories) {
@@ -373,24 +369,12 @@ const pages = {
             <div class="overall-progress-card">
                 <h3>全体の備蓄進捗</h3>
                 <div class="overall-progress-header">
-                    <span class="overall-summary-text">合計アイテム数: ${overallItemCount}</span>
+                    <span class="overall-summary-text">達成品目数: ${achievedItems} / 推奨品目数: ${totalItems}</span>
                     <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
                 </div>
                 <div class="overall-progress-bar progress-bar">
                     <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
                 </div>
-            </div>
-
-                <p class="overall-summary-text">
-                    <span>合計備蓄量: ${totalCurrent.toFixed(0)}</span>
-                    <span>/</span>
-                    <span>推奨合計量: ${totalRequired.toFixed(0)}</span>
-                </p>
-            </div>
-          <div class="todo-category">
-            <div class="category-header">
-              <h3>${categoryName}</h3>
-              <span class="category-achievement">${categoryData.achieved} / ${categoryData.total}</span>
             </div>
         `;
         categoryData.items.forEach(item => {
