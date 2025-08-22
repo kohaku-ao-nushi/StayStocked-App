@@ -6,6 +6,7 @@
  * =================================================================
  */
 const storage = {
+  // localStorageのキーを統一
   getAppData() {
     const data = localStorage.getItem('StayStockedApp');
     const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3, noticeDays: { '3': 7, '7': 14, '14': 30 } }, customMasterItems: [] };
@@ -218,6 +219,639 @@ const templates = {
     <p>このアプリは、あなたの防災備蓄をサポートするためのツールです。</p>
     <p>データはすべてお使いのブラウザ内（localStorage）に保存され、外部に送信されることはありません。</p>
   `
+};
+
+/**
+ * =================================================================
+ * ページごとのロジック (コントローラー層)
+ * =================================================================
+ */
+const pages = {
+  lifestyle() {
+    const data = storage.getAppData();
+    const profilesContainer = document.getElementById('profiles-container');
+    const peopleCountSelect = document.getElementById('peopleCountSelect');
+    const petCountSelect = document.getElementById('petCountSelect');
+
+    const renderProfileCards = (num, profiles = []) => {
+      profilesContainer.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const profile = profiles[i] || {};
+        const cardHTML = `
+          <div class="profile-card" data-index="${i}">
+            <h4>${i + 1}人目の情報</h4>
+            <div class="form-group">
+              <label>性別</label>
+              <select class="gender-select">
+                <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+                <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年代</label>
+              <select class="age-group-select">
+                <option value="乳幼児" ${profile.ageGroup === '乳幼児' ? 'selected' : ''}>乳幼児 (0-2歳)</option>
+                <option value="子ども" ${profile.ageGroup === '子ども' ? 'selected' : ''}>子ども (3-17歳)</option>
+                <option value="成人" ${profile.ageGroup === '成人' ? 'selected' : ''}>成人 (18-64歳)</option>
+                <option value="高齢者" ${profile.ageGroup === '高齢者' ? 'selected' : ''}>高齢者 (65歳以上)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        profilesContainer.insertAdjacentHTML('beforeend', cardHTML);
+      }
+    };
+    
+    peopleCountSelect.addEventListener('change', (e) => {
+      renderProfileCards(parseInt(e.target.value), storage.getAppData().profiles);
+    });
+
+    document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
+        const newProfiles = [];
+        document.querySelectorAll('.profile-card').forEach(card => {
+            newProfiles.push({
+                gender: card.querySelector('.gender-select').value,
+                ageGroup: card.querySelector('.age-group-select').value
+            });
+        });
+        
+        const currentData = storage.getAppData();
+        currentData.profiles = newProfiles;
+        currentData.pets.count = parseInt(petCountSelect.value) || 0;
+        storage.saveAppData(currentData);
+        
+        alert('くらし方を保存しました！');
+        window.location.hash = '#home';
+    });
+
+    petCountSelect.value = data.pets.count || 0;
+    const initialNum = data.profiles.length || 1;
+    peopleCountSelect.value = initialNum;
+    renderProfileCards(initialNum, data.profiles);
+  },
+  
+  stock() {
+    const data = storage.getAppData();
+    const days = data.settings.stockpileDays || 3;
+    const today = new Date();
+    const listOutput = document.getElementById('stock-list-output');
+
+    // 設定された通知日数を取得
+    const noticeDays = (data.settings.noticeDays && data.settings.noticeDays[days]) || {
+        '3': 7,
+        '7': 14,
+        '14': 30
+    }[days];
+
+    this.renderStockpileModeSelector(() => this.stock());
+    
+    listOutput.innerHTML = '';
+
+    if (data.profiles.length === 0) {
+      listOutput.innerHTML = '<p>「くらし方」が未設定のため、推奨量を計算できません。</p><a href="#lifestyle" class="btn">先にくらし方を設定する</a>';
+      return;
+    }
+
+    const params = this.getCalculationParams(data);
+    const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
+    
+    const stockItemsById = {};
+    const otherItems = [];
+    data.stockItems.forEach(item => {
+        const id = item.masterId || item.customId;
+        if(id) {
+            if(!stockItemsById[id]) stockItemsById[id] = [];
+            stockItemsById[id].push(item);
+        } else {
+            otherItems.push(item);
+        }
+    });
+
+    const categories = {};
+    let achievedItems = 0;
+    let totalItems = 0;
+
+    combinedMasterList.forEach(item => {
+        if (item.calc && item.isNeeded && item.isNeeded(params)) {
+            const required = item.calc(params, days);
+            if (required > 0) {
+                const currentItems = stockItemsById[item.id] || [];
+                const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
+            
+                totalItems++;
+                if (current >= required) {
+                    achievedItems++;
+                }
+
+                if (!categories[item.category]) {
+                    categories[item.category] = { items: [], achieved: 0, total: 0 };
+                }
+                categories[item.category].items.push({ ...item, required, current });
+                categories[item.category].total++;
+                if (current >= required) {
+                    categories[item.category].achieved++;
+                }
+            }
+        }
+    });
+
+    const overallPercentage = totalItems > 0 ? Math.min((achievedItems / totalItems) * 100, 100) : 0;
+    let overallStatusBarClass = 'is-low';
+    if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
+    else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
+
+    let listHTML = '';
+    listHTML += `
+        <div class="overall-progress-card">
+            <h3>全体の備蓄進捗</h3>
+            <div class="overall-progress-header">
+                <span class="overall-summary-text">達成品目数: ${achievedItems} / 推奨品目数: ${totalItems}</span>
+                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
+            </div>
+            <div class="overall-progress-bar progress-bar">
+                <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
+            </div>
+        </div>
+    `;
+
+    for (const categoryName in categories) {
+        const categoryData = categories[categoryName];
+        listHTML += `
+          <div class="todo-category">
+            <div class="category-header">
+              <h3>${categoryName}</h3>
+              <span class="category-achievement">${categoryData.achieved} / ${categoryData.total}</span>
+            </div>
+        `;
+        categoryData.items.forEach(item => {
+            const percentage = Math.min((item.current / item.required) * 100, 100);
+            let statusBarClass = 'is-low';
+            if (percentage >= 100) statusBarClass = 'is-sufficient';
+            else if (percentage >= 50) statusBarClass = 'is-medium';
+
+            const registeredItems = stockItemsById[item.id] || [];
+            const expiringSoonItems = registeredItems.filter(stock => {
+                if (!stock.expiry) return false;
+                const expiryDate = new Date(stock.expiry);
+                const diffTime = expiryDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays > 0 && diffDays <= noticeDays;
+            });
+
+            let highlightClass = '';
+            let openAccordion = false;
+            if (expiringSoonItems.length > 0) {
+                highlightClass = 'is-expiring';
+                openAccordion = true;
+            }
+          
+            const detailsHTML = registeredItems.length > 0
+                ? registeredItems.map(stock => {
+                    let subItemHighlightClass = '';
+                    if (stock.expiry) {
+                        const expiryDate = new Date(stock.expiry);
+                        const diffTime = expiryDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays > 0 && diffDays <= noticeDays) {
+                            subItemHighlightClass = 'is-expiring-sub-item';
+                        }
+                        if (diffDays <= 0) {
+                            subItemHighlightClass = 'is-expired-sub-item';
+                        }
+                    }
+                    return `
+                        <li class="stock-sub-item ${subItemHighlightClass}" data-id="${stock.id}">
+                            <span class="product-name">${stock.productName || item.name}</span>
+                            <div class="sub-item-details">
+                                <span class="item-amount">${stock.qty} ${stock.unit}</span>
+                                <span class="item-expiry">${stock.expiry ? stock.expiry : '期限なし'}</span>
+                            </div>
+                        </li>
+                    `;
+                }).join('')
+                : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
+    
+            listHTML += `
+                <details class="stock-accordion ${openAccordion ? 'open' : ''}" draggable="true" data-item-id="${item.id}">
+                    <summary class="stock-accordion stock-progress-item ${highlightClass}">
+                        <div class="progress-container">
+                            <div class="item-header">
+                                <div class="item-name">
+                                    <div class="accordion-icon"></div>
+                                    ${item.name}
+                                    ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
+                                </div>
+                                <span class="item-amount">${item.current.toLocaleString()}${item.unit} / ${item.required.toLocaleString()}${item.unit}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner ${statusBarClass}" style="width: ${percentage}%;"></div>
+                            </div>
+                        </div>
+                    </summary>
+                    <div class="accordion-content">
+                        <ul class="stock-sub-list">${detailsHTML}</ul>
+                        <button class="add-item-btn" data-id="${item.id}" data-name="${item.name}" data-unit="${item.unit}">＋ この品目を追加</button>
+                    </div>
+                </details>
+            `;
+        });
+        listHTML += `</div>`;
+    }
+    listOutput.innerHTML = listHTML;
+    
+    let draggingItem = null;
+    let dropTarget = null;
+    const stockAccordions = document.querySelectorAll('.stock-accordion');
+
+    stockAccordions.forEach(accordion => {
+        accordion.addEventListener('dragstart', (e) => {
+            draggingItem = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.dataset.itemId);
+            setTimeout(() => e.target.classList.add('is-dragging'), 0);
+        });
+
+        accordion.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const boundingBox = e.target.getBoundingClientRect();
+            const y = e.clientY - boundingBox.top;
+            if (y < boundingBox.height / 2) {
+                e.target.classList.add('drop-target-top');
+                e.target.classList.remove('drop-target-bottom');
+            } else {
+                e.target.classList.add('drop-target-bottom');
+                e.target.classList.remove('drop-target-top');
+            }
+        });
+
+        accordion.addEventListener('dragleave', (e) => {
+            e.target.classList.remove('drop-target-top', 'drop-target-bottom');
+        });
+
+        accordion.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.target.classList.remove('drop-target-top', 'drop-target-bottom');
+            const droppedItemId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.querySelector(`[data-item-id="${droppedItemId}"]`);
+            const targetElement = e.target.closest('.stock-accordion');
+            
+            if (draggedElement && targetElement && draggedElement !== targetElement) {
+                const isDropBefore = e.target.classList.contains('drop-target-top');
+                const parent = targetElement.parentNode;
+                if (isDropBefore) {
+                    parent.insertBefore(draggedElement, targetElement);
+                } else {
+                    parent.insertBefore(draggedElement, targetElement.nextSibling);
+                }
+
+                // localStorageのデータを更新
+                const currentData = storage.getAppData();
+                // まずは現在のリストのID順を保存
+                const currentOrder = Array.from(parent.querySelectorAll('.stock-accordion')).map(el => el.dataset.itemId);
+                
+                // 新しいtodoMasterListを作成
+                const reorderedMasterList = [];
+                currentOrder.forEach(itemId => {
+                    const item = todoMasterList.find(i => i.id === itemId);
+                    if (item) {
+                        reorderedMasterList.push(item);
+                    }
+                });
+
+                // localStorageに保存
+                currentData.stockItems = reorderedMasterList; // ここはtodoMasterListではなくstockItemsを対象にするべき
+                storage.saveAppData(currentData);
+            }
+        });
+
+        accordion.addEventListener('dragend', (e) => {
+            e.target.classList.remove('is-dragging');
+        });
+    });
+    
+    const otherOutput = document.getElementById('other-stock-output');
+    if (otherOutput) {
+        otherOutput.innerHTML = '';
+        if (otherItems.length > 0) {
+            otherItems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'stock-item-custom';
+                let expiryText = item.expiry ? `期限: ${item.expiry}` : '期限なし';
+                li.innerHTML = `
+                    <div class="item-details">
+                        <span class="item-name">${item.productName}</span>
+                        <span class="item-amount">(${item.qty} ${item.unit || '個'})</span>
+                        <span class="category-badge">${item.category || 'その他'}</span>
+                        <span class="item-expiry">${expiryText}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="edit-btn" data-id="${item.id}">編集</button>
+                        <button class="delete-btn" data-id="${item.id}">削除</button>
+                    </div>
+                `;
+                otherOutput.appendChild(li);
+            });
+        } else {
+            otherOutput.innerHTML = '<p>リストにない品目はまだ登録されていません。</p>';
+        }
+
+        otherOutput.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                sessionStorage.setItem('editItemId', e.target.dataset.id);
+                window.location.hash = '#register';
+            } else if (e.target.classList.contains('delete-btn')) {
+                if (confirm('この備蓄品を削除しますか？')) {
+                    const currentData = storage.getAppData();
+                    currentData.stockItems = currentData.stockItems.filter(item => item.id !== e.target.dataset.id);
+                    storage.saveAppData(currentData);
+                    this.stock();
+                }
+            }
+        });
+    }
+
+    listOutput.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-item-btn')) {
+            const { id, name, unit } = e.target.dataset;
+            const masterId = id.startsWith('custom-') ? null : id;
+            sessionStorage.setItem('newItemFromTodo', JSON.stringify({ masterId, customId: id, name, unit }));
+            window.location.hash = '#register';
+        } else if (e.target.closest('.stock-sub-item')) {
+            const itemId = e.target.closest('.stock-sub-item').dataset.id;
+            sessionStorage.setItem('editItemId', itemId);
+            window.location.hash = '#register';
+        }
+    });
+  },
+
+  register() {
+    const editItemId = sessionStorage.getItem('editItemId');
+    const data = storage.getAppData();
+    const itemToEdit = editItemId ? data.stockItems.find(item => item.id === editItemId) : null;
+
+    const titleEl = document.getElementById('register-title');
+    const saveBtn = document.getElementById('saveItemBtn');
+    const deleteBtn = document.getElementById('deleteItemBtn');
+    const itemNameGroup = document.getElementById('item-name-group');
+    const itemCategoryGroup = document.getElementById('item-category-group');
+    const itemNameInput = document.getElementById('itemName');
+    const itemCategorySelect = document.getElementById('itemCategory');
+    const productNameInput = document.getElementById('productName');
+    const itemQtyInput = document.getElementById('itemQty');
+    const itemUnitInput = document.getElementById('itemUnit');
+    const itemExpiryInput = document.getElementById('itemExpiry');
+    let masterId = null;
+    let customId = null;
+    let itemName = '';
+    
+    itemNameGroup.style.display = 'block';
+    itemCategoryGroup.style.display = 'none';
+    itemNameInput.readOnly = true;
+    itemNameInput.classList.add('readonly-input');
+
+    if (itemToEdit) {
+        titleEl.textContent = '備蓄品を編集';
+        saveBtn.textContent = 'この内容で更新する';
+        deleteBtn.style.display = 'block';
+        masterId = itemToEdit.masterId;
+        customId = itemToEdit.customId;
+        itemName = itemToEdit.itemName;
+        productNameInput.value = itemToEdit.productName || '';
+        itemQtyInput.value = itemToEdit.qty;
+        itemUnitInput.value = itemToEdit.unit;
+        itemExpiryInput.value = itemToEdit.expiry || '';
+        itemNameInput.value = itemName;
+        deleteBtn.addEventListener('click', () => {
+            if (confirm('この備蓄品を削除しますか？')) {
+                const currentData = storage.getAppData();
+                currentData.stockItems = currentData.stockItems.filter(item => item.id !== itemToEdit.id);
+                storage.saveAppData(currentData);
+                alert('備蓄品を削除しました！');
+                sessionStorage.removeItem('editItemId');
+                window.location.hash = '#stock';
+            }
+        });
+    } else {
+        titleEl.textContent = '新しい備蓄品を登録';
+        saveBtn.textContent = '＋ この内容で登録する';
+        deleteBtn.style.display = 'none';
+        const newItemData = sessionStorage.getItem('newItemFromTodo');
+        if (newItemData) {
+            const item = JSON.parse(newItemData);
+            masterId = item.masterId;
+            customId = item.customId;
+            itemName = item.name;
+            itemUnitInput.value = item.unit;
+            itemNameInput.value = itemName;
+            itemUnitInput.readOnly = true;
+            itemUnitInput.classList.add('readonly-input');
+            sessionStorage.removeItem('newItemFromTodo');
+        } else {
+            titleEl.textContent = '新しい備蓄品を登録';
+            itemNameInput.readOnly = false;
+            itemNameInput.classList.remove('readonly-input');
+            itemCategoryGroup.style.display = 'block';
+        }
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const productName = productNameInput.value;
+      const qty = parseFloat(itemQtyInput.value);
+      const unit = itemUnitInput.value;
+      const expiry = itemExpiryInput.value;
+      const finalItemName = itemNameInput.value;
+      
+      if (!finalItemName || !productName || isNaN(qty) || !unit) {
+        alert('品目名、商品名、数量、単位は必須です。');
+        return;
+      }
+
+      const isCustomNew = !masterId && !customId && !itemToEdit;
+      let finalCategory = '';
+      if(isCustomNew){
+          finalCategory = itemCategorySelect.value;
+          if(!finalCategory){
+               alert('カテゴリを選択してください。');
+               return;
+          }
+      }
+
+      const currentData = storage.getAppData();
+      if (itemToEdit) {
+          const itemIndex = currentData.stockItems.findIndex(item => item.id === itemToEdit.id);
+          if (itemIndex > -1) {
+              currentData.stockItems[itemIndex] = { ...itemToEdit, productName, qty, unit, expiry, itemName: finalItemName };
+          }
+      } else {
+          if(!isCustomNew) {
+            const masterItem = [...todoMasterList, ...currentData.customMasterItems].find(i => i.id === (masterId || customId));
+            if(masterItem) finalCategory = masterItem.category;
+          }
+          
+          const newItem = { 
+              id: Date.now().toString(), 
+              masterId, 
+              customId, 
+              itemName: finalItemName,
+              category: finalCategory,
+              productName, 
+              qty, 
+              unit, 
+              expiry 
+          };
+          currentData.stockItems.push(newItem);
+      }
+
+      storage.saveAppData(currentData);
+      sessionStorage.removeItem('editItemId');
+      alert(itemToEdit ? '更新しました！' : '登録しました！');
+      window.location.hash = '#stock';
+    });
+  },
+
+  settings() {
+    const data = storage.getAppData();
+    const noticeDays = data.settings.noticeDays || {};
+    document.getElementById('noticeDays3').value = noticeDays['3'] || 7;
+    document.getElementById('noticeDays7').value = noticeDays['7'] || 14;
+    document.getElementById('noticeDays14').value = noticeDays['14'] || 30;
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        const currentData = storage.getAppData();
+        currentData.settings.noticeDays = {
+            '3': parseInt(document.getElementById('noticeDays3').value) || 7,
+            '7': parseInt(document.getElementById('noticeDays7').value) || 14,
+            '14': parseInt(document.getElementById('noticeDays14').value) || 30
+        };
+        storage.saveAppData(currentData);
+        alert('設定を保存しました！');
+        window.location.hash = '#home';
+    });
+    document.getElementById('resetDataBtn').addEventListener('click', () => {
+        if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
+            localStorage.removeItem('StayStockedApp');
+            alert('データをリセットしました');
+            window.location.hash = '#home';
+            location.reload();
+        }
+    });
+    document.querySelector('a[href="#custom-list-editor"]').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.hash = '#custom-list-editor';
+    });
+  },
+  
+  'custom-list-editor'() {
+      const output = document.getElementById('custom-master-list-output');
+      
+      const renderCustomList = () => {
+          const data = storage.getAppData();
+          output.innerHTML = '';
+          if (data.customMasterItems.length === 0) {
+              output.innerHTML = '<p>あなたが追加した品目はまだありません。</p>';
+              return;
+          }
+          const list = document.createElement('ul');
+          list.className = 'master-list is-custom';
+          data.customMasterItems.forEach(item => {
+              const li = document.createElement('li');
+              li.innerHTML = `
+                  <div class="item-details">
+                    <span>${item.name} <span class="category-badge">${item.category}</span></span>
+                    <span class="item-expiry">${item.dailyQty ? `目標: 1人1日あたり ${item.dailyQty}${item.unit}` : '目標量なし'}</span>
+                  </div>
+                  <button class="delete-custom-item-btn" data-id="${item.id}">削除</button>
+              `;
+              list.appendChild(li);
+          });
+          output.appendChild(list);
+      };
+
+      document.getElementById('addCustomItemBtn').addEventListener('click', () => {
+          const name = document.getElementById('customItemName').value;
+          const category = document.getElementById('customItemCategory').value;
+          const unit = document.getElementById('customItemUnit').value;
+          const dailyQty = parseFloat(document.getElementById('customItemDailyQty').value);
+
+          if (!name || !category || !unit) {
+              alert('品目名、カテゴリ、単位はすべて必須です。');
+              return;
+          }
+
+          const newItem = { id: `custom-${Date.now()}`, name, category, unit };
+          if (!isNaN(dailyQty) && dailyQty > 0) {
+              newItem.dailyQty = dailyQty;
+          }
+          
+          const data = storage.getAppData();
+          data.customMasterItems.push(newItem);
+          storage.saveAppData(data);
+          
+          document.getElementById('customItemName').value = '';
+          document.getElementById('customItemCategory').value = '';
+          document.getElementById('customItemUnit').value = '';
+          document.getElementById('customItemDailyQty').value = '';
+          
+          renderCustomList();
+      });
+      
+      output.addEventListener('click', e => {
+          if (e.target.classList.contains('delete-custom-item-btn')) {
+              const itemIdToDelete = e.target.dataset.id;
+              if (confirm('この品目をリストから削除しますか？\n関連する在庫もすべて削除されます。')) {
+                  const data = storage.getAppData();
+                  data.customMasterItems = data.customMasterItems.filter(item => item.id !== itemIdToDelete);
+                  data.stockItems = data.stockItems.filter(stock => stock.customId !== itemIdToDelete);
+                  storage.saveAppData(data);
+                  pages['custom-list-editor']();
+              }
+          }
+      });
+
+      renderCustomList();
+  },
+
+  // --- ヘルパー関数 ---
+  getCalculationParams(data) {
+    const params = {
+      adults: 0, children: 0, infants: 0,
+      totalPeople: data.profiles.length,
+      females: 0, elderly: 0, pets: data.pets.count || 0
+    };
+    data.profiles.forEach(p => {
+        if (p.gender === '女性') params.females++;
+        switch (p.ageGroup) {
+            case '乳幼児': params.infants++; break;
+            case '子ども': params.children++; break;
+            case '成人': params.adults++; break;
+            case '高齢者': params.elderly++; params.adults++; break;
+        }
+    });
+    return params;
+  },
+    renderStockpileModeSelector(onchangeCallback) {
+    const data = storage.getAppData();
+    const container = document.getElementById('mode-selector-container');
+    const currentDays = data.settings.stockpileDays || 3;
+    
+    container.innerHTML = `
+      <div class="stockpile-mode-selector">
+        <button class="mode-btn ${currentDays === 3 ? 'is-active' : ''}" data-days="3">3日分</button>
+        <button class="mode-btn ${currentDays === 7 ? 'is-active' : ''}" data-days="7">1週間</button>
+        <button class="mode-btn ${currentDays === 14 ? 'is-active' : ''}" data-days="14">2週間</button>
+      </div>
+    `;
+
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mode-btn')) {
+            const selectedDays = parseInt(e.target.dataset.days);
+            const currentData = storage.getAppData();
+            currentData.settings.stockpileDays = selectedDays;
+            storage.saveAppData(currentData);
+            onchangeCallback();
+        }
+    });
+  }
 };
 
 /**
