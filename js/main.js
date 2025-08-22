@@ -381,16 +381,32 @@ const pages = {
             }
           
             const detailsHTML = registeredItems.length > 0
-              ? registeredItems.map(stock => `
-                  <li class="stock-sub-item" data-id="${stock.id}">
-                      <span class="product-name">${stock.productName || item.name}</span>
-                      <div class="sub-item-details">
-                          <span class="item-amount">${stock.qty} ${stock.unit}</span>
-                          <span class="item-expiry">${stock.expiry ? stock.expiry : '期限なし'}</span>
-                      </div>
-                  </li>
-                `).join('')
-              : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
+                ? registeredItems.map(stock => {
+                    let subItemHighlightClass = '';
+                    if (stock.expiry) {
+                        const expiryDate = new Date(stock.expiry);
+                        const diffTime = expiryDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        // 期限間近の判定
+                        if (diffDays > 0 && diffDays <= noticeDays) {
+                            subItemHighlightClass = 'is-expiring-sub-item';
+                        }
+                        // 期限切れの判定
+                        if (diffDays <= 0) {
+                            subItemHighlightClass = 'is-expired-sub-item';
+                        }
+                    }
+                    return `
+                        <li class="stock-sub-item ${subItemHighlightClass}" data-id="${stock.id}">
+                            <span class="product-name">${stock.productName || item.name}</span>
+                            <div class="sub-item-details">
+                                <span class="item-amount">${stock.qty} ${stock.unit}</span>
+                                <span class="item-expiry">${stock.expiry ? stock.expiry : '期限なし'}</span>
+                            </div>
+                        </li>
+                    `;
+                }).join('')
+                : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
     
             // ★★★ HTML構造を修正 ★★★
             listHTML += `
