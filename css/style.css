@@ -523,3 +523,16 @@ header h1 {
     background-color: #fff3cd; /* 薄い黄色 */
     border-left: 4px solid #ffc107; /* 左側に警告色を追加 */
 }
+
+/* アコーディオン内の個別の備蓄品を強調表示するスタイル */
+.is-expiring-sub-item {
+    background-color: #fff3cd; /* 薄い黄色 */
+    font-weight: bold;
+}
+
+/* 期限切れの備蓄品を強調表示するスタイル */
+.is-expired-sub-item {
+    background-color: #f8d7da; /* 薄い赤色 */
+    color: #721c24;
+    font-weight: bold;
+}
