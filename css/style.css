@@ -37,6 +37,7 @@ h3 {
   margin-top: 24px;
 }
 
+
 /* --- 共通コンポーネント --- */
 header {
   background-color: var(--primary-color);
@@ -107,6 +108,7 @@ header h1 {
 .btn.btn-secondary {
     background-color: #6c757d;
 }
+
 
 /* --- フォーム関連 --- */
 .form-group {
@@ -219,7 +221,7 @@ header h1 {
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden;
     cursor: grab;
-    position: relative; /* ドロップ時のボーダー表示用 */
+    position: relative;
 }
 .stock-accordion summary {
     list-style: none;
@@ -543,32 +545,27 @@ header h1 {
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
 .overall-progress-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
-
 .overall-progress-card h3 {
     margin-top: 0;
     margin-bottom: 8px;
     border-bottom: none;
     color: var(--text-color);
 }
-
 .overall-progress-text {
     font-size: 1.2em;
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 0;
 }
-
 .overall-progress-bar {
     height: 20px;
 }
-
 .overall-summary-text {
     font-size: 1.2em;
     color: #666;
@@ -576,16 +573,14 @@ header h1 {
     white-space: nowrap;
 }
 
-/* ドラッグ＆ドロップ用スタイル */
+/* --- ドラッグ＆ドロップ用スタイル --- */
 .stock-accordion.is-dragging {
   opacity: 0.5;
   border: 2px dashed var(--primary-color);
 }
-
 .stock-accordion.drop-target-top {
   border-top: 2px solid var(--primary-color);
 }
-
 .stock-accordion.drop-target-bottom {
   border-bottom: 2px solid var(--primary-color);
 }
