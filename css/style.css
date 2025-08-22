@@ -561,6 +561,7 @@ header h1 {
 }
 
 .overall-progress-text {
+    height: 16px;
     font-size: 1.2em;
     font-weight: bold;
     color: var(--primary-color);
