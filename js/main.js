@@ -7,7 +7,7 @@
  */
 const storage = {
   getAppData() {
-    const data = localStorage.getItem('bosaistockApp');
+    const data = localStorage.getItem('StayStockedApp');
     const defaults = { profiles: [], pets: { count: 0 }, stockItems: [], settings: { stockpileDays: 3 }, customMasterItems: [] };
     if (data) {
         const parsedData = JSON.parse(data);
@@ -29,7 +29,7 @@ const storage = {
         delete item.calc;
         delete item.isNeeded;
     });
-    localStorage.setItem('bosaistockApp', JSON.stringify(dataToSave));
+    localStorage.setItem('StayStockedApp', JSON.stringify(dataToSave));
   }
 };
 
@@ -640,7 +640,7 @@ const pages = {
     });
     document.getElementById('resetDataBtn').addEventListener('click', () => {
         if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
-            localStorage.removeItem('bosaistockApp');
+            localStorage.removeItem('StayStockedApp');
             alert('データをリセットしました');
             window.location.hash = '#home';
             location.reload();
@@ -791,7 +791,7 @@ const router = {
   
   getHeaderTitle(key) {
     const titles = {
-      home: 'bosaistock ホーム',
+      home: 'StayStocked ホーム',
       lifestyle: 'くらし方',
       stock: '備蓄リスト',
       register: '備蓄品登録',
@@ -800,7 +800,7 @@ const router = {
       help: 'ヘルプ',
       'custom-list-editor': '品目リストの編集'
     };
-    return titles[key] || 'bosaistock';
+    return titles[key] || 'StayStocked';
   }
 };
 
