@@ -217,7 +217,7 @@ header h1 {
 .stock-accordion {
     background-color: #fff;
     border-radius: 8px;
-    margin-bottom: 12px;
+    /*margin-bottom: 12px;*/
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden;
     cursor: grab;
@@ -549,7 +549,7 @@ header h1 {
 .overall-progress-info {
     display: flex;
     flex-direction: column;
-    /* gap: 8px; */ 
+    gap: 8px;
 }
 
 .overall-progress-header {
