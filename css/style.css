@@ -576,7 +576,7 @@ header h1 {
     white-space: nowrap;
 }
 
-/* --- ドラッグ＆ドロップ用スタイル --- */
+/* ドラッグ＆ドロップ用スタイル */
 .stock-accordion.is-dragging {
   opacity: 0.5;
   border: 2px dashed var(--primary-color);
@@ -589,4 +589,3 @@ header h1 {
 .stock-accordion.drop-target-bottom {
   border-bottom: 2px solid var(--primary-color);
 }
-
