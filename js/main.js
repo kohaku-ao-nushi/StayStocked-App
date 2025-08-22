@@ -328,8 +328,8 @@ const pages = {
     });
 
     const categories = {};
-    let achievedItems = 0; // ★★★ 達成品目数をカウントする変数
-    let totalItems = 0; // ★★★ 推奨品目数をカウントする変数
+    let achievedItems = 0;
+    let totalItems = 0;
 
     combinedMasterList.forEach(item => {
         if (item.calc && item.isNeeded && item.isNeeded(params)) {
@@ -338,7 +338,6 @@ const pages = {
                 const currentItems = stockItemsById[item.id] || [];
                 const current = currentItems.reduce((sum, stock) => sum + (parseFloat(stock.qty) || 0), 0);
             
-                // ★★★ 達成品目数と推奨品目数をカウント ★★★
                 totalItems++;
                 if (current >= required) {
                     achievedItems++;
@@ -356,7 +355,6 @@ const pages = {
         }
     });
 
-    // 全体の進捗率を計算 (品目数ベース)
     const overallPercentage = totalItems > 0 ? Math.min((achievedItems / totalItems) * 100, 100) : 0;
     let overallStatusBarClass = 'is-low';
     if (overallPercentage >= 100) overallStatusBarClass = 'is-sufficient';
@@ -392,21 +390,19 @@ const pages = {
             else if (percentage >= 50) statusBarClass = 'is-medium';
 
             const registeredItems = stockItemsById[item.id] || [];
-            // ★★★ 賞味期限の判定ロジックをここに挿入 ★★★
             const expiringSoonItems = registeredItems.filter(stock => {
                 if (!stock.expiry) return false;
                 const expiryDate = new Date(stock.expiry);
                 const diffTime = expiryDate.getTime() - today.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                // 通知日数以内かどうかを判定
                 return diffDays > 0 && diffDays <= noticeDays;
             });
-            // 強調表示のCSSクラスを付与
+
             let highlightClass = '';
             let openAccordion = false;
             if (expiringSoonItems.length > 0) {
                 highlightClass = 'is-expiring';
-                openAccordion = true; // 期限が近い備蓄品があればアコーディオンを開く
+                openAccordion = true;
             }
           
             const detailsHTML = registeredItems.length > 0
@@ -416,11 +412,9 @@ const pages = {
                         const expiryDate = new Date(stock.expiry);
                         const diffTime = expiryDate.getTime() - today.getTime();
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        // 期限間近の判定
                         if (diffDays > 0 && diffDays <= noticeDays) {
                             subItemHighlightClass = 'is-expiring-sub-item';
                         }
-                        // 期限切れの判定
                         if (diffDays <= 0) {
                             subItemHighlightClass = 'is-expired-sub-item';
                         }
@@ -437,7 +431,6 @@ const pages = {
                 }).join('')
                 : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
     
-            // ★★★ HTML構造を修正 ★★★
             listHTML += `
                 <details class="stock-accordion ${openAccordion ? 'open' : ''}">
                     <summary class="stock-accordion stock-progress-item ${highlightClass}">
@@ -771,7 +764,7 @@ const pages = {
     renderStockpileModeSelector(onchangeCallback) {
     const data = storage.getAppData();
     const container = document.getElementById('mode-selector-container');
-    const currentDays = data.settings.stockpileDays || 3; // ★★★ この行を追加 ★★★
+    const currentDays = data.settings.stockpileDays || 3;
     
     container.innerHTML = `
       <div class="stockpile-mode-selector">
