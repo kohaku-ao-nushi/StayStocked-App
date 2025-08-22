@@ -530,6 +530,16 @@ const pages = {
         itemUnitInput.value = itemToEdit.unit;
         itemExpiryInput.value = itemToEdit.expiry || '';
         itemNameInput.value = itemName;
+        deleteBtn.addEventListener('click', () => {
+    if (confirm('この備蓄品を削除しますか？')) {
+      const currentData = storage.getAppData();
+      currentData.stockItems = currentData.stockItems.filter(item => item.id !== itemToEdit.id);
+      storage.saveAppData(currentData);
+      alert('備蓄品を削除しました！');
+      sessionStorage.removeItem('editItemId');
+      window.location.hash = '#stock';
+    }
+    });
     } else {
         titleEl.textContent = '新しい備蓄品を登録';
         saveBtn.textContent = '＋ この内容で登録する';
@@ -607,17 +617,6 @@ const pages = {
       window.location.hash = '#stock';
     });
   },
-
-  deleteBtn.addEventListener('click', () => {
-    if (confirm('この備蓄品を削除しますか？')) {
-      const currentData = storage.getAppData();
-      currentData.stockItems = currentData.stockItems.filter(item => item.id !== itemToEdit.id);
-      storage.saveAppData(currentData);
-      alert('備蓄品を削除しました！');
-      sessionStorage.removeItem('editItemId');
-      window.location.hash = '#stock';
-    }
-  });
 
   settings() {
     const data = storage.getAppData();
