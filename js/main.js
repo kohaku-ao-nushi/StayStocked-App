@@ -312,7 +312,6 @@ const pages = {
     }
 
     const params = this.getCalculationParams(data);
-    const days = data.settings.stockpileDays || 3;
     const combinedMasterList = [...todoMasterList, ...data.customMasterItems];
     
     const stockItemsById = {};
