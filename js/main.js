@@ -692,7 +692,6 @@ const pages = {
   renderStockpileModeSelector(onchangeCallback) {
     const data = storage.getAppData();
     const container = document.getElementById('mode-selector-container');
-    const currentDays = data.settings.stockpileDays || 3;
     
     container.innerHTML = `
       <div class="stockpile-mode-selector">
