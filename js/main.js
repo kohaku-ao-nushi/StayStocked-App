@@ -272,7 +272,16 @@ const pages = {
   
   stock() {
     const data = storage.getAppData();
+    const days = data.settings.stockpileDays || 3;
+    const today = new Date();
     const listOutput = document.getElementById('stock-list-output');
+
+    // 設定された通知日数を取得
+    const noticeDays = (data.settings.noticeDays && data.settings.noticeDays[days]) || {
+        '3': 7,
+        '7': 14,
+        '14': 30
+    }[days];
 
     this.renderStockpileModeSelector(() => this.stock());
     
@@ -347,11 +356,28 @@ const pages = {
                   </li>
                 `).join('')
               : '<li><p class="no-sub-item-message">この品目の備蓄はまだありません。</p></li>';
+            // 期限切れ・期限間近の判定
+            const registeredItems = stockItemsById[item.id] || [];
+            const expiringSoonItems = registeredItems.filter(stock => {
+                if (!stock.expiry) return false;
+                const expiryDate = new Date(stock.expiry);
+                const diffTime = expiryDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays <= noticeDays;
+            });
 
+            // 強調表示のCSSクラスを付与
+            let highlightClass = '';
+            let openAccordion = false;
+            if (expiringSoonItems.length > 0) {
+                highlightClass = 'is-expiring';
+                openAccordion = true;
+            }
+    
             // ★★★ HTML構造を修正 ★★★
             listHTML += `
-                <details class="stock-accordion">
-                    <summary class="stock-accordion stock-progress-item">
+                <details class="stock-accordion ${openAccordion ? 'open' : ''}">
+                    <summary class="stock-accordion stock-progress-item ${highlightClass}">
                         <div class="progress-container">
                             <div class="item-header">
                                 <div class="item-name">
