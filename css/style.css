@@ -517,3 +517,9 @@ header h1 {
     font-size: 14px;
     font-weight: bold;
 }
+
+/* 期限が近い備蓄品を強調表示するスタイル */
+.is-expiring {
+    background-color: #fff3cd; /* 薄い黄色 */
+    border-left: 4px solid #ffc107; /* 左側に警告色を追加 */
+}
