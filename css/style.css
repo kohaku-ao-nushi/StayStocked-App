@@ -560,12 +560,13 @@ header h1 {
     color: var(--text-color);
 }
 
+/* ★★★ overall-progress-textのスタイルを修正 ★★★ */
 .overall-progress-text {
-    height: 16px;
     font-size: 1.2em;
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 0;
+    /* display: block; を削除してinline要素にする */
 }
 
 .overall-progress-bar {
@@ -590,3 +591,4 @@ header h1 {
 .stock-accordion.drop-target-bottom {
   border-bottom: 2px solid var(--primary-color);
 }
+```
