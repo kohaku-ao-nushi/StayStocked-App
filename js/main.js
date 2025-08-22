@@ -366,10 +366,12 @@ const pages = {
             <h3>全体の備蓄進捗</h3>
             <div class="overall-progress-header">
                 <span class="overall-summary-text">達成品目数: ${achievedItems} / 推奨品目数: ${totalItems}</span>
-                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
             </div>
             <div class="overall-progress-bar progress-bar">
                 <div class="progress-bar-inner ${overallStatusBarClass}" style="width: ${overallPercentage}%;"></div>
+            </div>
+            <div class="overall-progress-header">
+                <span class="overall-progress-text">${Math.round(overallPercentage)}% 達成</span>
             </div>
         </div>
     `;
