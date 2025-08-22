@@ -363,8 +363,6 @@ const pages = {
     else if (overallPercentage >= 50) overallStatusBarClass = 'is-medium';
 
     let listHTML = '';
-    for (const categoryName in categories) {
-        const categoryData = categories[categoryName];
         listHTML += `
             <div class="overall-progress-card">
                 <h3>全体の備蓄進捗</h3>
