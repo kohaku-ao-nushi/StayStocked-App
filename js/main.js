@@ -587,6 +587,25 @@ const pages = {
   },
 
   settings() {
+    const data = storage.getAppData();
+    // 設定フォームにlocalStorageの値を読み込む
+    const noticeDays = data.settings.noticeDays || {};
+    document.getElementById('noticeDays3').value = noticeDays['3'] || 7;
+    document.getElementById('noticeDays7').value = noticeDays['7'] || 14;
+    document.getElementById('noticeDays14').value = noticeDays['14'] || 30;
+
+    // 設定保存ボタンのイベントリスナー
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        const currentData = storage.getAppData();
+        currentData.settings.noticeDays = {
+            '3': parseInt(document.getElementById('noticeDays3').value) || 7,
+            '7': parseInt(document.getElementById('noticeDays7').value) || 14,
+            '14': parseInt(document.getElementById('noticeDays14').value) || 30
+        };
+        storage.saveAppData(currentData);
+        alert('設定を保存しました！');
+        window.location.hash = '#home';
+    });
     document.getElementById('resetDataBtn').addEventListener('click', () => {
         if (confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) {
             localStorage.removeItem('bosaistockApp');
