@@ -145,6 +145,7 @@ const templates = {
     <div class="form-actions">
       <button id="saveItemBtn" class="btn">＋ この内容で登録する</button>
       <a href="#stock" class="btn btn-secondary">キャンセル</a>
+      <button id="deleteItemBtn" class="btn btn-danger" style="display:none;">この備蓄品を削除する</button>
     </div>
   `,
   settings: `
@@ -499,6 +500,7 @@ const pages = {
 
     const titleEl = document.getElementById('register-title');
     const saveBtn = document.getElementById('saveItemBtn');
+    const deleteBtn = document.getElementById('deleteItemBtn');
     const itemNameGroup = document.getElementById('item-name-group');
     const itemCategoryGroup = document.getElementById('item-category-group');
     const itemNameInput = document.getElementById('itemName');
@@ -519,6 +521,7 @@ const pages = {
     if (itemToEdit) {
         titleEl.textContent = '備蓄品を編集';
         saveBtn.textContent = 'この内容で更新する';
+        deleteBtn.style.display = 'none';
         masterId = itemToEdit.masterId;
         customId = itemToEdit.customId;
         itemName = itemToEdit.itemName;
@@ -601,6 +604,17 @@ const pages = {
       window.location.hash = '#stock';
     });
   },
+
+  deleteBtn.addEventListener('click', () => {
+    if (confirm('この備蓄品を削除しますか？')) {
+      const currentData = storage.getAppData();
+      currentData.stockItems = currentData.stockItems.filter(item => item.id !== itemToEdit.id);
+      storage.saveAppData(currentData);
+      alert('備蓄品を削除しました！');
+      sessionStorage.removeItem('editItemId');
+      window.location.hash = '#stock';
+    }
+  });
 
   settings() {
     const data = storage.getAppData();
