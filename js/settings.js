@@ -6,6 +6,12 @@ function saveSettings() {
     hasElderly: document.getElementById('hasElderly').checked,
     petType: document.getElementById('petType').value,
     petCount: parseInt(document.getElementById('petCount').value)
+    // ★★★ 新規追加 ★★★
+    noticeDays: {
+      '3': parseInt(document.getElementById('noticeDays3').value),
+      '7': parseInt(document.getElementById('noticeDays7').value),
+      '14': parseInt(document.getElementById('noticeDays14').value)
+    }
   };
 
   localStorage.setItem('familySettings', JSON.stringify(settings));
