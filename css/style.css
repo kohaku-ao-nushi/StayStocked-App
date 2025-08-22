@@ -545,27 +545,32 @@ header h1 {
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
+
 .overall-progress-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
+
 .overall-progress-card h3 {
     margin-top: 0;
     margin-bottom: 8px;
     border-bottom: none;
     color: var(--text-color);
 }
+
 .overall-progress-text {
     font-size: 1.2em;
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 0;
 }
+
 .overall-progress-bar {
     height: 20px;
 }
+
 .overall-summary-text {
     font-size: 1.2em;
     color: #666;
