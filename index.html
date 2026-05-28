@@ -1,40 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>StayStocked - 防災備蓄管理</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayStocked - 防災備蓄管理</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- PWA対応のためのマニフェストファイル（将来用） -->
-  <!-- <link rel="manifest" href="manifest.json"> -->
+  <!-- PWA対応（将来用）
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2d7a4f">
+  -->
   <link rel="icon" href="icons/favicon.ico">
 </head>
 <body>
 
-  <!-- ▼▼▼ アプリの共通ヘッダー ▼▼▼ -->
-  <header>
-    <h1 id="header-title">StayStocked</h1>
+  <!-- ヘッダー：ページタイトルだけ。JSが動的に書き換える -->
+  <header class="app-header">
+    <h1 id="header-title" class="app-header__title">StayStocked</h1>
   </header>
-  <!-- ▲▲▲ アプリの共通ヘッダー ▲▲▲ -->
 
-  <!-- ▼▼▼ 各ページのコンテンツはここに描画される ▼▼▼ -->
-  <main id="app-root" class="container">
-    <!-- JavaScriptによって内容が動的に変わります -->
-  </main>
-  <!-- ▲▲▲ 各ページのコンテンツはここに描画される ▲▲▲ -->
+  <!-- メインコンテンツ：JSがここにページのHTMLを差し込む -->
+  <main id="app-root" class="app-main"></main>
 
-
-  <!-- ▼▼▼ アプリの共通フッターナビゲーション ▼▼▼ -->
+  <!-- ボトムナビゲーション -->
   <nav class="bottom-nav">
-    <a href="#home"><img src="icons/lifestyle.png" alt="ホーム"><div>ホーム</div></a>
-    <a href="#lifestyle"><img src="icons/suggest.png" alt="くらし方"><div>くらし方</div></a>
-    <a href="#stock"><img src="icons/stock.png" alt="備蓄リスト"><div>備蓄リスト</div></a>
-    <a href="#settings"><img src="icons/setting.png" alt="設定"><div>設定</div></a>
+    <a href="#home"      class="bottom-nav__item">
+      <img src="icons/lifestyle.png" alt="">
+      <span>ホーム</span>
+    </a>
+    <a href="#lifestyle" class="bottom-nav__item">
+      <img src="icons/suggest.png" alt="">
+      <span>くらし方</span>
+    </a>
+    <a href="#stock"     class="bottom-nav__item">
+      <img src="icons/stock.png" alt="">
+      <span>備蓄リスト</span>
+    </a>
+    <a href="#settings"  class="bottom-nav__item">
+      <img src="icons/setting.png" alt="">
+      <span>設定</span>
+    </a>
   </nav>
-  <!-- ▲▲▲ アプリの共通フッターナビゲーション ▲▲▲ -->
 
-  <!-- アプリの動作に必要なJavaScriptはこれ一つだけです -->
+  <!-- type="module" を指定することでESモジュール（import/export）が使える -->
   <script src="js/main.js" type="module"></script>
+
 </body>
 </html>
-
