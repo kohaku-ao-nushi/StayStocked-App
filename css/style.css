@@ -1,125 +1,219 @@
-/* --- 基本設定 --- */
+/* ============================================================
+   StayStocked — Design System
+   すべてのスタイルをこのファイルに集約（additions.css統合済み）
+   ============================================================ */
+
+/* ── 1. Design Tokens ──────────────────────────────────── */
 :root {
-  --primary-color: #4a6fa5;
-  --background-color: #fef9f5;
-  --text-color: #333;
-  --expired-color: #d9534f;
-  --near-expiry-color: #f0ad4e;
-  --sufficient-color: #5cb85c;
-  --medium-color: #f0ad4e;
-  --low-color: #d9534f;
+  /* ブランドカラー */
+  --c-primary:       #1B7A4F;
+  --c-primary-lt:    #E6F4EC;
+  --c-primary-dk:    #145C3C;
+
+  /* 背景・サーフェス */
+  --c-bg:            #F2F7F4;
+  --c-surface:       #FFFFFF;
+  --c-surface-2:     #EEF5F1;
+
+  /* テキスト */
+  --c-text:          #1A2E24;
+  --c-text-2:        #4A6358;
+  --c-text-muted:    #8FA898;
+
+  /* ボーダー */
+  --c-border:        #DDE8E3;
+  --c-border-lt:     #EEF4F1;
+
+  /* ステータス */
+  --c-ok:            #16A34A;
+  --c-ok-bg:         #DCFCE7;
+  --c-warn:          #D97706;
+  --c-warn-bg:       #FEF9C3;
+  --c-ng:            #DC2626;
+  --c-ng-bg:         #FEE2E2;
+
+  /* レイアウト */
+  --nav-h:    64px;
+  --header-h: 52px;
+
+  /* 角丸 */
+  --r-sm:   6px;
+  --r-md:  10px;
+  --r-lg:  16px;
+  --r-xl:  20px;
+  --r-pill: 9999px;
+
+  /* 影 */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.06);
+  --shadow-md: 0 2px 10px rgba(0,0,0,.09);
 }
+
+/* ── 2. Reset / Base ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background-color: var(--background-color);
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-  margin: 0 0 80px 0;
-  padding: 0;
-  color: var(--text-color);
+  background: var(--c-bg);
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-.container {
+/* ── 3. App Shell ──────────────────────────────────────── */
+.app-header {
+  background: var(--c-primary);
+  color: #fff;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header__title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.app-main {
   max-width: 520px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 16px 16px calc(var(--nav-h) + 20px);
 }
 
-h2 {
-  font-size: 1.4em;
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 8px;
-  margin-top: 0;
-}
-h3 {
-  font-size: 1.2em;
-  color: var(--primary-color);
-  margin-top: 24px;
-}
-
-
-/* --- 共通コンポーネント --- */
-header {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 16px;
-  text-align: center;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 1.2em;
-}
-
+/* ── 4. Bottom Navigation ──────────────────────────────── */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-border);
   display: flex;
-  justify-content: space-around;
-  padding: 6px 0;
-  z-index: 10;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+  height: var(--nav-h);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-.bottom-nav a {
-  text-align: center;
-  color: #555;
+.bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  text-decoration: none;
+  color: var(--c-text-muted);
   font-size: 10px;
-  text-decoration: none;
-  padding: 2px 4px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition: color .15s;
 }
 
-.bottom-nav img {
-  width: 28px;
-  height: 28px;
-  display: block;
-  margin: auto;
+.bottom-nav__item img {
+  width: 24px;
+  height: 24px;
+  opacity: .4;
+  transition: opacity .15s;
 }
 
+.bottom-nav__item.is-active       { color: var(--c-primary); }
+.bottom-nav__item.is-active img   { opacity: 1; }
+
+/* ── 5. Buttons ────────────────────────────────────────── */
 .btn {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  background-color: var(--primary-color);
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 18px;
+  border-radius: var(--r-md);
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  text-align: center;
   text-decoration: none;
-  margin-top: 20px;
-  box-sizing: border-box; 
+  line-height: 1;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn:active  { transform: scale(.97); }
+.btn:hover   { opacity: .88; }
+
+.btn-primary   { background: var(--c-primary);  color: #fff; }
+.btn-secondary {
+  background: var(--c-surface);
+  color: var(--c-text-2);
+  border: 1.5px solid var(--c-border);
+}
+.btn-danger    { background: var(--c-ng);        color: #fff; }
+.btn-full      { width: 100%; display: flex; }
+.btn-sm        { font-size: 13px; padding: 7px 12px; }
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1.5px dashed var(--c-border);
+  border-radius: var(--r-md);
+  color: var(--c-primary);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  margin-top: 8px;
+}
+.btn-add:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-lt);
 }
 
-.btn:hover {
-  opacity: 0.9;
+/* ── 6. Forms ──────────────────────────────────────────── */
+.form-section {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
-.btn.btn-danger {
-    background-color: var(--expired-color);
+.form-section--danger { border-top: 3px solid var(--c-ng); }
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--c-text-muted);
+  margin-bottom: 12px;
 }
 
-.btn.btn-secondary {
-    background-color: #6c757d;
+.section-desc {
+  font-size: 13px;
+  color: var(--c-text-2);
+  line-height: 1.55;
+  margin-bottom: 12px;
 }
 
-
-/* --- フォーム関連 --- */
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
+.form-group:last-child { margin-bottom: 0; }
 
 .form-group label {
   display: block;
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-2);
   margin-bottom: 6px;
-  font-size: 14px;
+  letter-spacing: .02em;
 }
 
 .form-group input[type="text"],
@@ -127,475 +221,665 @@ header h1 {
 .form-group input[type="date"],
 .form-group select {
   width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
   font-size: 16px;
+  color: var(--c-text);
+  background: var(--c-surface);
+  transition: border-color .15s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.readonly-input {
-    background-color: #f0f0f0;
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(27,122,79,.12);
 }
+
+.form-group input[readonly] {
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+}
+
+.form-group--inline {
+  display: flex;
+  gap: 10px;
+}
+.form-group--inline > div { flex: 1; }
 
 .form-actions {
-    margin-top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
 }
 
-/* --- ホーム画面 --- */
+/* ── 7. Progress Bar ───────────────────────────────────── */
+.progress-bar {
+  width: 100%;
+  height: 7px;
+  background: var(--c-border-lt);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.progress-bar__inner {
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width .45s ease;
+  min-width: 2px;
+}
+
+.progress-bar__inner.is-sufficient { background: var(--c-ok); }
+.progress-bar__inner.is-medium     { background: var(--c-warn); }
+.progress-bar__inner.is-low        { background: var(--c-ng); }
+
+/* ── 8. Badges ─────────────────────────────────────────── */
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.target-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--c-primary-lt);
+  color: var(--c-primary-dk);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── 9. Toast ──────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  padding: 10px 22px;
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .22s, transform .22s;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast--success { background: var(--c-primary); color: #fff; }
+.toast--error   { background: var(--c-ng);      color: #fff; }
+.toast--info    { background: #444;             color: #fff; }
+
+/* ── 10. Modal ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 900;
+}
+
+.modal {
+  background: var(--c-surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0));
+  width: 100%;
+  max-width: 520px;
+}
+
+.modal__message {
+  font-size: 15px;
+  line-height: 1.65;
+  white-space: pre-line;
+  color: var(--c-text);
+  margin-bottom: 20px;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 10px;
+}
+.modal__actions .btn { flex: 1; }
+
+/* ── 11. Home Page ─────────────────────────────────────── */
+.setup-prompt {
+  background: var(--c-primary-lt);
+  border-radius: var(--r-lg);
+  padding: 24px 16px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.setup-prompt p {
+  color: var(--c-primary-dk);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+/* 達成率サマリー */
+.summary-card {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 20px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--c-primary);
+}
+
+.summary-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--c-text-muted);
+  margin-bottom: 6px;
+}
+
+.summary-card__pct {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--c-primary);
+  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -.02em;
+}
+
+.summary-card .progress-bar {
+  height: 10px;
+  margin-bottom: 8px;
+}
+
+.summary-card__sub {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+/* 期限アラートカード */
+.alert-card {
+  background: #FFFDF0;
+  border: 1.5px solid #FBBF24;
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.alert-card__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400E;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.alert-card__title::before { content: '⚠'; }
+
+.alert-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+.alert-card__list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--c-text);
+  border-bottom: 1px solid #FDE68A;
+}
+.alert-card__list li:last-child { border-bottom: none; }
+
+.alert-label {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  background: #F59E0B;
+  color: #fff;
+  border-radius: var(--r-sm);
+  padding: 2px 6px;
+}
+.alert-label.is-expired { background: var(--c-ng); }
+
+.alert-card__more {
+  font-size: 12px;
+  color: #92400E;
+  margin-bottom: 6px;
+}
+.alert-card__link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400E;
+  text-decoration: none;
+}
+
+/* グリッドメニュー */
 .grid-menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-top: 20px;
+  gap: 10px;
 }
 
-.grid-menu a {
+.grid-menu__item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  background-color: white;
-  border: 2px solid var(--primary-color);
-  border-radius: 12px;
-  padding: 20px 8px;
+  gap: 8px;
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 22px 12px;
   text-decoration: none;
-  color: var(--primary-color);
-  font-weight: bold;
-  font-size: 14px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: transform 0.2s;
+  color: var(--c-primary);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--c-border-lt);
+  transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.grid-menu__item:active {
+  transform: scale(.96);
+  box-shadow: none;
+}
+.grid-menu__item img {
+  width: 38px;
+  height: 38px;
 }
 
-.grid-menu a:hover {
-    transform: scale(1.03);
-}
-
-.grid-menu img {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 8px;
-}
-
-/* --- くらし方画面 --- */
+/* ── 12. Lifestyle Page ────────────────────────────────── */
 .profile-card {
-  background-color: #fff;
-  border-left: 4px solid var(--primary-color);
-  border-radius: 8px;
-  padding: 16px;
-  margin: 12px 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background: var(--c-surface-2);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--c-primary);
 }
 
-/* --- 備蓄リスト カテゴリ --- */
-.todo-category {
-    margin-top: 24px;
-}
-.category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #ddd;
-}
-.category-header h3 {
-    margin: 0;
-    border: none;
-}
-.category-achievement {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: var(--primary-color);
+.profile-card__title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--c-primary);
+  margin-bottom: 12px;
 }
 
-/* --- 備蓄リスト アコーディオン --- */
-.stock-accordion {
-    background-color: #fff;
-    border-radius: 0px;
-    margin-bottom: 8px;*/
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    overflow: hidden;
-    cursor: grab;
-    position: relative;
-}
-.stock-accordion summary {
-    list-style: none;
-    display: block;
-}
-.stock-accordion summary::-webkit-details-marker {
-    display: none;
-}
-.stock-accordion[open] > summary.stock-progress-item {
-    border-bottom: 1px solid #eee;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-.stock-progress-item {
-    padding: 12px 16px;
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-/* プラス/クロス アイコン */
-.accordion-icon {
-    width: 20px;
-    height: 20px;
-    position: relative;
-    flex-shrink: 0;
-}
-.accordion-icon::before,
-.accordion-icon::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 2px;
-    background-color: var(--primary-color);
-    border-radius: 1px;
-    transition: transform 0.3s ease-in-out;
-}
-.accordion-icon::before {
-    transform: translate(-50%, -50%) rotate(0deg);
-}
-.accordion-icon::after {
-    transform: translate(-50%, -50%) rotate(90deg);
-}
-.stock-accordion[open] > summary .accordion-icon::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-.stock-accordion[open] > summary .accordion-icon::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-}
-/* 品目名と備蓄量を囲むヘッダー部分 */
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 8px;
-}
-.stock-progress-item .item-name {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.stock-progress-item .item-amount {
-    font-size: 0.9em;
-    color: #555;
-}
-/* プログレスバーのコンテナ */
-.progress-container {
-    width: 100%;
-}
-.progress-bar {
-    width: 100%;
-    height: 16px;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.progress-bar-inner {
-    height: 100%;
-    transition: width 0.5s ease-in-out;
-}
-.progress-bar-inner.is-sufficient { background-color: var(--sufficient-color); }
-.progress-bar-inner.is-medium { background-color: var(--medium-color); }
-.progress-bar-inner.is-low { background-color: var(--low-color); }
-
-.accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-    padding: 0 16px;
+.profile-card__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.stock-accordion[open] .accordion-content {
-    max-height: 500px;
-    padding: 12px 16px 16px;
+/* ラジオボタン（ピル型） */
+.radio-group {
+  display: flex;
+  gap: 8px;
 }
 
-.stock-sub-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.stock-sub-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 12px 4px;
-    border-bottom: 1px dashed #eee;
-    cursor: pointer;
-    align-items: center;
-}
-.stock-sub-item:last-child {
-    border-bottom: none;
-}
-.stock-sub-item:hover {
-    background-color: #f9f9f9;
-}
-.stock-sub-item .product-name {
-    font-weight: 500;
-}
-.stock-sub-item .sub-item-details {
-    display: flex;
-    gap: 12px;
-    align-items: baseline;
-    font-size: 0.9em;
-    color: #333;
-    white-space: nowrap;
-}
-.stock-sub-item .item-expiry {
-    font-size: 0.8em;
-    color: #666;
-}
-.no-sub-item-message {
-    text-align: center;
-    color: #888;
-    font-size: 14px;
-    padding: 8px 0;
-}
-.add-item-btn {
-    width: 100%;
-    margin-top: 16px;
-    padding: 10px;
-    font-size: 14px;
-    background-color: #e9ecef;
-    color: var(--primary-color);
-    border: 1px solid #ccc;
+.radio-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
 }
 
-/* --- その他・未分類リスト --- */
-.stock-item-custom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #fff;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.stock-item-custom .item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.stock-item-custom .item-name {
-    font-weight: 500;
-}
-.stock-item-custom .item-amount {
-    font-size: 0.9em;
-    color: #666;
-}
-.stock-item-custom .item-expiry {
-    font-size: 0.8em;
-    color: #888;
-}
-.stock-item-custom .category-badge {
-    align-self: flex-start;
-}
-.item-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
-.edit-btn, .delete-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    font-weight: bold;
-}
-.edit-btn {
-    background-color: #f0f0f0;
-    border-color: #ccc;
-    color: #333;
-}
-.delete-btn {
-    background-color: var(--expired-color);
-    border-color: #c82333;
-    color: white;
+/* ラジオを選択したときに枠とbgを変える */
+.radio-label:has(input:checked) {
+  border-color: var(--c-primary);
+  background: var(--c-primary-lt);
+  color: var(--c-primary-dk);
+  font-weight: 700;
 }
 
-/* --- 備蓄日数モード セレクター --- */
-.stockpile-mode-selector {
-    display: flex;
-    justify-content: center;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 20px;
+.radio-label input[type="radio"] { display: none; }
+
+/* ── 13. Stock List Page ───────────────────────────────── */
+
+/* モードセレクター（3日分/1週間/2週間） */
+.mode-selector {
+  display: flex;
+  background: var(--c-surface);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
 }
+
 .mode-btn {
-    flex: 1;
-    padding: 8px 12px;
-    border: none;
-    background-color: transparent;
-    color: #555;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background-color 0.2s, color 0.2s;
+  flex: 1;
+  padding: 9px 8px;
+  border: none;
+  background: transparent;
+  color: var(--c-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--r-pill);
+  transition: background .2s, color .2s;
 }
+
 .mode-btn.is-active {
-    background-color: var(--primary-color);
-    color: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--c-primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
 }
 
-/* --- 品目リスト編集画面 --- */
-.master-list {
-    list-style: none;
-    padding: 0;
-}
-/* デフォルト推奨品目リストのスタイル */
-.master-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #fff;
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-/* 品目名とバッジを囲むコンテナ */
-.master-item-details {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-}
-/* 複数のバッジを囲むコンテナ */
-.master-item-badges {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
+/* 全体進捗 */
+.overall-progress {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
-.category-badge {
-    background-color: #e9ecef;
-    color: #495057;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    white-space: nowrap;
-}
-.target-badge {
-    background-color: #d1e7dd;
-    color: #0f5132;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    white-space: nowrap;
-}
-.master-list.is-custom li {
-    border-left: 4px solid var(--sufficient-color);
-}
-.master-list .item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.delete-custom-item-btn {
-    background: none;
-    border: none;
-    color: var(--expired-color);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
+.overall-progress__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--c-text-2);
+  font-weight: 500;
 }
 
-/* 期限が近い備蓄品を強調表示するスタイル */
-.is-expiring {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
+.overall-progress__pct {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--c-primary);
 }
 
-/* アコーディオン内の個別の備蓄品を強調表示するスタイル */
-.is-expiring-sub-item {
-    background-color: #fff3cd;
-    font-weight: bold;
+.overall-progress .progress-bar { height: 9px; }
+
+.overall-progress__sub {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  margin-top: 6px;
 }
 
-/* 期限切れの備蓄品を強調表示するスタイル */
-.is-expired-sub-item {
-    background-color: #f8d7da;
-    color: #721c24;
-    font-weight: bold;
+/* カテゴリ */
+.stock-category { margin-bottom: 16px; }
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 8px;
 }
 
-/* 全体進捗カード */
-.overall-progress-card {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 20px 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+.category-header__name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--c-text);
 }
 
-/* ★★★ 新規追加 ★★★ */
-.overall-progress-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.category-header .category-badge {
+  background: var(--c-primary-lt);
+  color: var(--c-primary);
+  font-weight: 700;
 }
 
-.overall-progress-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 12px;
+/* 品目アコーディオン */
+.stock-item {
+  background: var(--c-surface);
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  /* 期限警告の左ボーダーを透明にしておき、状態によって色を付ける */
+  border-left: 3px solid transparent;
+  transition: border-color .15s;
 }
 
-.overall-progress-card h3 {
-    margin-top: 0;
-    margin-bottom: 8px;
-    border-bottom: none;
-    color: var(--text-color);
+.stock-item.is-expiring { border-left-color: var(--c-warn); }
+.stock-item.is-expired  { border-left-color: var(--c-ng); }
+
+.stock-item > summary {
+  list-style: none;
+  display: block;
+}
+.stock-item > summary::-webkit-details-marker { display: none; }
+
+.stock-item__summary {
+  padding: 12px 14px 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* ★★★ overall-progress-textのスタイルを修正 ★★★ */
-.overall-progress-text {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 0;
-    /* display: block; を削除してinline要素にする */
+.stock-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.overall-progress-bar {
-    height: 20px;
-    margin-bottom: 8px;
+.stock-item__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
-.overall-summary-text {
-    font-size: 1.2em;
-    color: #666;
-    margin-top: 0;
-    white-space: nowrap;
+.stock-item__amount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-2);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* --- ドラッグ＆ドロップ用スタイル --- */
-.stock-accordion.is-dragging {
-  opacity: 0.5;
-  border: 2px dashed var(--primary-color);
+/* アコーディオン展開時のコンテンツ */
+.stock-item__detail {
+  padding: 4px 14px 12px;
+  border-top: 1px solid var(--c-border-lt);
 }
-.stock-accordion.drop-target-top {
-  border-top: 2px solid var(--primary-color);
+
+/* サブアイテム（登録済み備蓄品） */
+.stock-sub-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px;
 }
-.stock-accordion.drop-target-bottom {
-  border-bottom: 2px solid var(--primary-color);
+
+.stock-sub-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--c-border-lt);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background .1s;
 }
-```
+.stock-sub-item:last-child { border-bottom: none; }
+.stock-sub-item:hover      { background: var(--c-surface-2); }
+
+.stock-sub-item.is-expiring-sub .stock-sub-item__expiry {
+  color: var(--c-warn);
+  font-weight: 700;
+}
+
+.stock-sub-item.is-expired-sub {
+  background: var(--c-ng-bg);
+  border-radius: var(--r-sm);
+  padding: 9px 6px;
+}
+.stock-sub-item.is-expired-sub .stock-sub-item__expiry {
+  color: var(--c-ng);
+  font-weight: 700;
+}
+
+.stock-sub-item--empty {
+  color: var(--c-text-muted);
+  font-size: 13px;
+  padding: 10px 4px;
+  text-align: center;
+}
+
+.stock-sub-item__name {
+  font-size: 13px;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-sub-item__qty {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-2);
+  white-space: nowrap;
+}
+
+.stock-sub-item__expiry {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+.stock-footer {
+  padding: 12px 0 4px;
+  text-align: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+}
+.empty-state p {
+  color: var(--c-text-2);
+  margin-bottom: 16px;
+}
+
+/* ── 14. Custom List Editor ────────────────────────────── */
+.master-list { list-style: none; padding: 0; }
+
+.master-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--c-border-lt);
+}
+.master-list__item:last-child { border-bottom: none; }
+
+.master-list__name {
+  font-size: 14px;
+  color: var(--c-text);
+  flex: 1;
+}
+
+.master-list__badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.master-list--custom .master-list__item {
+  background: var(--c-surface-2);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-bottom: none;
+}
+
+.master-list__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+/* ── 15. How-to list ───────────────────────────────────── */
+.how-to-list { padding-left: 20px; }
+
+.how-to-list li {
+  padding: 8px 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--c-text);
+  border-bottom: 1px solid var(--c-border-lt);
+}
+.how-to-list li:last-child { border-bottom: none; }
+
+/* ── 16. Utilities ─────────────────────────────────────── */
+.empty-text {
+  color: var(--c-text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* ── 17. Stock item 追加スタイル ───────────────────────── */
+
+/* 現在量 / 必要量テキスト行 */
+.stock-item__qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stock-item__qty-text {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+/* 期限バッジ（アイテム行内） */
+.expiry-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.is-expiring-badge {
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
+}
+
+.is-expired-badge {
+  background: var(--c-ng-bg);
+  color: var(--c-ng);
+}
