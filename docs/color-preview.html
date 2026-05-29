@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>カラーテーマ プレビュー</title>
+<style>
+
+/* ============================================================
+   カラーテーマ比較プレビュー
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+  background: #eee;
+  padding: 20px 12px 40px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.compare {
+  display: flex;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.theme {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme__label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 8px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+/* ── モックアップ共通シェル ── */
+.phone {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.18);
+}
+
+.mock-header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .03em;
+}
+
+.mock-body {
+  padding: 12px 12px 0;
+  min-height: 520px;
+}
+
+.mock-nav {
+  height: 56px;
+  display: flex;
+  border-top: 1px solid;
+  margin-top: 12px;
+}
+
+.mock-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.mock-nav__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+/* ── ウィジェット共通 ── */
+.card {
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+
+.card__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+
+.big-pct {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress__inner {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.sub-text {
+  font-size: 11px;
+}
+
+.category-label {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stock-item {
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.stock-item__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.stock-item__name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.progress-row .progress { flex: 1; margin: 0; }
+
+.amount {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn {
+  flex: 1;
+  padding: 11px 8px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  cursor: default;
+}
+
+/* ====================================================
+   現行テーマ（グリーン）
+   ==================================================== */
+.green {
+  --c-primary:    #1B7A4F;
+  --c-primary-lt: #E6F4EC;
+  --c-primary-dk: #145C3C;
+  --c-bg:         #F2F7F4;
+  --c-surface:    #FFFFFF;
+  --c-surface2:   #EEF5F1;
+  --c-text:       #1A2E24;
+  --c-text2:      #4A6358;
+  --c-muted:      #8FA898;
+  --c-border:     #DDE8E3;
+  --c-ok:         #16A34A;
+  --c-warn:       #D97706;
+  --c-ng:         #DC2626;
+  --c-badge-bg:   #E6F4EC;
+  --c-badge-text: #145C3C;
+  --c-nav-active: #1B7A4F;
+  --c-nav-icon:   #1B7A4F;
+}
+
+/* ====================================================
+   提案テーマ（アンバー × ブルーマール）
+   ==================================================== */
+.amber {
+  --c-primary:    #7A8FA0;   /* グレー寄りブルーマール：ヘッダー・アクティブ */
+  --c-primary-lt: #FDF0E0;   /* 琥珀の淡い光：背景ハイライト（変更なし）   */
+  --c-primary-dk: #2E4F63;   /* 濃いブルーマール：ボタン                   */
+  --c-bg:         #F7F3EE;   /* 朝焼け白：ページ背景（変更なし）            */
+  --c-surface:    #FFFFFF;
+  --c-surface2:   #F2EDE6;   /* 琥珀の薄み：カード内区切り（変更なし）      */
+  --c-text:       #2C1F0E;   /* 琥珀寄りブラック（変更なし）                */
+  --c-text2:      #5C4535;   /* サブテキスト（変更なし）                    */
+  --c-muted:      #9A8070;   /* ミュートテキスト（変更なし）                */
+  --c-border:     #E0D5C8;   /* 暖かみボーダー（変更なし）                  */
+  --c-ok:         #16A34A;
+  --c-warn:       #D97706;
+  --c-ng:         #DC2626;
+  --c-badge-bg:   #E8EFF4;
+  --c-badge-text: #3D5A70;
+  --c-nav-active: #3D5A70;   /* 濃いブルーマール：視認性重視 */
+  --c-nav-icon:   #3D5A70;
+}
+
+/* 提案テーマ：ボタンは濃いブルーマール */
+.amber .btn-primary { background: #2E4F63 !important; }
+
+/* 提案テーマ：達成率の大きい数字も濃いブルーマールで視認性アップ */
+.amber .big-pct { color: #3D5A70 !important; }
+
+/* テーマ変数の適用 */
+.green .phone,
+.amber .phone   { background: var(--c-bg); }
+
+.green .mock-header,
+.amber .mock-header { background: var(--c-primary); }
+
+.green .mock-nav,
+.amber .mock-nav {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+
+.green .mock-nav__item,
+.amber .mock-nav__item { color: var(--c-muted); }
+
+.green .mock-nav__item.is-active,
+.amber .mock-nav__item.is-active { color: var(--c-nav-active); }
+
+.green .mock-nav__icon,
+.amber .mock-nav__icon { background: var(--c-surface2); }
+
+.green .mock-nav__item.is-active .mock-nav__icon,
+.amber .mock-nav__item.is-active .mock-nav__icon { background: var(--c-primary-lt); }
+
+.green .card,
+.amber .card {
+  background: var(--c-surface);
+  border-left: 4px solid var(--c-primary);
+}
+
+.green .card__label,
+.amber .card__label { color: var(--c-muted); }
+
+.green .big-pct,
+.amber .big-pct { color: var(--c-primary); }
+
+.green .progress,
+.amber .progress { background: var(--c-border); }
+
+.green .progress__inner.ok,
+.amber .progress__inner.ok { background: var(--c-ok); }
+
+.green .progress__inner.low,
+.amber .progress__inner.low { background: var(--c-ng); }
+
+.green .sub-text,
+.amber .sub-text { color: var(--c-muted); }
+
+.green .category-label,
+.amber .category-label { color: var(--c-text); }
+
+.green .stock-item,
+.amber .stock-item {
+  background: var(--c-surface);
+}
+
+.green .stock-item__name,
+.amber .stock-item__name { color: var(--c-text); }
+
+.green .badge,
+.amber .badge {
+  background: var(--c-badge-bg);
+  color: var(--c-badge-text);
+}
+
+.green .amount,
+.amber .amount { color: var(--c-muted); }
+
+.green .btn-primary,
+.amber .btn-primary {
+  background: var(--c-primary);
+  color: #fff;
+}
+
+.green .btn-secondary,
+.amber .btn-secondary {
+  background: var(--c-surface);
+  color: var(--c-text2);
+  border: 1.5px solid var(--c-border);
+}
+
+/* アラートカード */
+.alert-card {
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.green .alert-card  { background: #FFFDF0; border: 1.5px solid #FBBF24; }
+.amber .alert-card  { background: #FFF8EE; border: 1.5px solid #E8A84C; }
+
+.alert-card__title {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.green .alert-card__title { color: #92400E; }
+.amber .alert-card__title { color: #7A4A18; }
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.alert-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+.expired-badge { background: #DC2626; }
+.warn-badge    { background: #D97706; }
+
+.green .alert-row { color: #2C1F0E; }
+.amber .alert-row { color: #2C1F0E; }
+
+</style>
+</head>
+<body>
+
+<h1>カラーテーマ比較プレビュー</h1>
+
+<div class="compare">
+
+  <!-- ── 現行：グリーン ── -->
+  <div class="theme green">
+    <div class="theme__label">現行（グリーン）</div>
+    <div class="phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+
+        <!-- アラートカード -->
+        <div class="alert-card">
+          <div class="alert-card__title">⚠ 期限アラート</div>
+          <div class="alert-row"><span class="alert-badge expired-badge">期限切れ</span>サントリー天然水</div>
+          <div class="alert-row"><span class="alert-badge warn-badge">残り3日</span>アルファ米</div>
+        </div>
+
+        <!-- 達成率カード -->
+        <div class="card">
+          <div class="card__label">3日分モード・備蓄達成率</div>
+          <div class="big-pct">42%</div>
+          <div class="progress"><div class="progress__inner ok" style="width:42%"></div></div>
+          <div class="sub-text">14 / 34 品目 達成</div>
+        </div>
+
+        <!-- 品目リスト -->
+        <div class="category-label">
+          食品・飲料
+          <span class="badge">2 / 5</span>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">水</span>
+            <span class="badge">全員</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner ok" style="width:100%"></div></div>
+            <span class="amount">220 / 27 L</span>
+          </div>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">レトルトご飯・乾麺</span>
+            <span class="badge">成人・子ども</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner low" style="width:0%"></div></div>
+            <span class="amount">0 / 27 食</span>
+          </div>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">缶詰・レトルト食品</span>
+            <span class="badge">成人・子ども</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner low" style="width:0%"></div></div>
+            <span class="amount">0 / 14 食分</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <div class="btn btn-primary">追加する</div>
+          <div class="btn btn-secondary">キャンセル</div>
+        </div>
+
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>ホーム
+        </div>
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>くらし方
+        </div>
+        <div class="mock-nav__item is-active">
+          <div class="mock-nav__icon"></div>備蓄リスト
+        </div>
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>設定
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 提案：アンバー × ブルーマール ── -->
+  <div class="theme amber">
+    <div class="theme__label">提案（アンバー地×ブルーマール）</div>
+    <div class="phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+
+        <!-- アラートカード -->
+        <div class="alert-card">
+          <div class="alert-card__title">⚠ 期限アラート</div>
+          <div class="alert-row"><span class="alert-badge expired-badge">期限切れ</span>サントリー天然水</div>
+          <div class="alert-row"><span class="alert-badge warn-badge">残り3日</span>アルファ米</div>
+        </div>
+
+        <!-- 達成率カード -->
+        <div class="card">
+          <div class="card__label">3日分モード・備蓄達成率</div>
+          <div class="big-pct">42%</div>
+          <div class="progress"><div class="progress__inner ok" style="width:42%"></div></div>
+          <div class="sub-text">14 / 34 品目 達成</div>
+        </div>
+
+        <!-- 品目リスト -->
+        <div class="category-label">
+          食品・飲料
+          <span class="badge">2 / 5</span>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">水</span>
+            <span class="badge">全員</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner ok" style="width:100%"></div></div>
+            <span class="amount">220 / 27 L</span>
+          </div>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">レトルトご飯・乾麺</span>
+            <span class="badge">成人・子ども</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner low" style="width:0%"></div></div>
+            <span class="amount">0 / 27 食</span>
+          </div>
+        </div>
+
+        <div class="stock-item">
+          <div class="stock-item__row">
+            <span class="stock-item__name">缶詰・レトルト食品</span>
+            <span class="badge">成人・子ども</span>
+          </div>
+          <div class="progress-row">
+            <div class="progress"><div class="progress__inner low" style="width:0%"></div></div>
+            <span class="amount">0 / 14 食分</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <div class="btn btn-primary">追加する</div>
+          <div class="btn btn-secondary">キャンセル</div>
+        </div>
+
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>ホーム
+        </div>
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>くらし方
+        </div>
+        <div class="mock-nav__item is-active">
+          <div class="mock-nav__icon"></div>備蓄リスト
+        </div>
+        <div class="mock-nav__item">
+          <div class="mock-nav__icon"></div>設定
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
