@@ -689,11 +689,17 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--c-text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
   flex: 1;
   min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 対象者バッジ専用行（名前・数量行の下・プログレスバーの上） */
+.stock-item__badge-row {
+  display: flex;
+  gap: 4px;
 }
 
 .stock-item__amount {

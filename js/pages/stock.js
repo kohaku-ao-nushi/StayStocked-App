@@ -146,14 +146,12 @@ export const stockPage = {
           <details class="stock-item ${itemClass}" ${(hasExpired || hasExpiring) ? 'open' : ''}>
             <summary class="stock-item__summary">
               <div class="stock-item__row">
-                <span class="stock-item__name">
-                  ${item.name}
-                  ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
-                </span>
+                <span class="stock-item__name">${item.name}</span>
                 <span class="stock-item__amount">
                   ${item.current.toLocaleString()} / ${item.required.toLocaleString()} ${item.unit}
                 </span>
               </div>
+              ${item.target ? `<div class="stock-item__badge-row"><span class="target-badge">${item.target}</span></div>` : ''}
               <div class="progress-bar">
                 <div class="progress-bar__inner ${this._statusClass(item.pct)}" style="width:${item.pct}%"></div>
               </div>
