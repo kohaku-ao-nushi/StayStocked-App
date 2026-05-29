@@ -17,7 +17,7 @@ export const homePage = {
       <div id="home-summary"></div>
       <nav class="grid-menu">
         <a href="#lifestyle" class="grid-menu__item">
-          <img src="icons/suggest.png" alt="くらし方">
+          <img src="icons/family.png" alt="くらし方">
           <span>くらし方</span>
         </a>
         <a href="#stock" class="grid-menu__item">

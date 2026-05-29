@@ -6,23 +6,24 @@
 /* ── 1. Design Tokens ──────────────────────────────────── */
 :root {
   /* ブランドカラー */
-  --c-primary:       #1B7A4F;
-  --c-primary-lt:    #E6F4EC;
-  --c-primary-dk:    #145C3C;
+  --c-primary:       #7A8FA0;  /* グレー寄りブルーマール：ヘッダー・構造的アクセント */
+  --c-primary-lt:    #FDF0E0;  /* 朝焼け琥珀の淡い光：背景ハイライト              */
+  --c-primary-dk:    #2E4F63;  /* 濃いブルーマール：ボタン・強調アクション         */
+  --c-accent:        #3D5A70;  /* テキスト強調・アクティブNav・大きい数字          */
 
-  /* 背景・サーフェス */
-  --c-bg:            #F2F7F4;
+  /* 背景・サーフェス（琥珀の朝焼け白） */
+  --c-bg:            #F7F3EE;
   --c-surface:       #FFFFFF;
-  --c-surface-2:     #EEF5F1;
+  --c-surface-2:     #F2EDE6;
 
-  /* テキスト */
-  --c-text:          #1A2E24;
-  --c-text-2:        #4A6358;
-  --c-text-muted:    #8FA898;
+  /* テキスト（琥珀寄りの暖かみ） */
+  --c-text:          #2C1F0E;
+  --c-text-2:        #5C4535;
+  --c-text-muted:    #9A8070;
 
-  /* ボーダー */
-  --c-border:        #DDE8E3;
-  --c-border-lt:     #EEF4F1;
+  /* ボーダー（暖かみのあるベージュ） */
+  --c-border:        #E0D5C8;
+  --c-border-lt:     #EDE8E0;
 
   /* ステータス */
   --c-ok:            #16A34A;
@@ -121,7 +122,7 @@ body {
   transition: opacity .15s;
 }
 
-.bottom-nav__item.is-active       { color: var(--c-primary); }
+.bottom-nav__item.is-active       { color: var(--c-accent); }
 .bottom-nav__item.is-active img   { opacity: 1; }
 
 /* ── 5. Buttons ────────────────────────────────────────── */
@@ -143,7 +144,7 @@ body {
 .btn:active  { transform: scale(.97); }
 .btn:hover   { opacity: .88; }
 
-.btn-primary   { background: var(--c-primary);  color: #fff; }
+.btn-primary   { background: var(--c-primary-dk); color: #fff; }
 .btn-secondary {
   background: var(--c-surface);
   color: var(--c-text-2);
@@ -293,8 +294,8 @@ body {
 .target-badge {
   display: inline-flex;
   align-items: center;
-  background: var(--c-primary-lt);
-  color: var(--c-primary-dk);
+  background: #E8EFF4;
+  color: var(--c-accent);
   border-radius: var(--r-pill);
   padding: 2px 8px;
   font-size: 11px;
@@ -397,7 +398,7 @@ body {
 .summary-card__pct {
   font-size: 52px;
   font-weight: 800;
-  color: var(--c-primary);
+  color: var(--c-accent);
   line-height: 1;
   margin-bottom: 12px;
   letter-spacing: -.02em;
@@ -489,7 +490,7 @@ body {
   border-radius: var(--r-lg);
   padding: 22px 12px;
   text-decoration: none;
-  color: var(--c-primary);
+  color: var(--c-accent);
   font-size: 13px;
   font-weight: 700;
   box-shadow: var(--shadow-sm);
@@ -512,7 +513,7 @@ body {
   border-radius: var(--r-md);
   padding: 14px;
   margin-bottom: 10px;
-  border-left: 3px solid var(--c-primary);
+  border-left: 3px solid var(--c-accent);
 }
 
 .profile-card__title {
@@ -520,7 +521,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .07em;
-  color: var(--c-primary);
+  color: var(--c-accent);
   margin-bottom: 12px;
 }
 
@@ -554,7 +555,7 @@ body {
 
 /* ラジオを選択したときに枠とbgを変える */
 .radio-label:has(input:checked) {
-  border-color: var(--c-primary);
+  border-color: var(--c-accent);
   background: var(--c-primary-lt);
   color: var(--c-primary-dk);
   font-weight: 700;
@@ -588,7 +589,7 @@ body {
 }
 
 .mode-btn.is-active {
-  background: var(--c-primary);
+  background: var(--c-primary-dk);
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
@@ -615,7 +616,7 @@ body {
 .overall-progress__pct {
   font-size: 20px;
   font-weight: 800;
-  color: var(--c-primary);
+  color: var(--c-accent);
 }
 
 .overall-progress .progress-bar { height: 9px; }
@@ -644,7 +645,7 @@ body {
 
 .category-header .category-badge {
   background: var(--c-primary-lt);
-  color: var(--c-primary);
+  color: var(--c-accent);
   font-weight: 700;
 }
 

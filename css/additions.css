@@ -84,7 +84,7 @@
    ボトムナビ アクティブ状態
    ===================================================== */
 .bottom-nav__item.is-active {
-  color: #2d7a4f;
+  color: #3D5A70;
   font-weight: 600;
 }
 .bottom-nav__item.is-active img {
@@ -130,7 +130,7 @@
 .summary-card__pct {
   font-size: 36px;
   font-weight: 700;
-  color: #2d7a4f;
+  color: #3D5A70;
   line-height: 1.2;
 }
 .summary-card__sub {
@@ -254,7 +254,7 @@
 }
 .btn-add:hover {
   border-color: #2d7a4f;
-  color: #2d7a4f;
+  color: #3D5A70;
 }
 
 /* =====================================================
@@ -294,7 +294,7 @@
   font-size: 20px;
   font-weight: 300;
   line-height: 1;
-  color: #2d7a4f;
+  color: #3D5A70;
   flex-shrink: 0;
   width: 24px;
   text-align: center;
@@ -307,10 +307,10 @@
 .master-list__note {
   margin: 0 0 12px 0;
   padding: 10px 12px;
-  background: #f5f9f6;
-  border-left: 3px solid #2d7a4f;
+  background: #EEF4F8;
+  border-left: 3px solid #7A8FA0;
   border-radius: 0 6px 6px 0;
   font-size: 13px;
   line-height: 1.65;
-  color: #444;
+  color: #2C1F0E;
 }
