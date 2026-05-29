@@ -15,8 +15,7 @@ import { showToast } from '../ui.js';
 const AGE_GROUPS = [
   { value: '乳幼児', label: '0〜2歳',   sub: '乳幼児' },
   { value: '子ども', label: '3〜17歳',  sub: '子ども' },
-  { value: '若年',   label: '18〜39歳', sub: '若年成人' },
-  { value: '中年',   label: '40〜64歳', sub: '中年成人' },
+  { value: '成人',   label: '18〜64歳', sub: '成人'   },
   { value: '高齢者', label: '65歳以上', sub: '高齢者' },
 ];
 

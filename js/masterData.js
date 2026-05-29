@@ -230,12 +230,13 @@ export function buildCalcParams(data) {
   data.profiles.forEach(({ gender, ageGroup }) => {
     if (gender === '女性') {
       p.females++;
-      // 月経対象年齢：子ども(3〜17)・若年(18〜39)・中年(40〜64)の女性
-      if (['子ども','若年','中年','成人'].includes(ageGroup)) p.females_menstrual++;
+      // 月経対象年齢：子ども(3〜17)・成人(18〜64)の女性
+      // 旧データ互換のため若年・中年も含む
+      if (['子ども', '成人', '若年', '中年'].includes(ageGroup)) p.females_menstrual++;
     }
-    if (ageGroup === '乳幼児')                          p.infants++;
-    else if (ageGroup === '子ども')                     p.children++;
-    else if (ageGroup === '若年' || ageGroup === '中年' || ageGroup === '成人') p.adults++;
+    if (ageGroup === '乳幼児')                                p.infants++;
+    else if (ageGroup === '子ども')                           p.children++;
+    else if (['成人', '若年', '中年'].includes(ageGroup))     p.adults++;
     else if (ageGroup === '高齢者') {
       p.elderly++;
       // 高齢者は elderly_food（おかゆ）に加え staple_food にも含める。
