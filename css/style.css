@@ -731,7 +731,7 @@ body {
 
 .stock-sub-item {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr 72px 90px;
   gap: 8px;
   align-items: center;
   padding: 9px 4px;
@@ -751,7 +751,7 @@ body {
 .stock-sub-item.is-expired-sub {
   background: var(--c-ng-bg);
   border-radius: var(--r-sm);
-  padding: 9px 6px;
+  padding: 9px 4px;
 }
 .stock-sub-item.is-expired-sub .stock-sub-item__expiry {
   color: var(--c-ng);
@@ -778,12 +778,14 @@ body {
   font-weight: 700;
   color: var(--c-text-2);
   white-space: nowrap;
+  text-align: right;
 }
 
 .stock-sub-item__expiry {
   font-size: 12px;
   color: var(--c-text-muted);
   white-space: nowrap;
+  text-align: right;
 }
 
 .stock-footer {
