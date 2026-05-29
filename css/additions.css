@@ -1207,3 +1207,39 @@
   font-size: 14px;
   color: var(--c-text);
 }
+
+/* ── 非表示ボタン（summary 右端・インライン） ── */
+.btn-hide-inline {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: 99px;
+  font-size: 10px;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+  /* summary 内での縦位置合わせ */
+  align-self: center;
+}
+.btn-hide-inline:hover,
+.btn-hide-inline:active {
+  color: var(--c-ng);
+  border-color: var(--c-ng);
+  background: var(--c-ng-bg, #FEE2E2);
+}
+/* stock-item__row を flex にして右寄せを有効化 */
+.stock-item__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.stock-item__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

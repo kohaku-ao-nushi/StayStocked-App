@@ -11,7 +11,7 @@
  * オフラインでも引き続き読み書きできる。
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME    = `staystocked-${CACHE_VERSION}`;
 
 const APP_SHELL = [

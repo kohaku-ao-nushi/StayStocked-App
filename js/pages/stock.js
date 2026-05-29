@@ -1,23 +1,16 @@
 'use strict';
 /**
  * pages/stock.js — 備蓄リスト画面
- *
- * 機能：
- *   - 3日分 / 1週間 / 2週間 のモード切り替え
- *   - 必要量 vs 現在の備蓄量をカテゴリ別に表示
- *   - 全体の達成率プログレスバー
- *   - 期限切れ・期限間近のアイテムを強調表示
- *   - フィルタ（不足のみ表示 / キーワード検索）
- *   - アイテムをタップして編集・追加画面へ遷移
- *   - 「使った」ボタンでローリングストック消費を記録
  */
-import { storage }                                          from '../storage.js';
-import { buildCalcParams, getFilteredMasterList, STARTER_IDS } from '../masterData.js';
-import { showToast, showConfirm }                            from '../ui.js';
+import { storage }                                             from '../storage.js';
+import { buildCalcParams, getFilteredMasterList }              from '../masterData.js';
+import { showToast, showConfirm }                              from '../ui.js';
 
 export const stockPage = {
   _filterShortfall: false,
   _filterKeyword:   '',
+  _filterReady:     false,
+  _listAbort:       null,  // AbortController — リスナー多重登録防止
 
   template() {
     return `
@@ -31,6 +24,7 @@ export const stockPage = {
     this._filterShortfall = false;
     this._filterKeyword   = '';
     this._filterReady     = false;
+    this._listAbort       = null;
     this.render();
   },
 
@@ -40,7 +34,6 @@ export const stockPage = {
     const listEl = document.getElementById('stock-list');
 
     this._renderModeSelector(days);
-    // フィルタバーは初回のみ描画（再描画するとフォーカスが外れる）
     if (!this._filterReady) {
       this._renderFilter();
       this._filterReady = true;
@@ -99,9 +92,7 @@ export const stockPage = {
       if (current >= required) categories[item.category].achieved++;
     });
 
-    const overallPct = totalItems > 0 ? Math.round((achievedItems / totalItems) * 100) : 0;
-
-    // 昇格バナー（スターターモード且つ80%以上達成）
+    const overallPct  = totalItems > 0 ? Math.round((achievedItems / totalItems) * 100) : 0;
     const showUpgrade = stockLevel === 'starter' && overallPct >= 80;
     const levelLabel  = stockLevel === 'starter' ? 'スターターセット' : '本格備蓄';
 
@@ -178,12 +169,15 @@ export const stockPage = {
             }).join('')
           : '<li class="stock-sub-item--empty">まだ登録されていません</li>';
 
+        // 非表示ボタンは summary の右端に配置（キャプチャで details トグルを抑制）
         html += `
           <details class="stock-item ${itemClass}" ${(hasExpired || hasExpiring) ? 'open' : ''}>
             <summary class="stock-item__summary">
               <div class="stock-item__row">
                 <span class="stock-item__name">${item.name}</span>
                 ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
+                <button class="btn-hide-inline js-hide-item" data-id="${item.id}"
+                  title="非表示にする" aria-label="非表示にする">非表示</button>
               </div>
               <div class="stock-item__progress-row">
                 <div class="progress-bar">
@@ -202,9 +196,6 @@ export const stockPage = {
                 data-unit="${item.unit}">
                 ＋ この品目を追加
               </button>
-              <button class="btn-hide js-hide-item" data-id="${item.id}">
-                この品目を非表示にする
-              </button>
             </div>
           </details>
         `;
@@ -214,22 +205,19 @@ export const stockPage = {
     }
 
     // ── 自由登録品目（目標量なしのカスタム品目）────────────
-    const masterIds = new Set(masterList.filter(m => m.calc && m.isNeeded(params)).map(m => m.id));
+    const masterIds  = new Set(masterList.filter(m => m.calc && m.isNeeded(params)).map(m => m.id));
     const freeStocks = data.stockItems.filter(s => {
       const key = s.masterId || s.customId;
       return key && !masterIds.has(key);
     });
 
-    if (freeStocks.length > 0 &&
-        (!this._filterKeyword || freeStocks.some(s =>
-          (s.itemName || s.productName || '').toLowerCase().includes(this._filterKeyword.toLowerCase())
-        ))) {
+    if (freeStocks.length > 0) {
       const filtered = this._filterKeyword
         ? freeStocks.filter(s =>
             (s.itemName || s.productName || '').toLowerCase().includes(this._filterKeyword.toLowerCase()))
         : freeStocks;
 
-      if (filtered.length > 0) {
+      if (filtered.length > 0 && !this._filterShortfall) {
         html += `
           <div class="stock-category">
             <div class="category-header">
@@ -280,12 +268,25 @@ export const stockPage = {
 
     html += `
       <div class="stock-footer">
-        <a href="#register" class="btn btn-secondary">リストにない品目を追加</a>
+        <a href="#custom-list-editor" class="btn btn-secondary">リストにない品目を追加・管理</a>
       </div>
     `;
 
     listEl.innerHTML = html;
 
+    // ── イベントリスナー（AbortController で多重登録を防ぐ）────
+    if (this._listAbort) this._listAbort.abort();
+    this._listAbort = new AbortController();
+    const sig = { signal: this._listAbort.signal };
+
+    // キャプチャフェーズ：非表示ボタンが <summary> のトグルを発火させないよう抑制
+    listEl.addEventListener('click', e => {
+      if (e.target.closest('.js-hide-item')) {
+        e.stopPropagation();
+      }
+    }, { capture: true, ...sig });
+
+    // バブルフェーズ：各アクション処理
     listEl.addEventListener('click', async e => {
       // 昇格バナー
       if (e.target.closest('.js-upgrade-level')) {
@@ -320,6 +321,7 @@ export const stockPage = {
         return;
       }
 
+      // ＋ この品目を追加
       const addBtn = e.target.closest('.js-add-item');
       if (addBtn) {
         const { id, name, unit } = addBtn.dataset;
@@ -327,18 +329,22 @@ export const stockPage = {
         window.location.hash = '#register';
         return;
       }
+
+      // 使った
       const useBtn = e.target.closest('.js-use-item');
       if (useBtn) {
         e.stopPropagation();
         this._showUseModal(useBtn.dataset);
         return;
       }
+
+      // サブアイテムタップで編集
       const subItem = e.target.closest('.stock-sub-item[data-id]');
       if (subItem && !e.target.closest('.js-use-item')) {
         sessionStorage.setItem('editItemId', subItem.dataset.id);
         window.location.hash = '#register';
       }
-    });
+    }, sig);
   },
 
   _showUseModal({ id, name, masterId, unit }) {
@@ -346,7 +352,7 @@ export const stockPage = {
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.id = 'use-modal';
+    overlay.id        = 'use-modal';
     overlay.innerHTML = `
       <div class="modal">
         <p class="modal__message">「${name}」を何${unit}使いましたか？</p>
@@ -356,7 +362,7 @@ export const stockPage = {
         </div>
         <div class="modal__actions" style="margin-top:12px;">
           <button class="btn btn-secondary" id="use-cancel">キャンセル</button>
-          <button class="btn btn-primary" id="use-confirm">記録する</button>
+          <button class="btn btn-primary"   id="use-confirm">記録する</button>
         </div>
       </div>
     `;
@@ -370,7 +376,7 @@ export const stockPage = {
     document.getElementById('use-confirm').addEventListener('click', () => {
       const usedQty = parseFloat(input.value);
       if (!usedQty || usedQty <= 0) {
-        input.style.borderColor = 'var(--c-ng)';
+        input.classList.add('input-error');
         return;
       }
       this._recordConsumption({ id, name, masterId, unit, usedQty });
@@ -425,17 +431,15 @@ export const stockPage = {
     `;
     document.getElementById('filter-shortfall').addEventListener('click', () => {
       this._filterShortfall = !this._filterShortfall;
-      // 「不足のみ」トグルはフィルタチップの見た目も変わるので全体再描画
       this._filterReady = false;
       this.render();
     });
     let t;
     document.getElementById('filter-keyword').addEventListener('input', e => {
       clearTimeout(t);
-      // キーワード変更はリストのみ再描画（フィルタバーは維持してフォーカス保持）
       t = setTimeout(() => {
         this._filterKeyword = e.target.value.trim();
-        this._filterReady = true;  // フィルタバーを再描画させない
+        this._filterReady = true;
         this.render();
       }, 250);
     });
@@ -457,15 +461,16 @@ export const stockPage = {
         `).join('')}
       </div>
     `;
-    container.addEventListener('click', e => {
+    // onclick で上書き → 多重登録しない
+    container.onclick = e => {
       const btn = e.target.closest('.mode-btn');
       if (!btn) return;
       const current = storage.get();
       current.settings.stockpileDays = parseInt(btn.dataset.days);
       storage.save(current);
-      this._filterReady = false;  // モード切替時はフィルタも再描画
+      this._filterReady = false;
       this.render();
-    });
+    };
   },
 
   _statusClass(pct) {
