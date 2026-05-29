@@ -11,7 +11,7 @@
  *   6. 各ページへのグリッドメニュー
  */
 import { storage }                               from '../storage.js';
-import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
+import { buildCalcParams, getFilteredMasterList } from '../masterData.js';
 
 /** 期限アイテム抽出しきい値（日）— todo.js と統一 */
 const EXPIRY_WINDOW = 30;
@@ -71,7 +71,7 @@ export const homePage = {
     // ── 集計 ──────────────────────────────────────────
     const params     = buildCalcParams(data);
     const days       = data.settings.stockpileDays;
-    const masterList = getCombinedMasterList(data.customMasterItems);
+    const masterList = getFilteredMasterList(data.customMasterItems, data.settings);
     const noticeDays = data.settings.noticeDays[days] ?? 7;
     const today      = new Date();
 
@@ -140,10 +140,16 @@ export const homePage = {
     `;
 
     // ── 達成率カード ────────────────────────────────
+    const stockLevel = data.settings.stockLevel ?? 'starter';
+    const levelLabel = stockLevel === 'starter' ? 'スターターセット' : '本格備蓄';
+
     summaryEl.innerHTML = `
       ${alertHTML}
       <div class="summary-card">
-        <div class="summary-card__label">${days}日分モード・備蓄達成率</div>
+        <div class="summary-card__label">
+          <span class="level-badge level-badge--${stockLevel}">${levelLabel}</span>
+          ${days}日分モード・達成率
+        </div>
         <div class="summary-card__pct">${pct}%</div>
         <div class="progress-bar">
           <div class="progress-bar__inner ${statusClass}" style="width:${pct}%"></div>

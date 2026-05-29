@@ -11,9 +11,9 @@
  *   - アイテムをタップして編集・追加画面へ遷移
  *   - 「使った」ボタンでローリングストック消費を記録
  */
-import { storage }                               from '../storage.js';
-import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
-import { showToast }                             from '../ui.js';
+import { storage }                                          from '../storage.js';
+import { buildCalcParams, getFilteredMasterList, STARTER_IDS } from '../masterData.js';
+import { showToast, showConfirm }                            from '../ui.js';
 
 export const stockPage = {
   _filterShortfall: false,
@@ -57,8 +57,9 @@ export const stockPage = {
     }
 
     const params     = buildCalcParams(data);
-    const masterList = getCombinedMasterList(data.customMasterItems);
+    const masterList = getFilteredMasterList(data.customMasterItems, data.settings);
     const noticeDays = data.settings.noticeDays[days] ?? 7;
+    const stockLevel = data.settings.stockLevel ?? 'starter';
     const today      = new Date();
 
     const stockById = {};
@@ -100,10 +101,17 @@ export const stockPage = {
 
     const overallPct = totalItems > 0 ? Math.round((achievedItems / totalItems) * 100) : 0;
 
+    // 昇格バナー（スターターモード且つ80%以上達成）
+    const showUpgrade = stockLevel === 'starter' && overallPct >= 80;
+    const levelLabel  = stockLevel === 'starter' ? 'スターターセット' : '本格備蓄';
+
     let html = `
       <div class="overall-progress">
         <div class="overall-progress__header">
-          <span>全体の達成率</span>
+          <span>
+            <span class="level-badge level-badge--${stockLevel}">${levelLabel}</span>
+            達成率
+          </span>
           <span class="overall-progress__pct">${overallPct}%</span>
         </div>
         <div class="progress-bar">
@@ -111,6 +119,15 @@ export const stockPage = {
         </div>
         <div class="overall-progress__sub">${achievedItems} / ${totalItems} 品目 達成</div>
       </div>
+      ${showUpgrade ? `
+        <div class="upgrade-banner">
+          <div class="upgrade-banner__body">
+            <strong>スターターセット達成！🎉</strong>
+            <p>行政推奨の本格備蓄リストに移行しますか？</p>
+          </div>
+          <button class="btn btn-primary btn-sm js-upgrade-level">移行する</button>
+        </div>
+      ` : ''}
     `;
 
     if (Object.keys(categories).length === 0) {
@@ -184,6 +201,9 @@ export const stockPage = {
                 data-name="${item.name}"
                 data-unit="${item.unit}">
                 ＋ この品目を追加
+              </button>
+              <button class="btn-hide js-hide-item" data-id="${item.id}">
+                この品目を非表示にする
               </button>
             </div>
           </details>
@@ -266,7 +286,40 @@ export const stockPage = {
 
     listEl.innerHTML = html;
 
-    listEl.addEventListener('click', e => {
+    listEl.addEventListener('click', async e => {
+      // 昇格バナー
+      if (e.target.closest('.js-upgrade-level')) {
+        const ok = await showConfirm(
+          '行政推奨の本格備蓄リストに移行します。\nスターターセット以外の品目も表示されるようになります。',
+          { confirmLabel: '移行する', confirmClass: 'btn-primary' }
+        );
+        if (!ok) return;
+        const current = storage.get();
+        current.settings.stockLevel = 'full';
+        storage.save(current);
+        showToast('本格備蓄モードに移行しました 🎉');
+        this._filterReady = false;
+        this.render();
+        return;
+      }
+
+      // 非表示
+      const hideBtn = e.target.closest('.js-hide-item');
+      if (hideBtn) {
+        const ok = await showConfirm(
+          'この品目を備蓄リストから非表示にしますか？\n設定画面からいつでも再表示できます。',
+          { confirmLabel: '非表示にする', confirmClass: 'btn-secondary' }
+        );
+        if (!ok) return;
+        const current = storage.get();
+        if (!current.settings.hiddenMasterIds) current.settings.hiddenMasterIds = [];
+        current.settings.hiddenMasterIds.push(hideBtn.dataset.id);
+        storage.save(current);
+        showToast('非表示にしました', 'info');
+        this.render();
+        return;
+      }
+
       const addBtn = e.target.closest('.js-add-item');
       if (addBtn) {
         const { id, name, unit } = addBtn.dataset;

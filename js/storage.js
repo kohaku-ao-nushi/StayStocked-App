@@ -20,8 +20,10 @@ const DEFAULTS = {
   settings: {
     stockpileDays: 3,
     noticeDays: { 3: 7, 7: 14, 14: 30 },
-    nextCheckDate: null,       // 次回棚卸し予定日（ISO文字列）
-    checkIntervalDays: 30      // 棚卸しリマインダー間隔（日）
+    nextCheckDate: null,        // 次回棚卸し予定日（ISO文字列）
+    checkIntervalDays: 30,      // 棚卸しリマインダー間隔（日）
+    stockLevel: 'starter',      // 'starter' | 'full'
+    hiddenMasterIds: []         // 非表示にした品目ID一覧
   },
   customMasterItems: [],
   onboarding: { completed: false }  // 初回案内フラグ

@@ -4,6 +4,7 @@
  */
 import { storage }                from '../storage.js';
 import { showToast, showConfirm } from '../ui.js';
+import { todoMasterList }         from '../masterData.js';
 
 export const settingsPage = {
   template() {
@@ -38,6 +39,18 @@ export const settingsPage = {
           <input type="number" id="check-interval" min="1" max="365" placeholder="30">
         </div>
         <button id="saveReminderBtn" class="btn btn-primary">リマインダーを保存</button>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">備蓄モード</h3>
+        <p class="section-desc">スターターセットは最低限の8品目に絞った初心者向けモードです。本格備蓄モードでは行政推奨の全品目が表示されます。</p>
+        <div id="stock-level-section"></div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">非表示にした品目</h3>
+        <p class="section-desc">備蓄リストで非表示にした品目を再表示できます。</p>
+        <div id="hidden-items-section"></div>
       </div>
 
       <div class="form-section">
@@ -136,6 +149,12 @@ export const settingsPage = {
       e.target.value = ''; // 同一ファイル再選択を許可
     });
 
+    // 備蓄モード切替
+    this._renderStockLevel();
+
+    // 非表示品目管理
+    this._renderHiddenItems();
+
     // リセット
     document.getElementById('resetBtn').addEventListener('click', async () => {
       const ok = await showConfirm(
@@ -147,5 +166,83 @@ export const settingsPage = {
       showToast('データをリセットしました', 'info');
       setTimeout(() => { window.location.hash = '#home'; location.reload(); }, 800);
     });
-  }
+  },
+
+  _renderStockLevel() {
+    const el   = document.getElementById('stock-level-section');
+    if (!el) return;
+    const data  = storage.get();
+    const level = data.settings.stockLevel ?? 'starter';
+    const isStarter = level === 'starter';
+
+    el.innerHTML = `
+      <div class="settings-level-row">
+        <div class="settings-level-info">
+          <span class="level-badge level-badge--${level}">${isStarter ? 'スターターセット' : '本格備蓄'}</span>
+          <span class="settings-level-desc">${isStarter ? '8品目・最低限セット' : '行政推奨・全品目'}</span>
+        </div>
+        <button class="btn btn-sm btn-secondary" id="toggle-level-btn">
+          ${isStarter ? '本格備蓄に移行する' : 'スターターに戻す'}
+        </button>
+      </div>
+    `;
+
+    document.getElementById('toggle-level-btn').addEventListener('click', async () => {
+      const next   = isStarter ? 'full' : 'starter';
+      const msg    = isStarter
+        ? '本格備蓄モードに移行します。全品目が表示されるようになります。'
+        : 'スターターセットモードに戻します。最低限の8品目のみ表示されます。';
+      const ok = await showConfirm(msg, {
+        confirmLabel: '切り替える',
+        confirmClass: 'btn-primary',
+      });
+      if (!ok) return;
+      const current = storage.get();
+      current.settings.stockLevel = next;
+      storage.save(current);
+      showToast(`${next === 'full' ? '本格備蓄' : 'スターター'}モードに切り替えました`);
+      this._renderStockLevel();
+    });
+  },
+
+  _renderHiddenItems() {
+    const el = document.getElementById('hidden-items-section');
+    if (!el) return;
+    const data   = storage.get();
+    const hidden = data.settings.hiddenMasterIds ?? [];
+
+    if (hidden.length === 0) {
+      el.innerHTML = '<p class="empty-text">非表示にした品目はありません。</p>';
+      return;
+    }
+
+    // IDから品目名を引く（デフォルト + カスタム）
+    const allItems = [
+      ...todoMasterList,
+      ...(data.customMasterItems || []),
+    ];
+    const rows = hidden.map(id => {
+      const item = allItems.find(i => i.id === id);
+      const name = item?.name ?? id;
+      return `
+        <div class="hidden-item-row">
+          <span class="hidden-item-row__name">${name}</span>
+          <button class="btn btn-sm btn-secondary js-restore-item" data-id="${id}">再表示</button>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = rows;
+
+    el.querySelectorAll('.js-restore-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = storage.get();
+        current.settings.hiddenMasterIds =
+          (current.settings.hiddenMasterIds ?? []).filter(id => id !== btn.dataset.id);
+        storage.save(current);
+        showToast('再表示しました');
+        this._renderHiddenItems();
+      });
+    });
+  },
 };

@@ -215,6 +215,22 @@ export const todoMasterList = [
 export const CATEGORIES = [...new Set(todoMasterList.map(i => i.category))];
 
 /**
+ * スターターセット品目ID
+ * 「まず3日分」として最低限揃えるべき8品目。
+ * 水・食料・トイレ・照明・充電・救急の6領域をカバー。
+ */
+export const STARTER_IDS = new Set([
+  'water',           // 水
+  'staple_food',     // レトルトご飯・乾麺
+  'side_dish',       // 缶詰・レトルト食品
+  'portable_toilet', // 携帯トイレ・簡易トイレ
+  'flashlight',      // 懐中電灯・ランタン
+  'batteries',       // 乾電池
+  'mobile_battery',  // 携帯充電器
+  'first_aid_kit',   // 救急箱
+]);
+
+/**
  * storage.get() の戻り値から、必要量計算用のパラメータオブジェクトを生成する。
  *
  * @param {Object} data - storage.get() の戻り値
@@ -261,4 +277,39 @@ export function getCombinedMasterList(customItems = []) {
     isNeeded: () => !!item.dailyQty
   }));
   return [...todoMasterList, ...processed];
+}
+
+/**
+ * stockLevel と hiddenMasterIds を適用してフィルタ済みリストを返す。
+ * stock / todo / home の各ページはこちらを使う。
+ *
+ * @param {Array}  customItems - data.customMasterItems
+ * @param {Object} settings    - data.settings
+ * @returns {Array}
+ */
+export function getFilteredMasterList(customItems = [], settings = {}) {
+  const {
+    stockLevel      = 'starter',
+    hiddenMasterIds = [],
+  } = settings;
+
+  const hiddenSet = new Set(hiddenMasterIds);
+
+  // スターターモードは STARTER_IDS の品目のみ
+  const baseList = (stockLevel === 'starter')
+    ? todoMasterList.filter(item => STARTER_IDS.has(item.id))
+    : todoMasterList;
+
+  const filteredBase = baseList.filter(item => !hiddenSet.has(item.id));
+
+  // カスタム品目は stockLevel に関係なく常に表示（非表示設定は反映）
+  const filteredCustom = customItems
+    .filter(item => !hiddenSet.has(item.id))
+    .map(item => ({
+      ...item,
+      calc:     item.dailyQty ? (p, d) => (p.totalPeople || 1) * item.dailyQty * d : null,
+      isNeeded: () => !!item.dailyQty,
+    }));
+
+  return [...filteredBase, ...filteredCustom];
 }

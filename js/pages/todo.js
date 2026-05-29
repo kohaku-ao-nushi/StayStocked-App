@@ -13,7 +13,7 @@
  * TODO: 将来的には questHistory を保存し、週次クエストの達成履歴を管理する
  */
 import { storage }                               from '../storage.js';
-import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
+import { buildCalcParams, getFilteredMasterList } from '../masterData.js';
 import { showToast }                             from '../ui.js';
 
 /** 期限アイテム抽出のしきい値（日） */
@@ -50,7 +50,7 @@ export const todoPage = {
 
     const params     = buildCalcParams(data);
     const days       = data.settings.stockpileDays;
-    const masterList = getCombinedMasterList(data.customMasterItems);
+    const masterList = getFilteredMasterList(data.customMasterItems, data.settings);
     const today      = new Date();
 
     // ── 在庫を ID でまとめる ────────────────────────

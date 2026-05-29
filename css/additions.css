@@ -1107,3 +1107,103 @@
   transition: background .15s;
 }
 .home-next-check__link:hover { background: var(--c-surface-2); }
+
+/* ============================================================
+   備蓄モード（スターター / 本格）
+   ============================================================ */
+
+/* レベルバッジ */
+.level-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.level-badge--starter {
+  background: #FEF3C7;
+  color: #92400E;
+}
+.level-badge--full {
+  background: var(--c-primary-lt);
+  color: var(--c-primary-dk);
+}
+
+/* 昇格バナー（備蓄リスト画面） */
+.upgrade-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #FDE68A;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.upgrade-banner__body strong {
+  display: block;
+  font-size: 14px;
+  color: #78350F;
+  margin-bottom: 2px;
+}
+.upgrade-banner__body p {
+  font-size: 12px;
+  color: #92400E;
+  margin: 0;
+}
+
+/* 品目の非表示ボタン */
+.btn-hide {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--c-text-muted);
+  text-align: center;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: color .15s, background .15s;
+}
+.btn-hide:hover {
+  color: var(--c-ng);
+  background: var(--c-ng-bg, #FEE2E2);
+}
+
+/* 設定画面 — モード切替行 */
+.settings-level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+}
+.settings-level-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-level-desc {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+/* 設定画面 — 非表示品目行 */
+.hidden-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--c-border-lt);
+  gap: 12px;
+}
+.hidden-item-row:last-child { border-bottom: none; }
+.hidden-item-row__name {
+  font-size: 14px;
+  color: var(--c-text);
+}
