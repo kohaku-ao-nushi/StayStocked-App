@@ -13,14 +13,12 @@ import { storage }   from '../storage.js';
 import { showToast } from '../ui.js';
 
 const AGE_GROUPS = [
-  { value: '乳幼児', label: '乳幼児（0〜2歳）' },
-  { value: '子ども', label: '子ども（3〜17歳）' },
-  { value: '成人',   label: '成人（18〜64歳）' },
-  { value: '高齢者', label: '高齢者（65歳以上）' },
+  { value: '乳幼児', label: '0〜2歳',   sub: '乳幼児' },
+  { value: '子ども', label: '3〜17歳',  sub: '子ども' },
+  { value: '若年',   label: '18〜39歳', sub: '若年成人' },
+  { value: '中年',   label: '40〜64歳', sub: '中年成人' },
+  { value: '高齢者', label: '65歳以上', sub: '高齢者' },
 ];
-
-const GENDER_ICONS = { '男性': '👨', '女性': '👩' };
-const AGE_ICONS    = { '乳幼児': '👶', '子ども': '🧒', '成人': '🧑', '高齢者': '🧓' };
 
 export const lifestylePage = {
   _people: 1,
@@ -119,15 +117,14 @@ export const lifestylePage = {
 
       const genderBtns = ['男性', '女性'].map(g => `
         <button class="ls-toggle-btn ${p.gender === g ? 'is-active' : ''}"
-          data-field="gender" data-value="${g}">
-          ${GENDER_ICONS[g]} ${g}
+          data-field="gender" data-value="${g}">${g}
         </button>
       `).join('');
 
       const ageBtns = AGE_GROUPS.map(g => `
         <button class="ls-age-btn ${p.ageGroup === g.value ? 'is-active' : ''}"
           data-field="ageGroup" data-value="${g.value}">
-          <span class="ls-age-btn__icon">${AGE_ICONS[g.value]}</span>
+          <span class="ls-age-btn__sub">${g.sub}</span>
           <span class="ls-age-btn__label">${g.label}</span>
         </button>
       `).join('');
@@ -143,7 +140,7 @@ export const lifestylePage = {
         </div>
         <div class="ls-field-group">
           <div class="ls-field-label">年代</div>
-          <div class="ls-age-grid">${ageBtns}</div>
+          <div class="ls-age-pills">${ageBtns}</div>
         </div>
       `;
 
