@@ -30,6 +30,7 @@ export const stockPage = {
   init() {
     this._filterShortfall = false;
     this._filterKeyword   = '';
+    this._filterReady     = false;
     this.render();
   },
 
@@ -39,7 +40,11 @@ export const stockPage = {
     const listEl = document.getElementById('stock-list');
 
     this._renderModeSelector(days);
-    this._renderFilter();
+    // フィルタバーは初回のみ描画（再描画するとフォーカスが外れる）
+    if (!this._filterReady) {
+      this._renderFilter();
+      this._filterReady = true;
+    }
 
     if (data.profiles.length === 0) {
       listEl.innerHTML = `
@@ -188,6 +193,71 @@ export const stockPage = {
       html += `</div>`;
     }
 
+    // ── 自由登録品目（目標量なしのカスタム品目）────────────
+    const masterIds = new Set(masterList.filter(m => m.calc && m.isNeeded(params)).map(m => m.id));
+    const freeStocks = data.stockItems.filter(s => {
+      const key = s.masterId || s.customId;
+      return key && !masterIds.has(key);
+    });
+
+    if (freeStocks.length > 0 &&
+        (!this._filterKeyword || freeStocks.some(s =>
+          (s.itemName || s.productName || '').toLowerCase().includes(this._filterKeyword.toLowerCase())
+        ))) {
+      const filtered = this._filterKeyword
+        ? freeStocks.filter(s =>
+            (s.itemName || s.productName || '').toLowerCase().includes(this._filterKeyword.toLowerCase()))
+        : freeStocks;
+
+      if (filtered.length > 0) {
+        html += `
+          <div class="stock-category">
+            <div class="category-header">
+              <h3 class="category-header__name">自由登録品目</h3>
+              <span class="category-badge">${filtered.length}</span>
+            </div>
+        `;
+        filtered.forEach(s => {
+          const diff = s.expiry
+            ? Math.ceil((new Date(s.expiry) - today) / 86400000) : null;
+          const subClass = diff !== null
+            ? (diff <= 0 ? 'is-expired-sub' : diff <= noticeDays ? 'is-expiring-sub' : '')
+            : '';
+          html += `
+            <details class="stock-item">
+              <summary class="stock-item__summary">
+                <div class="stock-item__row">
+                  <span class="stock-item__name">${s.itemName || s.productName}</span>
+                  <span class="target-badge">目標なし</span>
+                </div>
+                <div class="stock-item__progress-row">
+                  <div class="progress-bar" style="opacity:.3">
+                    <div class="progress-bar__inner is-sufficient" style="width:100%"></div>
+                  </div>
+                  <span class="stock-item__amount">${s.qty} ${s.unit}</span>
+                </div>
+              </summary>
+              <div class="stock-item__detail">
+                <ul class="stock-sub-list">
+                  <li class="stock-sub-item ${subClass}" data-id="${s.id}">
+                    <span class="stock-sub-item__name">${s.productName || s.itemName || ''}</span>
+                    <span class="stock-sub-item__qty">${s.qty} ${s.unit}</span>
+                    <span class="stock-sub-item__expiry">${s.expiry || '期限なし'}</span>
+                    <button class="btn-use js-use-item"
+                      data-id="${s.id}"
+                      data-name="${s.itemName || s.productName}"
+                      data-master-id="${s.masterId || s.customId}"
+                      data-unit="${s.unit}">使った</button>
+                  </li>
+                </ul>
+              </div>
+            </details>
+          `;
+        });
+        html += `</div>`;
+      }
+    }
+
     html += `
       <div class="stock-footer">
         <a href="#register" class="btn btn-secondary">リストにない品目を追加</a>
@@ -302,12 +372,19 @@ export const stockPage = {
     `;
     document.getElementById('filter-shortfall').addEventListener('click', () => {
       this._filterShortfall = !this._filterShortfall;
+      // 「不足のみ」トグルはフィルタチップの見た目も変わるので全体再描画
+      this._filterReady = false;
       this.render();
     });
     let t;
     document.getElementById('filter-keyword').addEventListener('input', e => {
       clearTimeout(t);
-      t = setTimeout(() => { this._filterKeyword = e.target.value.trim(); this.render(); }, 250);
+      // キーワード変更はリストのみ再描画（フィルタバーは維持してフォーカス保持）
+      t = setTimeout(() => {
+        this._filterKeyword = e.target.value.trim();
+        this._filterReady = true;  // フィルタバーを再描画させない
+        this.render();
+      }, 250);
     });
   },
 
@@ -333,6 +410,7 @@ export const stockPage = {
       const current = storage.get();
       current.settings.stockpileDays = parseInt(btn.dataset.days);
       storage.save(current);
+      this._filterReady = false;  // モード切替時はフィルタも再描画
       this.render();
     });
   },

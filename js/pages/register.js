@@ -157,11 +157,24 @@ export const registerPage = {
         }
         showToast('更新しました');
       } else {
-        // 新規追加
+        // モードC：マスター未登録品目 → customMasterItem も自動作成してリンク
+        let resolvedMasterId = masterId;
+        if (!resolvedMasterId) {
+          resolvedMasterId = `custom_${Date.now()}`;
+          if (!current.customMasterItems) current.customMasterItems = [];
+          current.customMasterItems.push({
+            id:       resolvedMasterId,
+            name:     itemName,
+            category,
+            unit,
+            dailyQty: null,   // 目標量なし（自由登録）
+            note:     ''
+          });
+        }
         current.stockItems.push({
-          id:          Date.now().toString(),
-          masterId:    masterId || null,
-          customId:    masterId || null,
+          id:          `${Date.now()}_s`,
+          masterId:    resolvedMasterId,
+          customId:    resolvedMasterId,
           itemName,
           category,
           productName,
