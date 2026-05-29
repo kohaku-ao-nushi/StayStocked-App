@@ -1064,3 +1064,46 @@
   border-top: 1px solid var(--c-border-lt);
 }
 .home-quest-card__link:hover { text-decoration: underline; }
+
+/* ============================================================
+   棚卸しリマインダー改修
+   ============================================================ */
+
+/* 前日は通常バナー、当日以降は urgent（濃い色） */
+.reminder-banner--urgent {
+  background: var(--c-ng-bg, #FEE2E2);
+  border-color: var(--c-ng);
+  color: var(--c-ng);
+}
+.reminder-banner--urgent .reminder-banner__msg { color: var(--c-ng); }
+.reminder-banner--urgent .reminder-banner__btn {
+  background: var(--c-ng);
+  color: #fff;
+}
+
+/* ── 次回棚卸し日（常設・グリッドメニュー下） ── */
+.home-next-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 16px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+.home-next-check__label {
+  font-weight: 600;
+}
+.home-next-check__date {
+  color: var(--c-text-2);
+}
+.home-next-check__link {
+  color: var(--c-primary);
+  text-decoration: none;
+  font-size: 11px;
+  padding: 1px 6px;
+  border: 1px solid var(--c-border);
+  border-radius: 99px;
+  transition: background .15s;
+}
+.home-next-check__link:hover { background: var(--c-surface-2); }

@@ -22,7 +22,7 @@ export const homePage = {
       <div id="home-banner"></div>
       <div id="home-summary"></div>
       <div id="home-quest"></div>
-      <nav class="grid-menu">
+      <nav class="grid-menu" id="home-grid">
         <a href="#lifestyle" class="grid-menu__item">
           <img src="icons/family.png" alt="くらし方">
           <span>くらし方</span>
@@ -44,6 +44,7 @@ export const homePage = {
           <span>使い方</span>
         </a>
       </nav>
+      <div id="home-next-check"></div>
     `;
   },
 
@@ -53,7 +54,7 @@ export const homePage = {
     const summaryEl = document.getElementById('home-summary');
 
     // ── 棚卸しリマインダーバナー ────────────────────────
-    this._renderReminder(bannerEl, data);
+    const isAlertActive = this._renderReminder(bannerEl, data);
 
     // くらし方が未設定の場合
     if (data.profiles.length === 0) {
@@ -63,6 +64,7 @@ export const homePage = {
           <a href="#lifestyle" class="btn btn-primary">くらし方を設定する →</a>
         </div>
       `;
+      this._renderNextCheck(data, isAlertActive);
       return;
     }
 
@@ -163,6 +165,9 @@ export const homePage = {
 
     // ── 優先アクションカード ────────────────────────
     this._renderQuest(data, params, days, masterList, today, noticeDays, stockById);
+
+    // ── 次回棚卸し日（常設・アラート中は非表示） ────
+    this._renderNextCheck(data, isAlertActive);
   },
 
   _renderQuest(data, params, days, masterList, today, noticeDays, stockById) {
@@ -237,24 +242,39 @@ export const homePage = {
     `;
   },
 
+  /**
+   * 棚卸しアラートバナーを描画する。
+   * 前日（diff === -1）から当日以降（diff >= 0）を対象にし、
+   * 「確認した」が押されるまで消えない。
+   * @returns {boolean} アラートを表示した場合 true
+   */
   _renderReminder(bannerEl, data) {
     const { nextCheckDate } = data.settings;
-    if (!nextCheckDate) return;
+    if (!nextCheckDate) return false;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const checkDate = new Date(nextCheckDate);
     checkDate.setHours(0, 0, 0, 0);
 
-    if (checkDate > today) return; // まだ期日前
+    // 前日より前はバナー不要
+    const diffDays = Math.round((checkDate - today) / 86400000); // 正 = まだ先
+    if (diffDays > 1) return false;
 
-    const diffDays = Math.round((today - checkDate) / 86400000);
-    const msg = diffDays === 0
-      ? '今日は備蓄の棚卸し日です！'
-      : `棚卸し予定日を ${diffDays} 日過ぎています`;
+    let msg, urgent;
+    if (diffDays === 1) {
+      msg    = '明日は備蓄の棚卸し日です。準備はいいですか？';
+      urgent = false;
+    } else if (diffDays === 0) {
+      msg    = '今日は備蓄の棚卸し日です！';
+      urgent = true;
+    } else {
+      msg    = `棚卸し予定日を ${Math.abs(diffDays)} 日過ぎています`;
+      urgent = true;
+    }
 
     bannerEl.innerHTML = `
-      <div class="reminder-banner">
+      <div class="reminder-banner ${urgent ? 'reminder-banner--urgent' : ''}">
         <span class="reminder-banner__icon">📋</span>
         <span class="reminder-banner__msg">${msg}</span>
         <button class="reminder-banner__btn" id="reminder-done">確認した</button>
@@ -269,6 +289,37 @@ export const homePage = {
       current.settings.nextCheckDate = next.toISOString().slice(0, 10);
       storage.save(current);
       bannerEl.innerHTML = '';
+      // 常設表示を再描画（バナーが消えたので表示する）
+      this._renderNextCheck(storage.get(), false);
     });
-  }
+
+    return true;
+  },
+
+  /**
+   * グリッドメニューの下に次回棚卸し日を1行で常設表示する。
+   * アラートバナーが出ている間は非表示（二重表示を避ける）。
+   */
+  _renderNextCheck(data, isAlertActive) {
+    const el = document.getElementById('home-next-check');
+    if (!el) return;
+
+    const { nextCheckDate } = data.settings;
+    if (!nextCheckDate || isAlertActive) {
+      el.innerHTML = '';
+      return;
+    }
+
+    // 日本語フォーマット（例：2026年6月29日）
+    const d = new Date(nextCheckDate);
+    const label = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+
+    el.innerHTML = `
+      <p class="home-next-check">
+        <span class="home-next-check__label">次回棚卸し</span>
+        <span class="home-next-check__date">${label}</span>
+        <a href="#settings" class="home-next-check__link">変更</a>
+      </p>
+    `;
+  },
 };
