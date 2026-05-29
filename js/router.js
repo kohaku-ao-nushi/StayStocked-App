@@ -39,7 +39,8 @@ export class Router {
       return;
     }
 
-    // テンプレートを描画
+    // テンプレートを描画（ページ遷移のたびに先頭へスクロール）
+    window.scrollTo(0, 0);
     document.getElementById('app-root').innerHTML  = page.template();
     document.getElementById('header-title').textContent = PAGE_TITLES[pageKey] ?? 'StayStocked';
 
