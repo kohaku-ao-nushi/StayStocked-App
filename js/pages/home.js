@@ -13,11 +13,15 @@
 import { storage }                               from '../storage.js';
 import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
 
+/** 期限アイテム抽出しきい値（日）— todo.js と統一 */
+const EXPIRY_WINDOW = 30;
+
 export const homePage = {
   template() {
     return `
       <div id="home-banner"></div>
       <div id="home-summary"></div>
+      <div id="home-quest"></div>
       <nav class="grid-menu">
         <a href="#lifestyle" class="grid-menu__item">
           <img src="icons/family.png" alt="くらし方">
@@ -26,6 +30,10 @@ export const homePage = {
         <a href="#stock" class="grid-menu__item">
           <img src="icons/stock.png" alt="備蓄リスト">
           <span>備蓄リスト</span>
+        </a>
+        <a href="#todo" class="grid-menu__item">
+          <img src="icons/todo.png" alt="ToDo備蓄">
+          <span>ToDo備蓄</span>
         </a>
         <a href="#settings" class="grid-menu__item">
           <img src="icons/setting.png" alt="設定">
@@ -152,6 +160,81 @@ export const homePage = {
         this.init(); // ホーム再描画
       });
     });
+
+    // ── 優先アクションカード ────────────────────────
+    this._renderQuest(data, params, days, masterList, today, noticeDays, stockById);
+  },
+
+  _renderQuest(data, params, days, masterList, today, noticeDays, stockById) {
+    const questEl = document.getElementById('home-quest');
+    if (!questEl) return;
+
+    // 不足上位3件
+    const shortfalls = [];
+    masterList.forEach(item => {
+      if (!item.calc || !item.isNeeded(params)) return;
+      const required = item.calc(params, days);
+      if (required <= 0) return;
+      const current  = stockById[item.id] || 0;
+      const shortage = required - current;
+      if (shortage > 0) shortfalls.push({ ...item, required, current, shortage });
+    });
+    shortfalls.sort((a, b) => (b.shortage / b.required) - (a.shortage / a.required));
+    const topShort = shortfalls.slice(0, 3);
+
+    // 期限間近上位2件
+    const expiryItems = [];
+    data.stockItems.forEach(s => {
+      if (!s.expiry) return;
+      const diff = Math.ceil((new Date(s.expiry) - today) / 86400000);
+      if (diff <= EXPIRY_WINDOW) expiryItems.push({ ...s, diff });
+    });
+    expiryItems.sort((a, b) => a.diff - b.diff);
+    const topExpiry = expiryItems.slice(0, 2);
+
+    if (topShort.length === 0 && topExpiry.length === 0) {
+      questEl.innerHTML = `
+        <div class="home-quest-card home-quest-card--ok">
+          <div class="home-quest-card__head">
+            <span class="home-quest-card__title">優先アクション</span>
+          </div>
+          <p class="home-quest-card__empty">今すぐやることはありません。備えは順調です！</p>
+        </div>
+      `;
+      return;
+    }
+
+    const rows = [
+      ...topShort.map(item => `
+        <li class="home-quest-row home-quest-row--shortfall">
+          <span class="home-quest-badge home-quest-badge--high">補充</span>
+          <span class="home-quest-row__name">${item.name}</span>
+          <span class="home-quest-row__meta">あと ${Math.ceil(item.shortage).toLocaleString()} ${item.unit}</span>
+        </li>
+      `),
+      ...topExpiry.map(s => {
+        const label = s.diff <= 0 ? '期限切れ' : `あと${s.diff}日`;
+        return `
+          <li class="home-quest-row home-quest-row--expiry">
+            <span class="home-quest-badge ${s.diff <= 0 ? 'home-quest-badge--expired' : 'home-quest-badge--warn'}">${s.diff <= 0 ? '期限切れ' : '期限間近'}</span>
+            <span class="home-quest-row__name">${s.productName || s.itemName}</span>
+            <span class="home-quest-row__meta">${label}</span>
+          </li>
+        `;
+      }),
+    ].join('');
+
+    const remaining = (shortfalls.length - topShort.length) + (expiryItems.length - topExpiry.length);
+    questEl.innerHTML = `
+      <div class="home-quest-card">
+        <div class="home-quest-card__head">
+          <span class="home-quest-card__title">優先アクション</span>
+          ${remaining > 0 ? `<span class="home-quest-card__more">他 ${remaining} 件</span>` : ''}
+        </div>
+        <ul class="home-quest-list">${rows}</ul>
+        <a href="#todo" class="home-quest-card__link">ToDo備蓄をすべて見る →</a>
+      </div>
+    `;
   },
 
   _renderReminder(bannerEl, data) {

@@ -17,6 +17,7 @@ import { registerPage }         from './pages/register.js';
 import { settingsPage }         from './pages/settings.js';
 import { customListEditorPage } from './pages/customListEditor.js';
 import { onboardingPage }       from './pages/onboarding.js';
+import { todoPage }             from './pages/todo.js';
 import { storage }              from './storage.js';
 import { handleNumberInput }    from './ui.js';
 
@@ -56,6 +57,7 @@ const router = new Router({
   'how-to':             howToPage,
   help:                 helpPage,
   onboarding:           onboardingPage,
+  todo:                 todoPage,
 });
 
 document.addEventListener('DOMContentLoaded', () => {

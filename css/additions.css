@@ -829,3 +829,238 @@
   border-color: var(--c-primary-dk);
   background: var(--c-primary-lt);
 }
+
+/* ============================================================
+   ToDo備蓄ページ & ホームの優先アクションカード
+   ============================================================ */
+
+/* ── ToDo セクション ──────────────────────────────────── */
+.todo-section {
+  margin-bottom: 24px;
+}
+.todo-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 0 0 10px;
+  padding: 0 4px;
+}
+.todo-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--c-primary);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ── ToDo カード ──────────────────────────────────────── */
+.todo-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border-lt);
+  border-left: 4px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 12px 12px 12px 10px;
+  margin-bottom: 8px;
+}
+.todo-card--shortfall { border-left-color: var(--c-primary-dk); }
+.todo-card--expiry    { border-left-color: var(--c-warn, #D97706); }
+.todo-card.is-expired { border-left-color: var(--c-ng); }
+
+/* バッジ */
+.todo-badge {
+  flex-shrink: 0;
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.todo-badge--high    { background: var(--c-primary-lt);  color: var(--c-primary-dk); }
+.todo-badge--warn    { background: #FEF3C7;               color: #92400E; }
+.todo-badge--expired { background: var(--c-ng-bg, #FEE2E2); color: var(--c-ng); }
+
+/* カード本文 */
+.todo-card__body {
+  flex: 1;
+  min-width: 0;
+}
+.todo-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.todo-card__meta {
+  font-size: 12px;
+  color: var(--c-text-2);
+}
+.todo-card__meta strong {
+  color: var(--c-ng);
+  font-weight: 700;
+}
+
+/* 進捗バー（compact でない不足カード） */
+.todo-card__progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 2px;
+}
+.progress-bar--sm {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--c-border-lt);
+  overflow: hidden;
+}
+.todo-card__pct {
+  font-size: 11px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+/* 空状態 */
+.todo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0 20px;
+  gap: 8px;
+}
+.todo-empty__icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #DCFCE7;
+  border-radius: 50%;
+  font-size: 20px;
+  color: var(--c-ok, #16A34A);
+  font-weight: 700;
+}
+.todo-empty__msg {
+  font-size: 13px;
+  color: var(--c-text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
+}
+.todo-empty-text {
+  font-size: 13px;
+  color: var(--c-text-muted);
+  text-align: center;
+  padding: 12px 0;
+  margin: 0;
+}
+
+/* ── ホームの優先アクションカード ─────────────────────── */
+.home-quest-card {
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border-lt);
+  border-radius: var(--r-lg, 14px);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.home-quest-card--ok {
+  border-color: #BBF7D0;
+  background: #F0FDF4;
+}
+.home-quest-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.home-quest-card__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.home-quest-card__more {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+.home-quest-card__empty {
+  font-size: 13px;
+  color: var(--c-ok, #16A34A);
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+  padding: 4px 0 2px;
+}
+.home-quest-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.home-quest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.home-quest-badge {
+  flex-shrink: 0;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.home-quest-badge--high    { background: var(--c-primary-lt);    color: var(--c-primary-dk); }
+.home-quest-badge--warn    { background: #FEF3C7;                 color: #92400E; }
+.home-quest-badge--expired { background: var(--c-ng-bg, #FEE2E2); color: var(--c-ng); }
+.home-quest-row__name {
+  flex: 1;
+  color: var(--c-text);
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.home-quest-row__meta {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+.home-quest-card__link {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-primary-dk);
+  text-decoration: none;
+  padding-top: 6px;
+  border-top: 1px solid var(--c-border-lt);
+}
+.home-quest-card__link:hover { text-decoration: underline; }

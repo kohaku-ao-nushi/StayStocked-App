@@ -12,15 +12,16 @@
  */
 
 const PAGE_TITLES = {
-  home:                'StayStocked',
-  lifestyle:           'くらし方',
-  stock:               '備蓄リスト',
-  register:            '備蓄品登録',
-  settings:            '設定',
-  'how-to':            '使い方',
-  help:                'ヘルプ',
+  home:                 'StayStocked',
+  lifestyle:            'くらし方',
+  stock:                '備蓄リスト',
+  register:             '備蓄品登録',
+  settings:             '設定',
+  'how-to':             '使い方',
+  help:                 'ヘルプ',
   'custom-list-editor': '品目リストの編集',
-  onboarding:           'ようこそ'
+  onboarding:           'ようこそ',
+  todo:                 'ToDo備蓄',
 };
 
 export class Router {
