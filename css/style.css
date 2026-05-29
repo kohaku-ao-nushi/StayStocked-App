@@ -62,6 +62,8 @@ body {
 }
 
 /* ── 3. App Shell ──────────────────────────────────────── */
+.is-hidden { display: none !important; }
+
 .app-header {
   background: var(--c-primary);
   color: #fff;

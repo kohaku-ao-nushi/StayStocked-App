@@ -42,6 +42,11 @@ export class Router {
     document.getElementById('app-root').innerHTML  = page.template();
     document.getElementById('header-title').textContent = PAGE_TITLES[pageKey] ?? 'StayStocked';
 
+    // オンボーディング中はヘッダー・ナビを非表示
+    const isOnboarding = pageKey === 'onboarding';
+    document.getElementById('app-header')?.classList.toggle('is-hidden', isOnboarding);
+    document.getElementById('bottom-nav')?.classList.toggle('is-hidden',  isOnboarding);
+
     // ボトムナビのアクティブ状態を更新
     document.querySelectorAll('.bottom-nav__item').forEach(link => {
       link.classList.toggle('is-active', link.getAttribute('href') === `#${pageKey}`);
