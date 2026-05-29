@@ -730,3 +730,102 @@
 }
 .ls-age-btn.is-active .ls-age-btn__sub  { color: rgba(255,255,255,.7); }
 .ls-age-btn.is-active .ls-age-btn__label { color: #fff; }
+
+/* =====================================================
+   ペットリスト
+   ===================================================== */
+.ls-pet-empty {
+  font-size: 13px;
+  color: var(--c-text-muted);
+  text-align: center;
+  padding: 8px 0 12px;
+}
+.ls-pet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--c-border-lt);
+}
+.ls-pet-row:last-child { border-bottom: none; }
+.ls-pet-row__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.ls-pet-type {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 7px 10px;
+  background: var(--c-bg);
+  cursor: pointer;
+  flex: 1;
+}
+.ls-pet-unit-wrap {
+  flex-shrink: 0;
+}
+.ls-pet-unit {
+  width: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 7px 6px;
+  text-align: center;
+  background: var(--c-bg);
+}
+.ls-pet-unit:focus {
+  outline: none;
+  border-color: var(--c-primary-dk);
+  color: var(--c-primary-dk);
+}
+.ls-pet-row__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ls-pet-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-text);
+  min-width: 24px;
+  text-align: center;
+}
+.ls-pet-del {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  margin-left: 2px;
+  transition: color .15s, background .15s;
+}
+.ls-pet-del:hover { color: var(--c-ng); background: var(--c-ng-bg); }
+.ls-pet-add-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1.5px dashed var(--c-border);
+  border-radius: var(--r-md);
+  background: none;
+  color: var(--c-primary-dk);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.ls-pet-add-btn:hover {
+  border-color: var(--c-primary-dk);
+  background: var(--c-primary-lt);
+}

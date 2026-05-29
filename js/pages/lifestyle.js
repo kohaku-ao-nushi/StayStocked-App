@@ -20,9 +20,20 @@ const AGE_GROUPS = [
   { value: '高齢者', label: '65歳以上', sub: '高齢者' },
 ];
 
+// ペットプリセット（種類 → デフォルト助数詞）
+const PET_PRESETS = [
+  { type: '犬',       unit: '匹' },
+  { type: '猫',       unit: '匹' },
+  { type: '鳥',       unit: '羽' },
+  { type: 'うさぎ',   unit: '羽' },
+  { type: 'ハムスター', unit: '匹' },
+  { type: '魚',       unit: '匹' },
+  { type: 'その他',   unit: '頭' },
+];
+
 export const lifestylePage = {
-  _people: 1,
-  _pets:   0,
+  _people:  1,
+  _petList: [],   // [{ type, unit, count }]
 
   template() {
     return `
@@ -40,12 +51,8 @@ export const lifestylePage = {
 
       <div class="ls-section">
         <div class="ls-section__label">ペット</div>
-        <div class="ls-counter" id="pet-counter">
-          <button class="ls-counter__btn" id="pet-minus">−</button>
-          <span class="ls-counter__val" id="pet-val">0</span>
-          <span class="ls-counter__unit">頭</span>
-          <button class="ls-counter__btn" id="pet-plus">＋</button>
-        </div>
+        <div id="pet-list"></div>
+        <button class="ls-pet-add-btn" id="pet-add">＋ ペットを追加</button>
       </div>
 
       <button id="saveLifestyleBtn" class="btn btn-primary btn-full" style="margin-top:8px;">保存する</button>
@@ -53,13 +60,21 @@ export const lifestylePage = {
   },
 
   init() {
-    const data = storage.get();
-    this._people = data.profiles.length || 1;
-    this._pets   = data.pets.count      || 0;
+    const data    = storage.get();
+    this._people  = data.profiles.length || 1;
+
+    // 旧データ（count のみ）との後方互換
+    if (data.pets.entries?.length > 0) {
+      this._petList = data.pets.entries.map(e => ({ ...e }));
+    } else if (data.pets.count > 0) {
+      this._petList = [{ type: 'その他', unit: '頭', count: data.pets.count }];
+    } else {
+      this._petList = [];
+    }
 
     this._updateCounter('people', this._people);
-    this._updateCounter('pet',    this._pets);
     this._renderProfiles(data.profiles);
+    this._renderPetList();
 
     // 人数カウンター
     document.getElementById('people-minus').addEventListener('click', () => {
@@ -75,23 +90,20 @@ export const lifestylePage = {
       this._renderProfiles(this._collectProfiles());
     });
 
-    // ペットカウンター
-    document.getElementById('pet-minus').addEventListener('click', () => {
-      if (this._pets <= 0) return;
-      this._pets--;
-      this._updateCounter('pet', this._pets);
-    });
-    document.getElementById('pet-plus').addEventListener('click', () => {
-      if (this._pets >= 9) return;
-      this._pets++;
-      this._updateCounter('pet', this._pets);
+    // ペット追加
+    document.getElementById('pet-add').addEventListener('click', () => {
+      this._petList.push({ type: '犬', unit: '匹', count: 1 });
+      this._renderPetList();
     });
 
     // 保存
     document.getElementById('saveLifestyleBtn').addEventListener('click', () => {
-      const current      = storage.get();
-      current.profiles   = this._collectProfiles();
-      current.pets.count = this._pets;
+      const current    = storage.get();
+      current.profiles = this._collectProfiles();
+      current.pets     = {
+        entries: this._petList,
+        count:   this._petList.reduce((s, e) => s + e.count, 0)
+      };
       storage.save(current);
       showToast('くらし方を保存しました');
       window.location.hash = '#home';
@@ -102,8 +114,81 @@ export const lifestylePage = {
     document.getElementById(`${key}-val`).textContent = val;
     const minusBtn = document.getElementById(`${key}-minus`);
     const plusBtn  = document.getElementById(`${key}-plus`);
-    if (minusBtn) minusBtn.disabled = (val <= (key === 'people' ? 1 : 0));
+    if (minusBtn) minusBtn.disabled = (val <= 1);
     if (plusBtn)  plusBtn.disabled  = (val >= 9);
+  },
+
+  _renderPetList() {
+    const container = document.getElementById('pet-list');
+    if (this._petList.length === 0) {
+      container.innerHTML = `<p class="ls-pet-empty">ペットがいる場合は追加してください</p>`;
+      return;
+    }
+    container.innerHTML = this._petList.map((pet, i) => `
+      <div class="ls-pet-row" data-idx="${i}">
+        <div class="ls-pet-row__left">
+          <select class="ls-pet-type" data-idx="${i}">
+            ${PET_PRESETS.map(p =>
+              `<option value="${p.type}" data-unit="${p.unit}" ${pet.type === p.type ? 'selected' : ''}>${p.type}</option>`
+            ).join('')}
+          </select>
+          <div class="ls-pet-unit-wrap">
+            <input class="ls-pet-unit" type="text" maxlength="3"
+              value="${pet.unit}" data-idx="${i}" placeholder="匹">
+          </div>
+        </div>
+        <div class="ls-pet-row__right">
+          <button class="ls-counter__btn ls-pet-minus" data-idx="${i}">−</button>
+          <span class="ls-pet-count">${pet.count}</span>
+          <button class="ls-counter__btn ls-pet-plus" data-idx="${i}">＋</button>
+          <button class="ls-pet-del" data-idx="${i}" title="削除">✕</button>
+        </div>
+      </div>
+    `).join('');
+
+    // 種類変更 → 助数詞を自動セット
+    container.querySelectorAll('.ls-pet-type').forEach(sel => {
+      sel.addEventListener('change', e => {
+        const idx      = parseInt(e.target.dataset.idx);
+        const selected = e.target.options[e.target.selectedIndex];
+        this._petList[idx].type = selected.value;
+        this._petList[idx].unit = selected.dataset.unit;
+        this._renderPetList();
+      });
+    });
+
+    // 助数詞の自由入力
+    container.querySelectorAll('.ls-pet-unit').forEach(inp => {
+      inp.addEventListener('input', e => {
+        this._petList[parseInt(e.target.dataset.idx)].unit = e.target.value;
+      });
+    });
+
+    // ± ボタン
+    container.querySelectorAll('.ls-pet-minus').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        if (this._petList[idx].count <= 1) return;
+        this._petList[idx].count--;
+        this._renderPetList();
+      });
+    });
+    container.querySelectorAll('.ls-pet-plus').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        if (this._petList[idx].count >= 9) return;
+        this._petList[idx].count++;
+        this._renderPetList();
+      });
+    });
+
+    // 削除
+    container.querySelectorAll('.ls-pet-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._petList.splice(parseInt(btn.dataset.idx), 1);
+        this._renderPetList();
+      });
+    });
   },
 
   _renderProfiles(existing = []) {
