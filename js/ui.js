@@ -17,6 +17,46 @@
  */
 
 /**
+ * 全角数字・小数点を半角に変換する
+ * @param {string} str
+ * @returns {string}
+ */
+export function toHalfWidthNumber(str) {
+  return str
+    .replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[．。]/g, '.');
+}
+
+/**
+ * number 型 input に対して全角→半角変換 + 不正値の赤枠表示を設定する。
+ * main.js でアプリ全体の #app-root に対してイベント委譲で呼ぶ想定。
+ *
+ * @param {Event} e — input イベント
+ */
+export function handleNumberInput(e) {
+  const el = e.target;
+  if (el.tagName !== 'INPUT' || el.type !== 'number') return;
+
+  // 全角→半角変換（type=number は value に全角が残らないため一時的に text として扱う）
+  const raw       = el.value;
+  const converted = toHalfWidthNumber(raw);
+  if (converted !== raw) el.value = converted;
+
+  // バリデーション：空 or 有効な数値ならOK、それ以外は赤枠
+  const val = el.value;
+  const isEmpty    = val === '';
+  const isValid    = !isNaN(parseFloat(val)) && isFinite(val);
+  const minOk      = el.min === '' || parseFloat(val) >= parseFloat(el.min);
+  const maxOk      = el.max === '' || parseFloat(val) <= parseFloat(el.max);
+
+  if (!isEmpty && (!isValid || !minOk || !maxOk)) {
+    el.classList.add('input-error');
+  } else {
+    el.classList.remove('input-error');
+  }
+}
+
+/**
  * 画面下部にトースト通知を2.5秒表示する（alert の代替）
  * @param {string} message
  * @param {'success'|'error'|'info'} type

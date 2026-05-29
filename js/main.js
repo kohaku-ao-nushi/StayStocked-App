@@ -18,6 +18,7 @@ import { settingsPage }         from './pages/settings.js';
 import { customListEditorPage } from './pages/customListEditor.js';
 import { onboardingPage }       from './pages/onboarding.js';
 import { storage }              from './storage.js';
+import { handleNumberInput }    from './ui.js';
 
 // 静的ページ（HTMLだけのシンプルなページはここに直接書く）
 const howToPage = {
@@ -64,4 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.hash = '#onboarding';
   }
   router.start();
+
+  // アプリ全体の number input に全角→半角変換とバリデーションを適用
+  // compositionend: IME確定時（全角→半角変換のカバー）
+  const root = document.getElementById('app-root');
+  root.addEventListener('input',          handleNumberInput);
+  root.addEventListener('compositionend', handleNumberInput);
 });

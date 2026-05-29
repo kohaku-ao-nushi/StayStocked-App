@@ -235,6 +235,13 @@ body {
   appearance: none;
 }
 
+/* 数値入力エラー（不正値・範囲外）*/
+input.input-error,
+input.input-error:focus {
+  border-color: var(--c-ng) !important;
+  background: #FFF5F5;
+}
+
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
