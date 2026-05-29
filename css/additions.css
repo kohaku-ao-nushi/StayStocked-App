@@ -697,6 +697,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: center;
 }
 .ls-age-btn {
   padding: 7px 12px;
