@@ -13,6 +13,13 @@ python3 -m http.server 8080
 
 There are no tests, no linter, and no package.json.
 
+## Git Workflow
+
+After every code change, always commit and push to origin/main.
+- Commit messages must be in English
+- Use conventional commit format: `type: short description`
+- After committing, always run `git push origin main`
+
 ## Architecture
 
 **Single-page app** using hash-based routing (`#home`, `#stock`, etc.) with ES modules (`type="module"`). No framework, no bundler.
