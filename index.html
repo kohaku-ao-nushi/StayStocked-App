@@ -6,10 +6,14 @@
   <title>StayStocked - 防災備蓄管理</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/additions.css">
-  <!-- PWA（将来用）
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1B7A4F">
-  -->
+  <meta name="theme-color" content="#5C6B7A">
+  <!-- iOS ホーム画面追加サポート -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="StayStocked">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" href="icons/favicon.ico">
 </head>
 <body>
@@ -40,6 +44,15 @@
   </nav>
 
   <script src="js/main.js" type="module"></script>
+  <script>
+    // Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .catch(err => console.warn('SW registration failed:', err));
+      });
+    }
+  </script>
 
 </body>
 </html>
