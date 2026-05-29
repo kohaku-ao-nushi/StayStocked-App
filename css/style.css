@@ -696,16 +696,21 @@ body {
   text-overflow: ellipsis;
 }
 
-/* 対象者バッジ専用行（名前・数量行の下・プログレスバーの上） */
-.stock-item__badge-row {
+/* プログレスバー＋数量を横並びにする行 */
+.stock-item__progress-row {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-item__progress-row .progress-bar {
+  flex: 1;
 }
 
 .stock-item__amount {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--c-text-2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }

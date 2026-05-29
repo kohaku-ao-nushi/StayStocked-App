@@ -147,13 +147,15 @@ export const stockPage = {
             <summary class="stock-item__summary">
               <div class="stock-item__row">
                 <span class="stock-item__name">${item.name}</span>
+                ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
+              </div>
+              <div class="stock-item__progress-row">
+                <div class="progress-bar">
+                  <div class="progress-bar__inner ${this._statusClass(item.pct)}" style="width:${item.pct}%"></div>
+                </div>
                 <span class="stock-item__amount">
                   ${item.current.toLocaleString()} / ${item.required.toLocaleString()} ${item.unit}
                 </span>
-              </div>
-              ${item.target ? `<div class="stock-item__badge-row"><span class="target-badge">${item.target}</span></div>` : ''}
-              <div class="progress-bar">
-                <div class="progress-bar__inner ${this._statusClass(item.pct)}" style="width:${item.pct}%"></div>
               </div>
             </summary>
             <div class="stock-item__detail">
