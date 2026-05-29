@@ -42,7 +42,7 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-.toast--success { background: #2d7a4f; color: #fff; }
+.toast--success { background: #4A5A68; color: #fff; }
 .toast--error   { background: #c0392b; color: #fff; }
 .toast--info    { background: #555;    color: #fff; }
 
@@ -84,7 +84,7 @@
    ボトムナビ アクティブ状態
    ===================================================== */
 .bottom-nav__item.is-active {
-  color: #3D5A70;
+  color: #4A5A68;
   font-weight: 600;
 }
 .bottom-nav__item.is-active img {
@@ -110,14 +110,14 @@
 .radio-label input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: #2d7a4f;
+  accent-color: #4A5A68;
 }
 
 /* =====================================================
    ホーム：達成率サマリーカード
    ===================================================== */
 .summary-card {
-  background: #f0f7f3;
+  background: #EEECEA;
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
@@ -130,7 +130,7 @@
 .summary-card__pct {
   font-size: 36px;
   font-weight: 700;
-  color: #3D5A70;
+  color: #4A5A68;
   line-height: 1.2;
 }
 .summary-card__sub {
@@ -253,8 +253,8 @@
   text-align: center;
 }
 .btn-add:hover {
-  border-color: #2d7a4f;
-  color: #3D5A70;
+  border-color: #4A5A68;
+  color: #4A5A68;
 }
 
 /* =====================================================
@@ -294,7 +294,7 @@
   font-size: 20px;
   font-weight: 300;
   line-height: 1;
-  color: #3D5A70;
+  color: #4A5A68;
   flex-shrink: 0;
   width: 24px;
   text-align: center;
@@ -307,10 +307,10 @@
 .master-list__note {
   margin: 0 0 12px 0;
   padding: 10px 12px;
-  background: #EEF4F8;
-  border-left: 3px solid #7A8FA0;
+  background: #EEF0F3;
+  border-left: 3px solid #5C6B7A;
   border-radius: 0 6px 6px 0;
   font-size: 13px;
   line-height: 1.65;
-  color: #2C1F0E;
+  color: #1A1A1A;
 }
