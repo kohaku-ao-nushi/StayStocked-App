@@ -555,3 +555,166 @@
 .settings-backup-row {
   margin-top: 8px;
 }
+
+/* =====================================================
+   くらし方 — モダンUI
+   ===================================================== */
+.ls-section {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.ls-section__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* カウンター（人数・ペット） */
+.ls-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.ls-counter__btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--c-primary-dk);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s;
+}
+.ls-counter__btn:hover:not(:disabled) {
+  background: var(--c-primary-lt);
+  border-color: var(--c-primary-dk);
+}
+.ls-counter__btn:disabled { opacity: .3; cursor: default; }
+.ls-counter__val {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--c-text);
+  min-width: 56px;
+  text-align: center;
+  line-height: 1;
+}
+.ls-counter__unit {
+  font-size: 16px;
+  color: var(--c-text-muted);
+  margin-left: -10px;
+  align-self: flex-end;
+  padding-bottom: 4px;
+}
+
+/* プロフィールカード */
+.ls-profile-card {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--c-primary);
+}
+.ls-profile-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ls-profile-card__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--c-primary-dk);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ls-profile-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.ls-field-group {
+  margin-bottom: 14px;
+}
+.ls-field-group:last-child { margin-bottom: 0; }
+.ls-field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  margin-bottom: 8px;
+  letter-spacing: .05em;
+}
+
+/* 性別トグルボタン */
+.ls-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+.ls-toggle-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--c-border);
+  background: var(--c-bg);
+  color: var(--c-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.ls-toggle-btn.is-active {
+  background: var(--c-primary-lt);
+  border-color: var(--c-primary-dk);
+  color: var(--c-primary-dk);
+}
+
+/* 年代グリッドボタン */
+.ls-age-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ls-age-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--c-border);
+  background: var(--c-bg);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.ls-age-btn.is-active {
+  background: var(--c-primary-lt);
+  border-color: var(--c-primary-dk);
+}
+.ls-age-btn__icon { font-size: 24px; line-height: 1; }
+.ls-age-btn__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text-2);
+  text-align: center;
+  line-height: 1.3;
+}
+.ls-age-btn.is-active .ls-age-btn__label { color: var(--c-primary-dk); }
