@@ -314,3 +314,215 @@
   line-height: 1.65;
   color: #1A1A1A;
 }
+
+/* =====================================================
+   オンボーディング
+   ===================================================== */
+.ob-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 24px;
+  min-height: calc(100vh - var(--header-h) - var(--nav-h));
+}
+.ob-steps {
+  width: 100%;
+  position: relative;
+  min-height: 260px;
+  margin-bottom: 32px;
+}
+.ob-step {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: ob-fade 0.3s ease;
+}
+.ob-step.is-active { display: flex; }
+@keyframes ob-fade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ob-step__icon {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.ob-step__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.ob-step__desc {
+  font-size: 14px;
+  color: var(--c-text-2);
+  line-height: 1.75;
+}
+.ob-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-border);
+  transition: background 0.2s, width 0.2s;
+}
+.ob-dot.is-active {
+  background: var(--c-primary-dk);
+  width: 24px;
+  border-radius: 4px;
+}
+.ob-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.btn-text-link {
+  background: none;
+  border: none;
+  color: var(--c-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+}
+
+/* =====================================================
+   ホーム：モード切替スイッチ（サマリーカード内）
+   ===================================================== */
+.home-mode-switch {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  justify-content: center;
+}
+.home-mode-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.home-mode-btn.is-active {
+  background: var(--c-primary-dk);
+  border-color: var(--c-primary-dk);
+  color: #fff;
+}
+
+/* =====================================================
+   ホーム：棚卸しリマインダーバナー
+   ===================================================== */
+.reminder-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--c-primary-lt);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.reminder-banner__icon { font-size: 20px; flex-shrink: 0; }
+.reminder-banner__msg  { flex: 1; color: var(--c-text-2); font-weight: 500; }
+.reminder-banner__btn  {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--c-primary-dk);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =====================================================
+   備蓄リスト：フィルタバー
+   ===================================================== */
+.stock-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 4px;
+}
+.filter-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.filter-chip.is-active {
+  background: var(--c-primary-dk);
+  border-color: var(--c-primary-dk);
+  color: #fff;
+}
+.filter-search {
+  flex: 1;
+}
+.filter-search input {
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  font-size: 13px;
+  color: var(--c-text);
+  outline: none;
+}
+.filter-search input:focus {
+  border-color: var(--c-primary-dk);
+}
+
+/* =====================================================
+   備蓄リスト：「使った」ボタン
+   ===================================================== */
+.stock-sub-list {
+  /* サブアイテムグリッドに「使った」列を追加 */
+  --sub-grid: 1fr 72px 90px 52px;
+}
+.stock-sub-item {
+  grid-template-columns: var(--sub-grid, 1fr 72px 90px 52px);
+}
+.btn-use {
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  color: var(--c-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-use:hover, .btn-use:active {
+  background: var(--c-primary-lt);
+  border-color: var(--c-primary-dk);
+  color: var(--c-primary-dk);
+}
+
+/* =====================================================
+   設定：バックアップセクション
+   ===================================================== */
+.settings-backup-row {
+  margin-top: 8px;
+}

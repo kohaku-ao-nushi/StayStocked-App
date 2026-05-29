@@ -16,11 +16,15 @@ const DEFAULTS = {
   profiles: [],
   pets: { count: 0 },
   stockItems: [],
+  consumptionLog: [],          // ローリングストック消費履歴
   settings: {
     stockpileDays: 3,
-    noticeDays: { 3: 7, 7: 14, 14: 30 }
+    noticeDays: { 3: 7, 7: 14, 14: 30 },
+    nextCheckDate: null,       // 次回棚卸し予定日（ISO文字列）
+    checkIntervalDays: 30      // 棚卸しリマインダー間隔（日）
   },
-  customMasterItems: []
+  customMasterItems: [],
+  onboarding: { completed: false }  // 初回案内フラグ
 };
 
 export const storage = {
@@ -37,7 +41,8 @@ export const storage = {
       return {
         ...DEFAULTS,
         ...saved,
-        settings: { ...DEFAULTS.settings, ...(saved.settings ?? {}) }
+        settings:   { ...DEFAULTS.settings,   ...(saved.settings   ?? {}) },
+        onboarding: { ...DEFAULTS.onboarding, ...(saved.onboarding ?? {}) }
       };
     } catch {
       // JSON.parse が失敗した場合（壊れたデータ）はデフォルトを返す

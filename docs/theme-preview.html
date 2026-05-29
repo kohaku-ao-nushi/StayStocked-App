@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>テーマプレビュー</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+  background: #E8E8E8;
+  padding: 24px 12px 48px;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 24px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+  max-width: 900px;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.col { flex: 1; min-width: 0; max-width: 260px; }
+
+.col__label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 8px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.col__sub {
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+  margin-bottom: 10px;
+}
+
+/* ── 共通シェル ── */
+.phone {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+
+.mock-header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.mock-body {
+  padding: 14px 12px 8px;
+}
+
+.mock-nav {
+  height: 58px;
+  display: flex;
+  border-top: 1px solid;
+  margin-top: 4px;
+}
+.mock-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.mock-nav__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+/* ── ウィジェット ── */
+.summary {
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.summary__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.summary__pct {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -.02em;
+}
+.summary__bar {
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.summary__bar-inner {
+  height: 100%;
+  border-radius: 999px;
+  background: #16A34A;
+  width: 42%;
+}
+.summary__sub { font-size: 11px; }
+
+.cat-label {
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  padding: 0 2px;
+}
+.cat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.item {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.item__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.item__name { font-size: 12px; font-weight: 600; }
+.item__badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.item__progress-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.item__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.item__bar-inner {
+  height: 100%;
+  border-radius: 999px;
+}
+.item__bar-inner.full  { background: #16A34A; width: 100%; }
+.item__bar-inner.empty { background: #DC2626; width: 2px; }
+.item__bar-inner.half  { background: #D97706; width: 55%; }
+.item__amount { font-size: 10px; font-weight: 600; white-space: nowrap; }
+
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 10px;
+  cursor: default;
+  color: #fff;
+}
+
+/* ================================================================
+   Theme A: Stone & Sage
+   自然素材・オーガニック。ライフスタイルアプリ感。
+   ================================================================ */
+.a { --bg: #F7F6F2; --surface: #FFFFFF; --primary: #3D6B4F;
+     --primary-lt: #EBF2ED; --accent: #2A4D38; --text: #1C1C18;
+     --text2: #5A5A52; --muted: #9A9A8E; --border: #E4E2DA;
+     --badge-bg: #E4EDE6; --badge-text: #2A4D38;
+     --cat-badge-bg: #EBF2ED; --cat-badge-text: #2A4D38;
+     --nav-active: #3D6B4F; --nav-border: #E4E2DA; }
+
+.a .phone     { background: var(--bg); }
+.a .mock-header { background: var(--bg); color: var(--accent); border-bottom: 1px solid var(--border); }
+.a .mock-nav  { background: var(--surface); border-color: var(--border); }
+.a .mock-nav__item { color: var(--muted); }
+.a .mock-nav__item.active { color: var(--nav-active); }
+.a .mock-nav__dot { background: var(--border); }
+.a .mock-nav__item.active .mock-nav__dot { background: var(--primary-lt); }
+
+.a .summary   { background: var(--surface); box-shadow: 0 1px 8px rgba(0,0,0,.06); }
+.a .summary__label { color: var(--muted); }
+.a .summary__pct   { color: var(--accent); }
+.a .summary__bar   { background: var(--border); }
+.a .summary__sub   { color: var(--muted); }
+
+.a .cat-label    { color: var(--text); }
+.a .cat-badge    { background: var(--cat-badge-bg); color: var(--cat-badge-text); }
+.a .item         { background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+.a .item__name   { color: var(--text); }
+.a .item__badge  { background: var(--badge-bg); color: var(--badge-text); }
+.a .item__bar    { background: var(--border); }
+.a .item__amount { color: var(--muted); }
+.a .btn-primary  { background: var(--primary); }
+
+/* ================================================================
+   Theme B: Cloud & Ink
+   超ミニマル・モノクローム。NotionやLinear系。
+   ================================================================ */
+.b { --bg: #F9F9F9; --surface: #FFFFFF; --primary: #111111;
+     --primary-lt: #F3F3F3; --accent: #111111; --text: #111111;
+     --text2: #555555; --muted: #AAAAAA; --border: #EBEBEB;
+     --badge-bg: #F0F0F0; --badge-text: #555555;
+     --cat-badge-bg: #EDEDED; --cat-badge-text: #333;
+     --nav-active: #111111; --nav-border: #EBEBEB; }
+
+.b .phone     { background: var(--bg); }
+.b .mock-header { background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border); }
+.b .mock-nav  { background: var(--surface); border-color: var(--border); }
+.b .mock-nav__item { color: var(--muted); }
+.b .mock-nav__item.active { color: var(--nav-active); }
+.b .mock-nav__dot { background: var(--border); }
+.b .mock-nav__item.active .mock-nav__dot { background: #111; }
+.b .mock-nav__item.active .mock-nav__dot { background: var(--primary-lt); border: 1.5px solid #ddd; }
+
+.b .summary   { background: var(--surface); border: 1px solid var(--border); }
+.b .summary__label { color: var(--muted); }
+.b .summary__pct   { color: var(--accent); }
+.b .summary__bar   { background: var(--border); }
+.b .summary__sub   { color: var(--muted); }
+
+.b .cat-label    { color: var(--text); }
+.b .cat-badge    { background: var(--cat-badge-bg); color: var(--cat-badge-text); }
+.b .item         { background: var(--surface); border: 1px solid var(--border); }
+.b .item__name   { color: var(--text); }
+.b .item__badge  { background: var(--badge-bg); color: var(--badge-text); }
+.b .item__bar    { background: var(--border); }
+.b .item__amount { color: var(--muted); }
+.b .btn-primary  { background: var(--primary); }
+
+/* ================================================================
+   Theme C: Dusk
+   アンバー×ディープネイビー。落ち着いたプレミアム感。
+   ================================================================ */
+.c { --bg: #F5F2EE; --surface: #FFFFFF; --primary: #1E3A5F;
+     --primary-lt: #FDF0E0; --accent: #1E3A5F; --text: #1A1208;
+     --text2: #4A3C2E; --muted: #9A8A78; --border: #DDD5C8;
+     --badge-bg: #EAF0F6; --badge-text: #1E3A5F;
+     --cat-badge-bg: #FDF0E0; --cat-badge-text: #9A5F1A;
+     --nav-active: #1E3A5F; --nav-border: #DDD5C8; }
+
+.c .phone     { background: var(--bg); }
+.c .mock-header { background: var(--primary); color: #fff; }
+.c .mock-nav  { background: var(--surface); border-color: var(--border); }
+.c .mock-nav__item { color: var(--muted); }
+.c .mock-nav__item.active { color: var(--nav-active); }
+.c .mock-nav__dot { background: var(--border); }
+.c .mock-nav__item.active .mock-nav__dot { background: var(--primary-lt); }
+
+.c .summary   { background: var(--surface); box-shadow: 0 2px 12px rgba(30,58,95,.08); }
+.c .summary__label { color: var(--muted); }
+.c .summary__pct   { color: var(--accent); }
+.c .summary__bar   { background: var(--border); }
+.c .summary__sub   { color: var(--muted); }
+
+.c .cat-label    { color: var(--text); }
+.c .cat-badge    { background: var(--cat-badge-bg); color: var(--cat-badge-text); }
+.c .item         { background: var(--surface); box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+.c .item__name   { color: var(--text); }
+.c .item__badge  { background: var(--badge-bg); color: var(--badge-text); }
+.c .item__bar    { background: var(--border); }
+.c .item__amount { color: var(--muted); }
+.c .btn-primary  { background: var(--primary); }
+
+</style>
+</head>
+<body>
+
+<h1>Theme Preview — 3 Directions</h1>
+
+<div class="row">
+
+  <!-- ── A: Stone & Sage ── -->
+  <div class="col a">
+    <div class="col__label">A: Stone &amp; Sage</div>
+    <div class="col__sub">自然素材・ライフスタイル系</div>
+    <div class="phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+        <div class="summary">
+          <div class="summary__label">3日分 · 備蓄達成率</div>
+          <div class="summary__pct">42%</div>
+          <div class="summary__bar"><div class="summary__bar-inner"></div></div>
+          <div class="summary__sub">14 / 34 品目 達成</div>
+        </div>
+        <div class="cat-label">食品・飲料 <span class="cat-badge">1 / 5</span></div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">水</span>
+            <span class="item__badge">全員</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner full"></div></div>
+            <span class="item__amount">220 / 126 L</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">レトルトご飯・乾麺</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner empty"></div></div>
+            <span class="item__amount">0 / 27 食</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">缶詰・レトルト食品</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner half"></div></div>
+            <span class="item__amount">8 / 14 食分</span>
+          </div>
+        </div>
+        <button class="btn-primary">＋ この品目を追加</button>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>ホーム</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>くらし方</div>
+        <div class="mock-nav__item active"><div class="mock-nav__dot"></div>備蓄リスト</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>設定</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B: Cloud & Ink ── -->
+  <div class="col b">
+    <div class="col__label">B: Cloud &amp; Ink</div>
+    <div class="col__sub">超ミニマル・モノクローム</div>
+    <div class="phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+        <div class="summary">
+          <div class="summary__label">3日分 · 備蓄達成率</div>
+          <div class="summary__pct">42%</div>
+          <div class="summary__bar"><div class="summary__bar-inner"></div></div>
+          <div class="summary__sub">14 / 34 品目 達成</div>
+        </div>
+        <div class="cat-label">食品・飲料 <span class="cat-badge">1 / 5</span></div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">水</span>
+            <span class="item__badge">全員</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner full"></div></div>
+            <span class="item__amount">220 / 126 L</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">レトルトご飯・乾麺</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner empty"></div></div>
+            <span class="item__amount">0 / 27 食</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">缶詰・レトルト食品</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner half"></div></div>
+            <span class="item__amount">8 / 14 食分</span>
+          </div>
+        </div>
+        <button class="btn-primary">＋ この品目を追加</button>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>ホーム</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>くらし方</div>
+        <div class="mock-nav__item active"><div class="mock-nav__dot"></div>備蓄リスト</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>設定</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C: Dusk ── -->
+  <div class="col c">
+    <div class="col__label">C: Dusk</div>
+    <div class="col__sub">アンバー地×ディープネイビー</div>
+    <div class="phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+        <div class="summary">
+          <div class="summary__label">3日分 · 備蓄達成率</div>
+          <div class="summary__pct">42%</div>
+          <div class="summary__bar"><div class="summary__bar-inner"></div></div>
+          <div class="summary__sub">14 / 34 品目 達成</div>
+        </div>
+        <div class="cat-label">食品・飲料 <span class="cat-badge">1 / 5</span></div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">水</span>
+            <span class="item__badge">全員</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner full"></div></div>
+            <span class="item__amount">220 / 126 L</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">レトルトご飯・乾麺</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner empty"></div></div>
+            <span class="item__amount">0 / 27 食</span>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item__row">
+            <span class="item__name">缶詰・レトルト食品</span>
+            <span class="item__badge">成人・子ども</span>
+          </div>
+          <div class="item__progress-row">
+            <div class="item__bar"><div class="item__bar-inner half"></div></div>
+            <span class="item__amount">8 / 14 食分</span>
+          </div>
+        </div>
+        <button class="btn-primary">＋ この品目を追加</button>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>ホーム</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>くらし方</div>
+        <div class="mock-nav__item active"><div class="mock-nav__dot"></div>備蓄リスト</div>
+        <div class="mock-nav__item"><div class="mock-nav__dot"></div>設定</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -9,13 +9,15 @@
  * ビジネスロジックはここには書かない。
  * 「どのファイルに何があるか」がひと目でわかる地図の役割。
  */
-import { Router }              from './router.js';
-import { homePage }            from './pages/home.js';
-import { lifestylePage }       from './pages/lifestyle.js';
-import { stockPage }           from './pages/stock.js';
-import { registerPage }        from './pages/register.js';
-import { settingsPage }        from './pages/settings.js';
+import { Router }               from './router.js';
+import { homePage }             from './pages/home.js';
+import { lifestylePage }        from './pages/lifestyle.js';
+import { stockPage }            from './pages/stock.js';
+import { registerPage }         from './pages/register.js';
+import { settingsPage }         from './pages/settings.js';
 import { customListEditorPage } from './pages/customListEditor.js';
+import { onboardingPage }       from './pages/onboarding.js';
+import { storage }              from './storage.js';
 
 // 静的ページ（HTMLだけのシンプルなページはここに直接書く）
 const howToPage = {
@@ -52,6 +54,14 @@ const router = new Router({
   'custom-list-editor': customListEditorPage,
   'how-to':             howToPage,
   help:                 helpPage,
+  onboarding:           onboardingPage,
 });
 
-document.addEventListener('DOMContentLoaded', () => router.start());
+document.addEventListener('DOMContentLoaded', () => {
+  // 初回起動時はオンボーディングへ
+  const data = storage.get();
+  if (!data.onboarding.completed && !window.location.hash.includes('onboarding')) {
+    window.location.hash = '#onboarding';
+  }
+  router.start();
+});

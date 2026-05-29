@@ -3,17 +3,20 @@
  * pages/home.js — ホーム画面
  *
  * 表示するもの：
- *   1. くらし方未設定なら設定を促すメッセージ
- *   2. 期限切れ・期限間近のアラートカード
- *   3. 全体備蓄達成率のプログレスバー
- *   4. 各ページへのグリッドメニュー
+ *   1. 棚卸しリマインダーバナー（nextCheckDate が今日以前）
+ *   2. くらし方未設定なら設定を促すメッセージ
+ *   3. 期限切れ・期限間近のアラートカード
+ *   4. 備蓄モード切替スイッチ（3日/1週間/2週間）
+ *   5. 全体備蓄達成率のプログレスバー
+ *   6. 各ページへのグリッドメニュー
  */
-import { storage }                              from '../storage.js';
+import { storage }                               from '../storage.js';
 import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
 
 export const homePage = {
   template() {
     return `
+      <div id="home-banner"></div>
       <div id="home-summary"></div>
       <nav class="grid-menu">
         <a href="#lifestyle" class="grid-menu__item">
@@ -38,7 +41,11 @@ export const homePage = {
 
   init() {
     const data      = storage.get();
+    const bannerEl  = document.getElementById('home-banner');
     const summaryEl = document.getElementById('home-summary');
+
+    // ── 棚卸しリマインダーバナー ────────────────────────
+    this._renderReminder(bannerEl, data);
 
     // くらし方が未設定の場合
     if (data.profiles.length === 0) {
@@ -58,7 +65,6 @@ export const homePage = {
     const noticeDays = data.settings.noticeDays[days] ?? 7;
     const today      = new Date();
 
-    // 備蓄品をマスターIDで集計（同一品目に複数の備蓄品が登録できるため合算する）
     const stockById = {};
     const alerts    = [];
 
@@ -92,7 +98,6 @@ export const homePage = {
     // ── アラートカード ──────────────────────────────
     let alertHTML = '';
     if (alerts.length > 0) {
-      // 期限切れ → 期限間近 の順、最大3件表示
       const sorted = alerts.sort((a, b) => a.diff - b.diff).slice(0, 3);
       const rows = sorted.map(a => {
         const label = a.expired ? '⚠ 期限切れ' : `残り${a.diff}日`;
@@ -108,6 +113,22 @@ export const homePage = {
       `;
     }
 
+    // ── モード切替スイッチ ──────────────────────────
+    const modes = [
+      { days: 3,  label: '3日分' },
+      { days: 7,  label: '1週間' },
+      { days: 14, label: '2週間' },
+    ];
+    const modeSwitchHTML = `
+      <div class="home-mode-switch">
+        ${modes.map(m => `
+          <button class="home-mode-btn ${days === m.days ? 'is-active' : ''}" data-days="${m.days}">
+            ${m.label}
+          </button>
+        `).join('')}
+      </div>
+    `;
+
     // ── 達成率カード ────────────────────────────────
     summaryEl.innerHTML = `
       ${alertHTML}
@@ -118,7 +139,53 @@ export const homePage = {
           <div class="progress-bar__inner ${statusClass}" style="width:${pct}%"></div>
         </div>
         <div class="summary-card__sub">${achievedItems} / ${totalItems} 品目 達成</div>
+        ${modeSwitchHTML}
       </div>
     `;
+
+    // モード切替イベント
+    summaryEl.querySelectorAll('.home-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = storage.get();
+        current.settings.stockpileDays = parseInt(btn.dataset.days);
+        storage.save(current);
+        this.init(); // ホーム再描画
+      });
+    });
+  },
+
+  _renderReminder(bannerEl, data) {
+    const { nextCheckDate } = data.settings;
+    if (!nextCheckDate) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkDate = new Date(nextCheckDate);
+    checkDate.setHours(0, 0, 0, 0);
+
+    if (checkDate > today) return; // まだ期日前
+
+    const diffDays = Math.round((today - checkDate) / 86400000);
+    const msg = diffDays === 0
+      ? '今日は備蓄の棚卸し日です！'
+      : `棚卸し予定日を ${diffDays} 日過ぎています`;
+
+    bannerEl.innerHTML = `
+      <div class="reminder-banner">
+        <span class="reminder-banner__icon">📋</span>
+        <span class="reminder-banner__msg">${msg}</span>
+        <button class="reminder-banner__btn" id="reminder-done">確認した</button>
+      </div>
+    `;
+
+    document.getElementById('reminder-done').addEventListener('click', () => {
+      const current  = storage.get();
+      const interval = current.settings.checkIntervalDays || 30;
+      const next     = new Date();
+      next.setDate(next.getDate() + interval);
+      current.settings.nextCheckDate = next.toISOString().slice(0, 10);
+      storage.save(current);
+      bannerEl.innerHTML = '';
+    });
   }
 };

@@ -19,7 +19,8 @@ const PAGE_TITLES = {
   settings:            '設定',
   'how-to':            '使い方',
   help:                'ヘルプ',
-  'custom-list-editor': '品目リストの編集'
+  'custom-list-editor': '品目リストの編集',
+  onboarding:           'ようこそ'
 };
 
 export class Router {

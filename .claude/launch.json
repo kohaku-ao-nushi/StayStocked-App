@@ -3,9 +3,17 @@
   "configurations": [
     {
       "name": "staystocked",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server"],
-      "port": 8080
+      "runtimeExecutable": "/usr/bin/perl",
+      "runtimeArgs": [
+        "-MHTTP::Daemon",
+        "-MHTTP::Status",
+        "-MHTTP::Response",
+        "-e",
+        "my $d=HTTP::Daemon->new(LocalPort=>$ENV{PORT}||8080,ReuseAddr=>1)||die;while(my $c=$d->accept){while(my $r=$c->get_request){my $f='/Users/axxxakxxxi/Documents/GitHub/StayStocked-App'.$r->uri->path;$f.='/index.html' if -d $f;if(-f $f){open my $fh,'<',$f;local $/;my $body=<$fh>;close $fh;my $res=HTTP::Response->new(RC_OK);my $ct=$f=~/\\.js$/? 'application/javascript':$f=~/\\.css$/? 'text/css':$f=~/\\.html$/? 'text/html':'text/plain';$res->header('Content-Type'=>\"$ct; charset=utf-8\");$res->content($body);$c->send_response($res)}else{$c->send_error(RC_NOT_FOUND)}}$c->close}"
+      ],
+      "port": 8080,
+      "autoPort": true,
+      "url": "/docs/theme-preview.html"
     }
   ]
 }

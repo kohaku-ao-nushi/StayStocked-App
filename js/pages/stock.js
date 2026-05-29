@@ -7,26 +7,29 @@
  *   - 必要量 vs 現在の備蓄量をカテゴリ別に表示
  *   - 全体の達成率プログレスバー
  *   - 期限切れ・期限間近のアイテムを強調表示
+ *   - フィルタ（不足のみ表示 / キーワード検索）
  *   - アイテムをタップして編集・追加画面へ遷移
- *
- * 設計メモ：
- *   render() を独立したメソッドにしているのは、モード変更時に
- *   init() を経由せず render() だけ呼び直せるようにするため。
- *   イベント委譲（addEventListener を listEl 一か所にまとめる）で
- *   動的に生成したボタンにもイベントが届く。
+ *   - 「使った」ボタンでローリングストック消費を記録
  */
-import { storage }                              from '../storage.js';
+import { storage }                               from '../storage.js';
 import { buildCalcParams, getCombinedMasterList } from '../masterData.js';
+import { showToast }                             from '../ui.js';
 
 export const stockPage = {
+  _filterShortfall: false,
+  _filterKeyword:   '',
+
   template() {
     return `
       <div id="mode-selector"></div>
+      <div id="stock-filter"></div>
       <div id="stock-list"></div>
     `;
   },
 
   init() {
+    this._filterShortfall = false;
+    this._filterKeyword   = '';
     this.render();
   },
 
@@ -36,8 +39,8 @@ export const stockPage = {
     const listEl = document.getElementById('stock-list');
 
     this._renderModeSelector(days);
+    this._renderFilter();
 
-    // くらし方未設定の場合
     if (data.profiles.length === 0) {
       listEl.innerHTML = `
         <div class="empty-state">
@@ -53,7 +56,6 @@ export const stockPage = {
     const noticeDays = data.settings.noticeDays[days] ?? 7;
     const today      = new Date();
 
-    // 備蓄品をマスターIDでグループ化
     const stockById = {};
     data.stockItems.forEach(item => {
       const key = item.masterId || item.customId;
@@ -62,7 +64,6 @@ export const stockPage = {
       stockById[key].push(item);
     });
 
-    // カテゴリ別に集計
     const categories = {};
     let totalItems = 0, achievedItems = 0;
 
@@ -78,17 +79,22 @@ export const stockPage = {
       totalItems++;
       if (current >= required) achievedItems++;
 
-      if (!categories[item.category]) {
-        categories[item.category] = { achieved: 0, total: 0, items: [] };
+      if (this._filterShortfall && current >= required) return;
+      if (this._filterKeyword) {
+        const kw = this._filterKeyword.toLowerCase();
+        if (!item.name.toLowerCase().includes(kw)) return;
       }
+
+      if (!categories[item.category]) {
+        categories[item.category] = { items: [], total: 0, achieved: 0 };
+      }
+      categories[item.category].items.push({ ...item, stocks, current, required, pct });
       categories[item.category].total++;
       if (current >= required) categories[item.category].achieved++;
-      categories[item.category].items.push({ ...item, required, current, pct, stocks });
     });
 
     const overallPct = totalItems > 0 ? Math.round((achievedItems / totalItems) * 100) : 0;
 
-    // ── HTML 組み立て ──────────────────────────────────
     let html = `
       <div class="overall-progress">
         <div class="overall-progress__header">
@@ -102,6 +108,10 @@ export const stockPage = {
       </div>
     `;
 
+    if (Object.keys(categories).length === 0) {
+      html += `<p class="empty-text" style="text-align:center;padding:24px 0">該当する品目がありません</p>`;
+    }
+
     for (const [catName, cat] of Object.entries(categories)) {
       html += `
         <div class="stock-category">
@@ -112,7 +122,6 @@ export const stockPage = {
       `;
 
       cat.items.forEach(item => {
-        // 期限状態を確認
         let hasExpired = false, hasExpiring = false;
         item.stocks.forEach(s => {
           if (!s.expiry) return;
@@ -123,13 +132,12 @@ export const stockPage = {
 
         const itemClass = hasExpired ? 'is-expired' : hasExpiring ? 'is-expiring' : '';
 
-        // サブアイテムリスト（登録済み備蓄品）
         const subItemsHTML = item.stocks.length > 0
           ? item.stocks.map(s => {
               let subClass = '';
               if (s.expiry) {
                 const diff = Math.ceil((new Date(s.expiry) - today) / 86400000);
-                if (diff <= 0)             subClass = 'is-expired-sub';
+                if (diff <= 0)               subClass = 'is-expired-sub';
                 else if (diff <= noticeDays) subClass = 'is-expiring-sub';
               }
               return `
@@ -137,6 +145,12 @@ export const stockPage = {
                   <span class="stock-sub-item__name">${s.productName || item.name}</span>
                   <span class="stock-sub-item__qty">${s.qty} ${s.unit}</span>
                   <span class="stock-sub-item__expiry">${s.expiry || '期限なし'}</span>
+                  <button class="btn-use js-use-item"
+                    data-id="${s.id}"
+                    data-name="${s.productName || item.name}"
+                    data-master-id="${item.id}"
+                    data-unit="${s.unit}"
+                    title="使った">使った</button>
                 </li>
               `;
             }).join('')
@@ -171,7 +185,7 @@ export const stockPage = {
         `;
       });
 
-      html += `</div>`; // .stock-category
+      html += `</div>`;
     }
 
     html += `
@@ -182,9 +196,7 @@ export const stockPage = {
 
     listEl.innerHTML = html;
 
-    // ── イベント委譲（listEl 1か所で処理する）──────────
     listEl.addEventListener('click', e => {
-      // 「この品目を追加」ボタン
       const addBtn = e.target.closest('.js-add-item');
       if (addBtn) {
         const { id, name, unit } = addBtn.dataset;
@@ -192,16 +204,113 @@ export const stockPage = {
         window.location.hash = '#register';
         return;
       }
-      // サブアイテムをタップ → 編集
+      const useBtn = e.target.closest('.js-use-item');
+      if (useBtn) {
+        e.stopPropagation();
+        this._showUseModal(useBtn.dataset);
+        return;
+      }
       const subItem = e.target.closest('.stock-sub-item[data-id]');
-      if (subItem) {
+      if (subItem && !e.target.closest('.js-use-item')) {
         sessionStorage.setItem('editItemId', subItem.dataset.id);
         window.location.hash = '#register';
       }
     });
   },
 
-  /** モード切り替えボタンを描画する */
+  _showUseModal({ id, name, masterId, unit }) {
+    document.getElementById('use-modal')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'use-modal';
+    overlay.innerHTML = `
+      <div class="modal">
+        <p class="modal__message">「${name}」を何${unit}使いましたか？</p>
+        <div class="form-group" style="margin-top:12px;">
+          <input type="number" id="use-qty" min="0.1" step="0.1"
+            style="font-size:20px;text-align:center;padding:12px;" placeholder="数量を入力">
+        </div>
+        <div class="modal__actions" style="margin-top:12px;">
+          <button class="btn btn-secondary" id="use-cancel">キャンセル</button>
+          <button class="btn btn-primary" id="use-confirm">記録する</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = document.getElementById('use-qty');
+    input.focus();
+
+    document.getElementById('use-cancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('use-confirm').addEventListener('click', () => {
+      const usedQty = parseFloat(input.value);
+      if (!usedQty || usedQty <= 0) {
+        input.style.borderColor = 'var(--c-ng)';
+        return;
+      }
+      this._recordConsumption({ id, name, masterId, unit, usedQty });
+      overlay.remove();
+    });
+  },
+
+  _recordConsumption({ id, name, masterId, unit, usedQty }) {
+    const data = storage.get();
+    const idx  = data.stockItems.findIndex(s => s.id === id);
+    if (idx === -1) return;
+
+    const item   = data.stockItems[idx];
+    const newQty = Math.max(0, (parseFloat(item.qty) || 0) - usedQty);
+
+    if (!data.consumptionLog) data.consumptionLog = [];
+    data.consumptionLog.push({
+      id:       `log_${Date.now()}`,
+      stockId:  id,
+      masterId,
+      itemName: name,
+      usedQty,
+      unit,
+      date:     new Date().toISOString().slice(0, 10)
+    });
+
+    if (newQty <= 0) {
+      data.stockItems.splice(idx, 1);
+      showToast(`${name} を使い切りました。リストから削除しました`, 'info');
+    } else {
+      data.stockItems[idx] = { ...item, qty: newQty };
+      showToast(`${name} を ${usedQty}${unit} 使用記録しました（残 ${newQty}${unit}）`);
+    }
+
+    storage.save(data);
+    this.render();
+  },
+
+  _renderFilter() {
+    const el = document.getElementById('stock-filter');
+    el.innerHTML = `
+      <div class="stock-filter-bar">
+        <button class="filter-chip ${this._filterShortfall ? 'is-active' : ''}" id="filter-shortfall">
+          不足のみ
+        </button>
+        <div class="filter-search">
+          <input type="search" id="filter-keyword"
+            placeholder="品目を検索…"
+            value="${this._filterKeyword}">
+        </div>
+      </div>
+    `;
+    document.getElementById('filter-shortfall').addEventListener('click', () => {
+      this._filterShortfall = !this._filterShortfall;
+      this.render();
+    });
+    let t;
+    document.getElementById('filter-keyword').addEventListener('input', e => {
+      clearTimeout(t);
+      t = setTimeout(() => { this._filterKeyword = e.target.value.trim(); this.render(); }, 250);
+    });
+  },
+
   _renderModeSelector(currentDays) {
     const container = document.getElementById('mode-selector');
     const modes = [
@@ -218,18 +327,16 @@ export const stockPage = {
         `).join('')}
       </div>
     `;
-    // モード変更時：設定を保存してこのページを再描画
     container.addEventListener('click', e => {
       const btn = e.target.closest('.mode-btn');
       if (!btn) return;
       const current = storage.get();
       current.settings.stockpileDays = parseInt(btn.dataset.days);
       storage.save(current);
-      this.render(); // ページ全体を再描画
+      this.render();
     });
   },
 
-  /** 達成率に応じた CSS クラスを返す */
   _statusClass(pct) {
     if (pct >= 100) return 'is-sufficient';
     if (pct >= 50)  return 'is-medium';

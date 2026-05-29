@@ -731,7 +731,7 @@ body {
 
 .stock-sub-item {
   display: grid;
-  grid-template-columns: 1fr 72px 90px;
+  grid-template-columns: 1fr 72px 90px 52px;
   gap: 8px;
   align-items: center;
   padding: 9px 4px;
