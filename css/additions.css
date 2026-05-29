@@ -264,3 +264,53 @@
   padding: 16px 0 8px;
   text-align: center;
 }
+
+/* =====================================================
+   品目リスト：アコーディオン（デフォルト推奨品目）
+   ===================================================== */
+.master-list__item--accordion {
+  padding: 0;
+}
+
+.master-list__details {
+  width: 100%;
+}
+
+.master-list__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 4px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.master-list__summary::-webkit-details-marker { display: none; }
+
+/* 展開インジケーター（＋ / －）*/
+.master-list__summary::after {
+  content: '+';
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  color: #2d7a4f;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+  transition: opacity 0.15s ease;
+}
+.master-list__details[open] > .master-list__summary::after {
+  content: '−';
+}
+
+.master-list__note {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  background: #f5f9f6;
+  border-left: 3px solid #2d7a4f;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #444;
+}

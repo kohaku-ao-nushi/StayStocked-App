@@ -13,12 +13,17 @@ export const customListEditorPage = {
   template() {
     const catOptions   = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
     const defaultItems = todoMasterList.map(item => `
-      <li class="master-list__item">
-        <span class="master-list__name">${item.name}</span>
-        <div class="master-list__badges">
-          ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
-          <span class="category-badge">${item.category}</span>
-        </div>
+      <li class="master-list__item master-list__item--accordion">
+        <details class="master-list__details">
+          <summary class="master-list__summary">
+            <span class="master-list__name">${item.name}</span>
+            <div class="master-list__badges">
+              ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
+              <span class="category-badge">${item.category}</span>
+            </div>
+          </summary>
+          <p class="master-list__note">${item.note ?? ''}</p>
+        </details>
       </li>
     `).join('');
 
