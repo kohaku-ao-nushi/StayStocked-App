@@ -1,16 +1,21 @@
 'use strict';
 /**
  * pages/stock.js — 備蓄リスト画面
+ *
+ * 品目の非表示：左スワイプで「非表示」ボタンが滑り出るiOSメール風UI。
+ * <details> を .stock-item-wrap でラップし、ラップ内に絶対配置した
+ * .stock-item__swipe-btn を左スワイプで露出させる。
  */
-import { storage }                                             from '../storage.js';
-import { buildCalcParams, getFilteredMasterList }              from '../masterData.js';
-import { showToast, showConfirm }                              from '../ui.js';
+import { storage }                               from '../storage.js';
+import { buildCalcParams, getFilteredMasterList } from '../masterData.js';
+import { showToast, showConfirm }                from '../ui.js';
 
 export const stockPage = {
   _filterShortfall: false,
   _filterKeyword:   '',
   _filterReady:     false,
-  _listAbort:       null,  // AbortController — リスナー多重登録防止
+  _listAbort:       null,   // AbortController — リスナー多重登録防止
+  _swipedWrap:      null,   // 現在スワイプ中の .stock-item-wrap
 
   template() {
     return `
@@ -25,6 +30,7 @@ export const stockPage = {
     this._filterKeyword   = '';
     this._filterReady     = false;
     this._listAbort       = null;
+    this._swipedWrap      = null;
     this.render();
   },
 
@@ -169,35 +175,38 @@ export const stockPage = {
             }).join('')
           : '<li class="stock-sub-item--empty">まだ登録されていません</li>';
 
-        // 非表示ボタンは summary の右端に配置（キャプチャで details トグルを抑制）
+        // .stock-item-wrap でラップ → 左スワイプで .stock-item__swipe-btn が露出
         html += `
-          <details class="stock-item ${itemClass}" ${(hasExpired || hasExpiring) ? 'open' : ''}>
-            <summary class="stock-item__summary">
-              <div class="stock-item__row">
-                <span class="stock-item__name">${item.name}</span>
-                ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
-                <button class="btn-hide-inline js-hide-item" data-id="${item.id}"
-                  title="非表示にする" aria-label="非表示にする">非表示</button>
-              </div>
-              <div class="stock-item__progress-row">
-                <div class="progress-bar">
-                  <div class="progress-bar__inner ${this._statusClass(item.pct)}" style="width:${item.pct}%"></div>
+          <div class="stock-item-wrap">
+            <details class="stock-item ${itemClass}" ${(hasExpired || hasExpiring) ? 'open' : ''}>
+              <summary class="stock-item__summary">
+                <div class="stock-item__row">
+                  <span class="stock-item__name">${item.name}</span>
+                  ${item.target ? `<span class="target-badge">${item.target}</span>` : ''}
                 </div>
-                <span class="stock-item__amount">
-                  ${item.current.toLocaleString()} / ${item.required.toLocaleString()} ${item.unit}
-                </span>
+                <div class="stock-item__progress-row">
+                  <div class="progress-bar">
+                    <div class="progress-bar__inner ${this._statusClass(item.pct)}" style="width:${item.pct}%"></div>
+                  </div>
+                  <span class="stock-item__amount">
+                    ${item.current.toLocaleString()} / ${item.required.toLocaleString()} ${item.unit}
+                  </span>
+                </div>
+              </summary>
+              <div class="stock-item__detail">
+                <ul class="stock-sub-list">${subItemsHTML}</ul>
+                <button class="btn btn-sm btn-add js-add-item"
+                  data-id="${item.id}"
+                  data-name="${item.name}"
+                  data-unit="${item.unit}">
+                  ＋ この品目を追加
+                </button>
               </div>
-            </summary>
-            <div class="stock-item__detail">
-              <ul class="stock-sub-list">${subItemsHTML}</ul>
-              <button class="btn btn-sm btn-add js-add-item"
-                data-id="${item.id}"
-                data-name="${item.name}"
-                data-unit="${item.unit}">
-                ＋ この品目を追加
-              </button>
-            </div>
-          </details>
+            </details>
+            <button class="stock-item__swipe-btn js-hide-item" data-id="${item.id}">
+              非表示
+            </button>
+          </div>
         `;
       });
 
@@ -211,13 +220,13 @@ export const stockPage = {
       return key && !masterIds.has(key);
     });
 
-    if (freeStocks.length > 0) {
+    if (freeStocks.length > 0 && !this._filterShortfall) {
       const filtered = this._filterKeyword
         ? freeStocks.filter(s =>
             (s.itemName || s.productName || '').toLowerCase().includes(this._filterKeyword.toLowerCase()))
         : freeStocks;
 
-      if (filtered.length > 0 && !this._filterShortfall) {
+      if (filtered.length > 0) {
         html += `
           <div class="stock-category">
             <div class="category-header">
@@ -273,21 +282,31 @@ export const stockPage = {
     `;
 
     listEl.innerHTML = html;
+    this._swipedWrap = null;
 
-    // ── イベントリスナー（AbortController で多重登録を防ぐ）────
+    // ── イベントリスナー（AbortController で多重登録防止）────
     if (this._listAbort) this._listAbort.abort();
     this._listAbort = new AbortController();
-    const sig = { signal: this._listAbort.signal };
+    const sig = this._listAbort.signal;
 
-    // キャプチャフェーズ：非表示ボタンが <summary> のトグルを発火させないよう抑制
+    // キャプチャ：スワイプ中のサマリークリックで details トグルをキャンセル
     listEl.addEventListener('click', e => {
-      if (e.target.closest('.js-hide-item')) {
+      if (this._swipedWrap && e.target.closest('summary')) {
         e.stopPropagation();
+        this._closeSwipe(this._swipedWrap);
+        this._swipedWrap = null;
       }
-    }, { capture: true, ...sig });
+    }, { capture: true, signal: sig });
 
-    // バブルフェーズ：各アクション処理
+    // バブル：各アクション
     listEl.addEventListener('click', async e => {
+      // スワイプ中に他の場所をタップ → 閉じる
+      if (this._swipedWrap && !e.target.closest('.js-hide-item')) {
+        this._closeSwipe(this._swipedWrap);
+        this._swipedWrap = null;
+        return;
+      }
+
       // 昇格バナー
       if (e.target.closest('.js-upgrade-level')) {
         const ok = await showConfirm(
@@ -304,14 +323,18 @@ export const stockPage = {
         return;
       }
 
-      // 非表示
+      // 非表示（スワイプで露出したボタン）
       const hideBtn = e.target.closest('.js-hide-item');
       if (hideBtn) {
         const ok = await showConfirm(
           'この品目を備蓄リストから非表示にしますか？\n設定画面からいつでも再表示できます。',
           { confirmLabel: '非表示にする', confirmClass: 'btn-secondary' }
         );
-        if (!ok) return;
+        if (!ok) {
+          this._closeSwipe(hideBtn.closest('.stock-item-wrap'));
+          this._swipedWrap = null;
+          return;
+        }
         const current = storage.get();
         if (!current.settings.hiddenMasterIds) current.settings.hiddenMasterIds = [];
         current.settings.hiddenMasterIds.push(hideBtn.dataset.id);
@@ -344,7 +367,90 @@ export const stockPage = {
         sessionStorage.setItem('editItemId', subItem.dataset.id);
         window.location.hash = '#register';
       }
-    }, sig);
+    }, { signal: sig });
+
+    // スワイプ処理
+    this._attachSwipe(listEl, sig);
+  },
+
+  // ── スワイプで非表示ボタンを露出させる ──────────────────
+  _attachSwipe(listEl, signal) {
+    const SWIPE_THRESHOLD = 60;  // px：これ以上左に引いたら確定
+    const SWIPE_WIDTH     = 80;  // px：露出するボタン幅
+    let startX, startY, activeWrap, dragging = false;
+
+    listEl.addEventListener('touchstart', e => {
+      const wrap = e.target.closest('.stock-item-wrap');
+      if (!wrap) return;
+      startX     = e.touches[0].clientX;
+      startY     = e.touches[0].clientY;
+      activeWrap = wrap;
+      dragging   = false;
+    }, { passive: true, signal });
+
+    listEl.addEventListener('touchmove', e => {
+      if (!activeWrap) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      // 縦スクロールが主なら中断
+      if (!dragging && Math.abs(dy) > Math.abs(dx) + 5) {
+        activeWrap = null;
+        return;
+      }
+      // 右スワイプは無視（ただし既に開いている場合は閉じる）
+      if (!dragging && dx > 10) {
+        if (activeWrap.classList.contains('is-swiped')) {
+          this._closeSwipe(activeWrap);
+          this._swipedWrap = null;
+        }
+        activeWrap = null;
+        return;
+      }
+
+      dragging = true;
+      const details  = activeWrap.querySelector('.stock-item');
+      const base     = activeWrap.classList.contains('is-swiped') ? -SWIPE_WIDTH : 0;
+      const clamped  = Math.max(-SWIPE_WIDTH, Math.min(0, base + dx));
+      details.style.transition = 'none';
+      details.style.transform  = `translateX(${clamped}px)`;
+    }, { passive: true, signal });
+
+    listEl.addEventListener('touchend', e => {
+      if (!activeWrap || !dragging) { activeWrap = null; return; }
+      const dx      = e.changedTouches[0].clientX - startX;
+      const details = activeWrap.querySelector('.stock-item');
+      details.style.transition = '';
+
+      const wasOpen = activeWrap.classList.contains('is-swiped');
+      const open    = wasOpen ? dx > -SWIPE_WIDTH + SWIPE_THRESHOLD : dx < -SWIPE_THRESHOLD;
+
+      if (open && !wasOpen) {
+        // 開く：他に開いているものを閉じる
+        if (this._swipedWrap && this._swipedWrap !== activeWrap) {
+          this._closeSwipe(this._swipedWrap);
+        }
+        details.style.transform = `translateX(-${SWIPE_WIDTH}px)`;
+        activeWrap.classList.add('is-swiped');
+        this._swipedWrap = activeWrap;
+      } else {
+        // 閉じる
+        this._closeSwipe(activeWrap);
+        if (this._swipedWrap === activeWrap) this._swipedWrap = null;
+      }
+      activeWrap = null;
+      dragging   = false;
+    }, { signal });
+  },
+
+  _closeSwipe(wrap) {
+    if (!wrap) return;
+    const details = wrap.querySelector('.stock-item');
+    if (details) {
+      details.style.transition = '';
+      details.style.transform  = '';
+    }
+    wrap.classList.remove('is-swiped');
   },
 
   _showUseModal({ id, name, masterId, unit }) {
@@ -461,7 +567,6 @@ export const stockPage = {
         `).join('')}
       </div>
     `;
-    // onclick で上書き → 多重登録しない
     container.onclick = e => {
       const btn = e.target.closest('.mode-btn');
       if (!btn) return;

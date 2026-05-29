@@ -1243,3 +1243,45 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ============================================================
+   スワイプ非表示 UI
+   ============================================================ */
+.stock-item-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+}
+/* details は wrap の上に重なり、スワイプで左にスライド */
+.stock-item-wrap .stock-item {
+  position: relative;
+  z-index: 1;
+  transform: translateX(0);
+  transition: transform .2s ease;
+  margin-bottom: 0;   /* wrap が margin を担う */
+  border-radius: var(--r-md);
+  /* will-change: transform; */
+}
+/* 非表示ボタン：wrap 右端に絶対配置、スワイプで露出 */
+.stock-item__swipe-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  background: var(--c-ng, #EF4444);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: .04em;
+}
+.stock-item__swipe-btn:active {
+  filter: brightness(.9);
+}
