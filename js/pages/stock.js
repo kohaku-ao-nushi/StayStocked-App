@@ -260,7 +260,7 @@ export const stockPage = {
 
     html += `
       <div class="stock-footer">
-        <a href="#register" class="btn btn-secondary">リストにない品目を追加</a>
+        <a href="#custom-list-editor" class="btn btn-secondary">リストにない品目を追加・管理</a>
       </div>
     `;
 
