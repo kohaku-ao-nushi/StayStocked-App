@@ -97,7 +97,22 @@ export const howToPage = {
   margin-top: 4px;
 }
 
-/* ── STEP 1: lifestyle ──────────────────────── */
+/* ── STEP 1: lifestyle section ─────────────── */
+.m-ls-section   { margin-bottom: 12px; }
+.m-ls-label     { font-size: 12px; font-weight: 700; color: var(--c-text-2); margin-bottom: 6px; }
+.m-profile__head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.m-profile__num { width: 20px; height: 20px; border-radius: 50%; background: var(--c-accent); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.m-age-btn      {
+  flex: 1; text-align: center; padding: 5px 2px;
+  border-radius: 8px; border: 1.5px solid var(--c-border);
+  background: var(--c-surface); color: var(--c-text-2);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.m-age-btn--on  { border-color: var(--c-accent); background: var(--c-primary-lt); color: var(--c-primary-dk); }
+.m-age-sub      { font-size: 9px; font-weight: 700; }
+.m-age-label    { font-size: 8px; color: var(--c-text-muted); }
+
+/* ── STEP 1: counter ───────────────────────── */
 .m-counter      {
   background: var(--c-surface); border-radius: 10px;
   padding: 10px 14px; margin-bottom: 10px;
@@ -126,12 +141,6 @@ export const howToPage = {
 }
 .m-radio--on    { border-color: var(--c-accent); background: var(--c-primary-lt); color: var(--c-primary-dk); }
 .m-age-group    { display: flex; gap: 4px; }
-.m-age-btn      {
-  flex: 1; text-align: center; padding: 5px 2px;
-  border-radius: 8px; font-size: 10px; font-weight: 600;
-  background: var(--c-surface); border: 1.5px solid var(--c-border); color: var(--c-text-2);
-}
-.m-age-btn--on  { border-color: var(--c-accent); background: var(--c-primary-lt); color: var(--c-primary-dk); }
 
 /* ── STEP 2: register ───────────────────────── */
 .m-camera       {
@@ -169,16 +178,29 @@ export const howToPage = {
 .m-cat-name     { font-size: 13px; font-weight: 700; color: var(--c-text-2); }
 .m-cat-badge    { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; background: var(--c-bg); color: var(--c-text-muted); }
 
-/* ── STEP 4: quest ──────────────────────────── */
-.m-priority     {
-  border-radius: 8px; padding: 9px 10px; margin-bottom: 7px;
-  border-left: 3px solid var(--c-primary-dk);
-  background: var(--c-primary-lt);
-  display: flex; align-items: center; gap: 8px;
+/* ── STEP 4: quest todo-card style ─────────── */
+.m-todo-section { margin-bottom: 14px; }
+.m-todo-section__title {
+  font-size: 13px; font-weight: 800; color: var(--c-text-2);
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
 }
-.m-priority--warn { border-left-color: var(--c-warn); background: var(--c-warn-bg, #FEF9C3); }
-.m-priority__icon { font-size: 14px; }
-.m-priority__text { flex: 1; font-size: 12px; color: var(--c-text-2); }
+.m-todo-count   { background: var(--c-ng); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9999px; }
+.m-todo-card    {
+  background: var(--c-surface); border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 7px;
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.m-todo-card--expiry { border-left: 3px solid var(--c-warn); }
+.m-todo-badge   { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+.m-todo-badge--high    { background: var(--c-ng);   color: #fff; }
+.m-todo-badge--warn    { background: var(--c-warn); color: #fff; }
+.m-todo-card__body  { flex: 1; min-width: 0; }
+.m-todo-card__title { font-size: 12px; font-weight: 700; color: var(--c-text); margin-bottom: 3px; }
+.m-todo-card__meta  { font-size: 11px; color: var(--c-text-muted); }
+.m-btn-sm       { font-size: 10px; font-weight: 700; padding: 5px 9px; border-radius: 9999px; white-space: nowrap; flex-shrink: 0; }
+.m-btn-sm--primary   { background: var(--c-primary-dk); color: #fff; }
+.m-btn-sm--secondary { background: var(--c-bg); color: var(--c-text-2); border: 1px solid var(--c-border); }
 
 /* ── HOME bonus ─────────────────────────────── */
 .m-grid         { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
@@ -211,27 +233,31 @@ export const howToPage = {
     <div class="mock-phone">
       <div class="mock-header">くらし方</div>
       <div class="mock-body">
-        <div class="m-label">一緒に住んでいる人数</div>
-        <div class="m-counter">
-          <div class="m-counter__btn">−</div>
-          <div class="m-counter__val">3</div>
-          <div class="m-counter__unit">人</div>
-          <div class="m-counter__btn">＋</div>
+        <div class="m-ls-section">
+          <div class="m-ls-label">一緒に住んでいる人数</div>
+          <div class="m-counter">
+            <div class="m-counter__btn">−</div>
+            <div class="m-counter__val">2</div>
+            <div class="m-counter__unit">人</div>
+            <div class="m-counter__btn">＋</div>
+          </div>
         </div>
         <div class="m-profile">
-          <div class="m-profile__title">Person 1</div>
+          <div class="m-profile__head">
+            <div class="m-profile__num">1</div>
+            <div class="m-profile__title">1人目</div>
+          </div>
           <div class="m-label" style="margin-bottom:5px;">性別</div>
           <div class="m-radio-group">
             <div class="m-radio m-radio--on">男性</div>
             <div class="m-radio">女性</div>
-            <div class="m-radio">その他</div>
           </div>
-          <div class="m-label" style="margin-top:6px;margin-bottom:5px;">年代</div>
+          <div class="m-label" style="margin-top:8px;margin-bottom:5px;">年代</div>
           <div class="m-age-group">
-            <div class="m-age-btn">0〜2歳</div>
-            <div class="m-age-btn">3〜17歳</div>
-            <div class="m-age-btn m-age-btn--on">18〜64歳</div>
-            <div class="m-age-btn">65歳〜</div>
+            <div class="m-age-btn"><span class="m-age-sub">乳幼児</span><span class="m-age-label">0〜2歳</span></div>
+            <div class="m-age-btn"><span class="m-age-sub">子ども</span><span class="m-age-label">3〜17歳</span></div>
+            <div class="m-age-btn m-age-btn--on"><span class="m-age-sub">成人</span><span class="m-age-label">18〜64歳</span></div>
+            <div class="m-age-btn"><span class="m-age-sub">高齢者</span><span class="m-age-label">65歳以上</span></div>
           </div>
         </div>
       </div>
@@ -329,28 +355,42 @@ export const howToPage = {
     <div class="mock-phone">
       <div class="mock-header">備蓄クエスト</div>
       <div class="mock-body">
-        <div class="m-card">
-          <div class="m-card__title">⚡ 優先アクション</div>
-          <div class="m-priority">
-            <div class="m-priority__icon">📦</div>
-            <div class="m-priority__text">乾パン・クラッカーが不足しています</div>
-            <div class="m-btn m-btn--primary">追加する</div>
+        <div class="m-todo-section">
+          <div class="m-todo-section__title">優先アクション</div>
+          <div class="m-todo-card">
+            <span class="m-todo-badge m-todo-badge--high">補充</span>
+            <div class="m-todo-card__body">
+              <div class="m-todo-card__title">乾パン・クラッカー</div>
+              <div class="m-todo-card__meta">あと 6 個 不足</div>
+            </div>
+            <div class="m-btn-sm m-btn-sm--primary">追加する</div>
           </div>
-          <div class="m-priority m-priority--warn">
-            <div class="m-priority__icon">⏰</div>
-            <div class="m-priority__text">缶詰（魚）の期限まで残り14日</div>
-            <div class="m-btn m-btn--primary" style="background:var(--c-warn)">使った</div>
+          <div class="m-todo-card m-todo-card--expiry">
+            <span class="m-todo-badge m-todo-badge--warn">期限間近</span>
+            <div class="m-todo-card__body">
+              <div class="m-todo-card__title">缶詰（魚）</div>
+              <div class="m-todo-card__meta">あと14日</div>
+            </div>
+            <div class="m-btn-sm m-btn-sm--secondary">使った</div>
           </div>
         </div>
-        <div class="m-card">
-          <div class="m-card__title">📋 不足している備蓄</div>
-          <div class="m-row">
-            <div class="m-row__name">カセットコンロ用ガス</div>
-            <div class="m-btn m-btn--primary">追加する</div>
+        <div class="m-todo-section">
+          <div class="m-todo-section__title">不足している備蓄 <span class="m-todo-count">5</span></div>
+          <div class="m-todo-card">
+            <span class="m-todo-badge m-todo-badge--high">補充</span>
+            <div class="m-todo-card__body">
+              <div class="m-todo-card__title">カセットコンロ用ガス</div>
+              <div class="m-todo-card__meta">あと 3 本 不足</div>
+            </div>
+            <div class="m-btn-sm m-btn-sm--primary">追加する</div>
           </div>
-          <div class="m-row">
-            <div class="m-row__name">携帯トイレ</div>
-            <div class="m-btn m-btn--primary">追加する</div>
+          <div class="m-todo-card">
+            <span class="m-todo-badge m-todo-badge--high">補充</span>
+            <div class="m-todo-card__body">
+              <div class="m-todo-card__title">携帯トイレ</div>
+              <div class="m-todo-card__meta">あと 10 個 不足</div>
+            </div>
+            <div class="m-btn-sm m-btn-sm--primary">追加する</div>
           </div>
         </div>
       </div>
