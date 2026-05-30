@@ -118,7 +118,7 @@ export const settingsPage = {
       const a        = document.createElement('a');
       const dateStr  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       a.href         = url;
-      a.download     = `staystocked_backup_${dateStr}.json`;
+      a.download     = `crasona_backup_${dateStr}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('エクスポートしました');

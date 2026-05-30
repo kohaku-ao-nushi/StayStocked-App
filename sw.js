@@ -11,8 +11,8 @@
  * オフラインでも引き続き読み書きできる。
  */
 
-const CACHE_VERSION = 'v4';
-const CACHE_NAME    = `staystocked-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v5';
+const CACHE_NAME    = `crasona-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',

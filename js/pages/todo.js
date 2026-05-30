@@ -1,6 +1,6 @@
 'use strict';
 /**
- * pages/todo.js — ToDo備蓄画面
+ * pages/todo.js — びちくえ！画面（備蓄クエスト）
  *
  * 役割：利用者が「次にやるべき備蓄行動」を確認・実行する場所
  *

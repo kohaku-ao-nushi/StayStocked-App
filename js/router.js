@@ -12,7 +12,7 @@
  */
 
 const PAGE_TITLES = {
-  home:                 'StayStocked',
+  home:                 'クラソナ',
   lifestyle:            'くらし方',
   stock:                '備蓄リスト',
   register:             '備蓄品登録',
@@ -21,7 +21,7 @@ const PAGE_TITLES = {
   help:                 'ヘルプ',
   'custom-list-editor': '品目リストの編集',
   onboarding:           'ようこそ',
-  todo:                 'ToDo備蓄',
+  todo:                 'びちくえ！',
 };
 
 export class Router {
@@ -42,7 +42,7 @@ export class Router {
     // テンプレートを描画（ページ遷移のたびに先頭へスクロール）
     window.scrollTo(0, 0);
     document.getElementById('app-root').innerHTML  = page.template();
-    document.getElementById('header-title').textContent = PAGE_TITLES[pageKey] ?? 'StayStocked';
+    document.getElementById('header-title').textContent = PAGE_TITLES[pageKey] ?? 'クラソナ';
 
     // オンボーディング中はヘッダー・ナビを非表示
     const isOnboarding = pageKey === 'onboarding';

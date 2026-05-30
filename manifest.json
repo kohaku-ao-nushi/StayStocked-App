@@ -1,7 +1,7 @@
 {
-  "name": "StayStocked - 防災備蓄管理",
-  "short_name": "StayStocked",
-  "description": "家族とペットの防災備蓄をかんたんに管理するアプリ",
+  "name": "クラソナ - 暮らしで備える。",
+  "short_name": "クラソナ",
+  "description": "暮らしで備える防災備蓄アプリ。家族とペットの備えをかんたんに管理。",
   "start_url": "./index.html#home",
   "display": "standalone",
   "orientation": "portrait",

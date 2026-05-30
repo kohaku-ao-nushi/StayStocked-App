@@ -6,9 +6,9 @@ import { storage } from '../storage.js';
 
 const STEPS = [
   {
-    icon: '🏠',
-    title: '家族を守る、\n日常の備蓄管理',
-    desc: '「えらぶ・そなえる・つかう」のサイクルで\n備蓄を無理なく日常に取り入れるアプリです。',
+    icon: '🐾',
+    title: 'クラソナへようこそ',
+    desc: '「暮らしで備える。」\n\n特別な準備じゃなく、日常の中に\n自然に備えを組み込むアプリです。',
     color: '#F0EEEB'
   },
   {
