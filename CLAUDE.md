@@ -68,7 +68,7 @@ Pages must not set up listeners in `template()`. The Router replaces `#app-root`
 - **アプリ名：クラソナ（Crasona）**
   - 由来：暮らし（Kurashi）＋備える（Sonaeru）、ソナー（Sonar）のダブルミーニング
   - コンセプト：「暮らしで備える。」
-- **機能名：びちくえ！**（旧 ToDo備蓄）
+- **機能名：備蓄クエスト**（旧 ToDo備蓄）
   - 由来：備蓄クエスト（Bichiku Quest）の略
 
 ### ストレージ

@@ -32,8 +32,8 @@ export const homePage = {
           <span>備蓄リスト</span>
         </a>
         <a href="#todo" class="grid-menu__item">
-          <img src="icons/todo.png" alt="びちくえ！">
-          <span>びちくえ！</span>
+          <img src="icons/todo.png" alt="備蓄クエスト">
+          <span>備蓄クエスト</span>
         </a>
         <a href="#settings" class="grid-menu__item">
           <img src="icons/setting.png" alt="設定">
@@ -243,7 +243,7 @@ export const homePage = {
           ${remaining > 0 ? `<span class="home-quest-card__more">他 ${remaining} 件</span>` : ''}
         </div>
         <ul class="home-quest-list">${rows}</ul>
-        <a href="#todo" class="home-quest-card__link">びちくえ！をすべて見る →</a>
+        <a href="#todo" class="home-quest-card__link">備蓄クエストをすべて見る →</a>
       </div>
     `;
   },

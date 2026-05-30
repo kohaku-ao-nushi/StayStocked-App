@@ -21,7 +21,7 @@ const PAGE_TITLES = {
   help:                 'ヘルプ',
   'custom-list-editor': '品目リストの編集',
   onboarding:           'ようこそ',
-  todo:                 'びちくえ！',
+  todo:                 '備蓄クエスト',
 };
 
 export class Router {
