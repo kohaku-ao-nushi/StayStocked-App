@@ -59,3 +59,35 @@ Pages must not set up listeners in `template()`. The Router replaces `#app-root`
 ### CSS
 
 `css/style.css` — base styles and shared components. `css/additions.css` — additions/overrides. CSS variables for colors are defined in `:root` in `style.css`.
+
+---
+
+## Brand & Product Decisions
+
+### ブランド名
+- **アプリ名：クラソナ（Crasona）**
+  - 由来：暮らし（Kurashi）＋備える（Sonaeru）、ソナー（Sonar）のダブルミーニング
+  - コンセプト：「暮らしで備える。」
+- **機能名：びちくえ！**（旧 ToDo備蓄）
+  - 由来：備蓄クエスト（Bichiku Quest）の略
+
+### ストレージ
+- localStorage キーは **`StayStockedApp` のまま維持する**（既存ユーザーのデータ互換のため）
+- 将来の正式リリース時にマイグレーションを検討
+
+### デザイン
+- カラーテーマ：Theme C（グレースレート × アンバー）
+  - `--c-primary: #5C6B7A`（スレートブルー）
+  - `--c-accent: #D4A853`（アンバー）
+  - `--c-bg: #EEECEA`（ウォームグレー）
+
+### 備蓄モード
+- `starter`（スターターセット）：8品目の初心者向けモード（デフォルト）
+- `full`（本格備蓄）：行政推奨の全品目表示
+- `STARTER_IDS` は `js/masterData.js` で管理
+
+### マスコット
+- **ソナーくん**（犬）— 将来的に導入予定。ナビゲーション・アドバイス役。
+
+### 公開 URL
+- https://stay-stocked-app.vercel.app（Vercel 自動デプロイ、origin/main にプッシュで反映）
