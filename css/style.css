@@ -485,8 +485,8 @@ input.input-error:focus {
 /* グリッドメニュー */
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .grid-menu__item {
@@ -494,13 +494,13 @@ input.input-error:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--c-surface);
   border-radius: var(--r-lg);
-  padding: 22px 12px;
+  padding: 14px 8px;
   text-decoration: none;
   color: var(--c-accent);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   box-shadow: var(--shadow-sm);
   border: 1.5px solid var(--c-border-lt);
@@ -512,8 +512,8 @@ input.input-error:focus {
   box-shadow: none;
 }
 .grid-menu__item img {
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
 }
 
 /* ── 12. Lifestyle Page ────────────────────────────────── */

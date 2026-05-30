@@ -117,10 +117,12 @@
    ホーム：達成率サマリーカード
    ===================================================== */
 .summary-card {
-  background: #EEECEA;
+  background: #FFFFFF;
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--c-border-lt);
 }
 .summary-card__label {
   font-size: 13px;
