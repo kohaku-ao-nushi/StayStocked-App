@@ -11,7 +11,7 @@
  * オフラインでも引き続き読み書きできる。
  */
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME    = `crasona-${CACHE_VERSION}`;
 
 const APP_SHELL = [

@@ -906,3 +906,43 @@ input.input-error:focus {
   background: var(--c-ng-bg);
   color: var(--c-ng);
 }
+
+/* ── Photo Registration ─────────────────────── */
+.photo-area {
+  background: var(--c-surface-2);
+  border: 2px dashed var(--c-border);
+  border-radius: var(--r-md);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.photo-area:hover { border-color: var(--c-accent); }
+.photo-area.has-photo { border-style: solid; border-color: var(--c-border); cursor: default; }
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px;
+}
+.photo-placeholder__icon { font-size: 32px; }
+.photo-placeholder__text { font-size: 14px; font-weight: 600; color: var(--c-text-2); }
+.photo-placeholder__sub  { font-size: 12px; color: var(--c-text-muted); }
+
+.photo-preview {
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}

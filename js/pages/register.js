@@ -24,6 +24,23 @@ export const registerPage = {
     const catOptions = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
     return `
       <div class="form-section">
+        <!-- 写真登録エリア -->
+        <div class="form-group" id="photoGroup">
+          <label>写真（任意）</label>
+          <div class="photo-area" id="photoArea">
+            <img id="photoPreview" class="photo-preview" style="display:none">
+            <div class="photo-placeholder" id="photoPlaceholder">
+              <div class="photo-placeholder__icon">📷</div>
+              <div class="photo-placeholder__text">パッケージを撮影する</div>
+              <div class="photo-placeholder__sub">または写真を選択</div>
+            </div>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+          <div class="photo-actions" id="photoActions" style="display:none">
+            <button type="button" class="btn btn-secondary btn-sm" id="photoRetakeBtn">撮り直す</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="photoRemoveBtn">削除</button>
+          </div>
+        </div>
         <div class="form-group" id="itemNameGroup">
           <label for="itemName">品目名</label>
           <input type="text" id="itemName" placeholder="例：水">
@@ -82,6 +99,7 @@ export const registerPage = {
 
     let masterId     = null;
     let existingItem = null;
+    let photoBase64  = null; // 写真データ（Base64 or null）
 
     // ── モードA：既存品目への追加 ────────────────────
     if (newItemRaw) {
@@ -110,6 +128,11 @@ export const registerPage = {
         headerTitle.textContent = '備蓄品を編集';
         saveBtn.textContent     = '更新する';
         deleteBtn.style.display = 'block';
+        // 既存の写真をプレビュー
+        if (existingItem.photo) {
+          photoBase64 = existingItem.photo;
+          this._showPhotoPreview(existingItem.photo);
+        }
       }
 
     // ── モードC：完全新規 ────────────────────────────
@@ -118,6 +141,31 @@ export const registerPage = {
       catGroupEl.style.display = 'block';
       headerTitle.textContent  = '新しい備蓄品を登録';
     }
+
+    // ── 写真エリア：タップでファイル選択 ────────────
+    document.getElementById('photoArea').addEventListener('click', () => {
+      if (!photoBase64) {
+        document.getElementById('photoInput').click();
+      }
+    });
+
+    document.getElementById('photoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      this._resizeAndSetPhoto(file, (base64) => {
+        photoBase64 = base64;
+        this._showPhotoPreview(base64);
+      });
+    });
+
+    document.getElementById('photoRetakeBtn').addEventListener('click', () => {
+      document.getElementById('photoInput').click();
+    });
+
+    document.getElementById('photoRemoveBtn').addEventListener('click', () => {
+      photoBase64 = null;
+      this._clearPhotoPreview();
+    });
 
     // ── 保存ボタン ───────────────────────────────────
     saveBtn.addEventListener('click', () => {
@@ -153,7 +201,11 @@ export const registerPage = {
         // 更新
         const idx = current.stockItems.findIndex(i => i.id === existingItem.id);
         if (idx > -1) {
-          current.stockItems[idx] = { ...existingItem, productName, qty, unit, expiry, itemName };
+          current.stockItems[idx] = {
+            ...existingItem,
+            productName, qty, unit, expiry, itemName,
+            photo: photoBase64 ?? null
+          };
         }
         showToast('更新しました');
       } else {
@@ -180,7 +232,8 @@ export const registerPage = {
           productName,
           qty,
           unit,
-          expiry
+          expiry,
+          photo: photoBase64 ?? null
         });
         showToast('登録しました');
       }
@@ -199,5 +252,66 @@ export const registerPage = {
       showToast('削除しました', 'info');
       window.location.hash = '#stock';
     });
+  },
+
+  // ── 写真ヘルパー ─────────────────────────────────
+
+  /**
+   * ファイルを読み込み、長辺800px以内にリサイズしてJPEG Base64に変換。
+   * @param {File}     file     入力ファイル
+   * @param {Function} callback (base64: string) => void
+   */
+  _resizeAndSetPhoto(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) {
+            height = Math.round(height * MAX / width);
+            width  = MAX;
+          } else {
+            width  = Math.round(width * MAX / height);
+            height = MAX;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  },
+
+  _showPhotoPreview(base64) {
+    const preview     = document.getElementById('photoPreview');
+    const placeholder = document.getElementById('photoPlaceholder');
+    const actions     = document.getElementById('photoActions');
+    const area        = document.getElementById('photoArea');
+    if (!preview) return;
+    preview.src               = base64;
+    preview.style.display     = 'block';
+    placeholder.style.display = 'none';
+    actions.style.display     = 'flex';
+    area.classList.add('has-photo');
+  },
+
+  _clearPhotoPreview() {
+    const preview     = document.getElementById('photoPreview');
+    const placeholder = document.getElementById('photoPlaceholder');
+    const actions     = document.getElementById('photoActions');
+    const area        = document.getElementById('photoArea');
+    if (!preview) return;
+    preview.src               = '';
+    preview.style.display     = 'none';
+    placeholder.style.display = 'flex';
+    actions.style.display     = 'none';
+    area.classList.remove('has-photo');
+    document.getElementById('photoInput').value = '';
   }
 };
