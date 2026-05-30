@@ -11,7 +11,7 @@
  * オフラインでも引き続き読み書きできる。
  */
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME    = `crasona-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -32,6 +32,7 @@ const APP_SHELL = [
   './js/pages/customListEditor.js',
   './js/pages/onboarding.js',
   './js/pages/todo.js',
+  './js/pages/how-to.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/family.png',

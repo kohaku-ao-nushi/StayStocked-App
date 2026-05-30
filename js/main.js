@@ -18,23 +18,9 @@ import { settingsPage }         from './pages/settings.js';
 import { customListEditorPage } from './pages/customListEditor.js';
 import { onboardingPage }       from './pages/onboarding.js';
 import { todoPage }             from './pages/todo.js';
+import { howToPage }            from './pages/how-to.js';
 import { storage }              from './storage.js';
 import { handleNumberInput }    from './ui.js';
-
-// 静的ページ（HTMLだけのシンプルなページはここに直接書く）
-const howToPage = {
-  template: () => `
-    <div class="form-section">
-      <ol class="how-to-list">
-        <li>「くらし方」で家族構成とペットを設定します。</li>
-        <li>「備蓄リスト」で推奨量と現在の在庫を確認します。</li>
-        <li>品目をタップして備蓄品を追加・編集できます。</li>
-        <li>ホーム画面で全体の達成率をひと目で確認できます。</li>
-      </ol>
-    </div>
-  `,
-  init: () => {}
-};
 
 const helpPage = {
   template: () => `
