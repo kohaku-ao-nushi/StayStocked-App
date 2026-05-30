@@ -165,7 +165,7 @@ export const howToPage = {
 .m-form-input--filled { color: var(--c-text); border-color: var(--c-accent); }
 .m-form-row     { display: flex; gap: 8px; }
 
-/* ── STEP 3: stock list ─────────────────────── */
+/* ── STEP 2: stock list ─────────────────────── */
 .m-mode-sel     {
   display: flex; background: var(--c-surface);
   border-radius: 9999px; padding: 3px; margin-bottom: 10px;
@@ -174,13 +174,20 @@ export const howToPage = {
 .m-mode-btn     { flex: 1; padding: 7px; text-align: center; font-size: 11px; font-weight: 700; border-radius: 9999px; color: var(--c-text-muted); }
 .m-mode-btn--on { background: var(--c-primary-dk); color: #fff; box-shadow: var(--shadow-sm); }
 .m-overall      { background: var(--c-surface); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
-.m-overall__row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.m-overall__row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.m-overall__label { font-size: 11px; color: var(--c-text-2); display: flex; align-items: center; gap: 5px; }
+.m-starter-tag  { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; background: var(--c-accent); color: #fff; }
 .m-overall__pct { font-size: 22px; font-weight: 800; color: var(--c-accent); }
 .m-overall__sub { font-size: 11px; color: var(--c-text-muted); margin-top: 5px; }
-.m-category     { background: var(--c-surface); border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow-sm); overflow: hidden; }
-.m-cat-header   { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--c-border); }
-.m-cat-name     { font-size: 13px; font-weight: 700; color: var(--c-text-2); }
-.m-cat-badge    { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; background: var(--c-bg); color: var(--c-text-muted); }
+/* category: no card — flat section like real UI */
+.m-cat-header   { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 4px; }
+.m-cat-name     { font-size: 13px; font-weight: 700; color: var(--c-text); }
+.m-cat-badge    { font-size: 11px; color: var(--c-text-muted); }
+.m-item         { padding: 7px 0; border-bottom: 1px solid var(--c-border-lt, #e8e4de); }
+.m-item:last-child { border-bottom: none; }
+.m-item__row    { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.m-item__name   { font-size: 12px; color: var(--c-text); }
+.m-item__target { font-size: 10px; color: var(--c-text-muted); background: var(--c-bg); padding: 1px 6px; border-radius: 9999px; border: 1px solid var(--c-border); }
 
 /* ── STEP 4: quest todo-card style ─────────── */
 .m-todo-section { margin-bottom: 14px; }
@@ -270,10 +277,64 @@ export const howToPage = {
   </div>
   <hr class="ht-divider">
 
-  <!-- ── STEP 2 ── -->
+  <!-- ── STEP 2: 備蓄リスト ── -->
   <div class="ht-step">
     <div class="ht-step__label">
       <div class="ht-step__num">2</div>
+      <div class="ht-step__title">備蓄リストで何が必要か確認する</div>
+    </div>
+    <div class="ht-step__desc">カテゴリ別に「必要な量」と「今ある量」が一覧できます。何が足りないか、プログレスバーですぐわかります。</div>
+    <div class="mock-phone">
+      <div class="mock-header">備蓄リスト</div>
+      <div class="mock-body">
+        <div class="m-mode-sel">
+          <div class="m-mode-btn m-mode-btn--on">3日分</div>
+          <div class="m-mode-btn">1週間</div>
+          <div class="m-mode-btn">2週間</div>
+        </div>
+        <div class="m-overall">
+          <div class="m-overall__row">
+            <div class="m-overall__label"><span class="m-starter-tag">スターターセット</span> 達成率</div>
+            <div class="m-overall__pct">0%</div>
+          </div>
+          <div class="m-bar"><div class="m-bar__inner m-bar__inner--ng" style="width:0%"></div></div>
+          <div class="m-overall__sub">0 / 8 品目 達成</div>
+        </div>
+        <div class="m-cat-header">
+          <div class="m-cat-name">食品・飲料</div>
+          <div class="m-cat-badge">0 / 3</div>
+        </div>
+        <div class="m-item">
+          <div class="m-item__row">
+            <div class="m-item__name">水</div>
+            <div class="m-item__target">全員</div>
+          </div>
+          <div class="m-bar"><div class="m-bar__inner m-bar__inner--ng" style="width:0%"></div></div>
+        </div>
+        <div class="m-item">
+          <div class="m-item__row">
+            <div class="m-item__name">レトルトご飯・乾麺など</div>
+            <div class="m-item__target">成人・子ども</div>
+          </div>
+          <div class="m-bar"><div class="m-bar__inner m-bar__inner--ng" style="width:0%"></div></div>
+        </div>
+        <div class="m-item">
+          <div class="m-item__row">
+            <div class="m-item__name">缶詰・レトルト食品</div>
+            <div class="m-item__target">成人・子ども</div>
+          </div>
+          <div class="m-bar"><div class="m-bar__inner m-bar__inner--ng" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ht-tip">まずは「スターターセット」8品目を目標に。足りないものがわかったら次のステップで登録しましょう。</div>
+  </div>
+  <hr class="ht-divider">
+
+  <!-- ── STEP 3: 登録 ── -->
+  <div class="ht-step">
+    <div class="ht-step__label">
+      <div class="ht-step__num">3</div>
       <div class="ht-step__title">今ある備蓄を登録する</div>
     </div>
     <div class="ht-step__desc">備蓄リストから品目を選んで、今ある数量と消費期限を登録します。パッケージを撮影するとスムーズです。</div>
@@ -301,51 +362,7 @@ export const howToPage = {
         <div class="m-btn--full">登録する</div>
       </div>
     </div>
-    <div class="ht-tip">最初はスターターセット8品目から。少しずつ登録するだけで達成率が上がっていきます。</div>
-  </div>
-  <hr class="ht-divider">
-
-  <!-- ── STEP 3 ── -->
-  <div class="ht-step">
-    <div class="ht-step__label">
-      <div class="ht-step__num">3</div>
-      <div class="ht-step__title">備蓄リストで達成率を確認する</div>
-    </div>
-    <div class="ht-step__desc">カテゴリ別に備蓄の充足状況が一覧できます。プログレスバーで何が足りないか一目でわかります。</div>
-    <div class="mock-phone">
-      <div class="mock-header">備蓄リスト</div>
-      <div class="mock-body">
-        <div class="m-mode-sel">
-          <div class="m-mode-btn">3日分</div>
-          <div class="m-mode-btn m-mode-btn--on">1週間</div>
-          <div class="m-mode-btn">2週間</div>
-        </div>
-        <div class="m-overall">
-          <div class="m-overall__row">
-            <div class="m-label" style="margin:0">全体達成率</div>
-            <div class="m-overall__pct">42%</div>
-          </div>
-          <div class="m-bar"><div class="m-bar__inner m-bar__inner--warn" style="width:42%"></div></div>
-          <div class="m-overall__sub">12 / 28 品目 達成</div>
-        </div>
-        <div class="m-category">
-          <div class="m-cat-header">
-            <div class="m-cat-name">💧 水・飲料</div>
-            <div class="m-cat-badge">3/4</div>
-          </div>
-          <div class="m-row">
-            <div class="m-row__name">飲料水（ペットボトル）</div>
-            <div class="m-mini-bar m-bar"><div class="m-bar__inner m-bar__inner--ok" style="width:100%"></div></div>
-            <div class="m-row__sub">12本</div>
-          </div>
-          <div class="m-row">
-            <div class="m-row__name">経口補水液</div>
-            <div class="m-mini-bar m-bar"><div class="m-bar__inner m-bar__inner--warn" style="width:40%"></div></div>
-            <div class="m-row__sub">2本</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="ht-tip">登録するたびに達成率が上がります。少しずつでも大丈夫！</div>
   </div>
   <hr class="ht-divider">
 
