@@ -1,4 +1,6 @@
-# 設計書 — StayStocked
+# 設計書 — クラソナ（Crasona）
+
+> **最終更新**: 2026-05-31
 
 ## 1. アーキテクチャ概要
 
@@ -7,29 +9,34 @@
 - **フレームワークなし**。バンドラーなし。ES モジュール（`type="module"`）を直接ブラウザで実行する
 - **ハッシュルーティング**（`#home`, `#stock` 等）によるSPA
 - **データ永続化**は `localStorage` のみ。外部依存ゼロ
+- **PWA 対応済み**（manifest.json + Service Worker / キャッシュファースト戦略）
 
 ### 1.2 ディレクトリ構成
 
 ```
-StayStocked-App/
+crasona-app/
 ├── index.html              # エントリーポイント。HTML 骨格のみ
+├── manifest.json           # PWA マニフェスト
+├── sw.js                   # Service Worker（キャッシュファースト）
 ├── css/
-│   ├── style.css           # ベーススタイル・CSS変数
-│   └── additions.css       # 追加スタイル・上書き
+│   ├── style.css           # ベーススタイル・CSS変数（デザイントークン）
+│   └── additions.css       # 追加スタイル・コンポーネント
 ├── js/
-│   ├── main.js             # アプリ起動・ページ登録
+│   ├── main.js             # アプリ起動・ページ登録・グローバルイベント
 │   ├── router.js           # ハッシュルーター
 │   ├── storage.js          # localStorage ラッパー
 │   ├── masterData.js       # 備蓄品マスター・計算ロジック
-│   ├── ui.js               # Toast / Confirm UI コンポーネント
+│   ├── ui.js               # Toast / Confirm / 数値入力ユーティリティ
 │   └── pages/
 │       ├── home.js         # ホーム画面
 │       ├── lifestyle.js    # くらし方設定
 │       ├── stock.js        # 備蓄リスト
 │       ├── register.js     # 備蓄品登録・編集
+│       ├── todo.js         # びちくえ！（備蓄クエスト）
 │       ├── settings.js     # 設定
-│       └── customListEditor.js  # カスタム品目管理
-├── icons/                  # アイコン画像
+│       ├── customListEditor.js  # カスタム品目管理
+│       └── onboarding.js   # 初回起動ガイド
+├── icons/                  # アプリアイコン・ナビアイコン
 └── docs/                   # ドキュメント（このディレクトリ）
 ```
 
@@ -44,8 +51,10 @@ StayStocked-App/
 ```
 hashchange
   └─ render()
+       ├─ window.scrollTo(0, 0)          ← ページ先頭へスクロール
        ├─ page.template() → #app-root.innerHTML に設定
-       ├─ ヘッダータイトル更新
+       ├─ ヘッダータイトル更新（PAGE_TITLES）
+       ├─ オンボーディング中はヘッダー・ナビを非表示
        ├─ ボトムナビのアクティブ状態更新
        └─ page.init()
 ```
@@ -54,9 +63,22 @@ hashchange
 - `template()`: HTML文字列を返す。副作用なし
 - `init()`: DOMへのイベント登録・データ取得・DOM更新を行う
 
+**PAGE_TITLES**:
+
+| キー | タイトル |
+|---|---|
+| home | クラソナ |
+| lifestyle | くらし方 |
+| stock | 備蓄リスト |
+| register | 備蓄品登録 |
+| todo | びちくえ！ |
+| settings | 設定 |
+| custom-list-editor | 品目リストの編集 |
+| onboarding | ようこそ |
+
 ### 2.2 Storage（`storage.js`）
 
-`localStorage` の読み書きを一点集約。
+`localStorage` の読み書きを一点集約。ストレージキー: `StayStockedApp`（データ互換のため変更しない）
 
 ```
 storage.get()   → AppState（DEFAULTS とのマージ済み）
@@ -64,36 +86,7 @@ storage.save()  → JSON.stringify して localStorage に書き込む
 storage.reset() → localStorage.removeItem
 ```
 
-**AppState の型定義**:
-
-```js
-{
-  profiles: [{ gender: '男性'|'女性', ageGroup: '乳幼児'|'子ども'|'成人'|'高齢者' }],
-  pets: { count: number },
-  stockItems: [{
-    id: string,          // Date.now().toString()
-    masterId: string|null,
-    customId: string|null,
-    itemName: string,
-    category: string,
-    productName: string,
-    qty: number,
-    unit: string,
-    expiry: string       // ISO日付文字列 "YYYY-MM-DD"、未設定は ""
-  }],
-  settings: {
-    stockpileDays: 3|7|14,
-    noticeDays: { 3: number, 7: number, 14: number }
-  },
-  customMasterItems: [{
-    id: string,          // "custom-" + Date.now()
-    name: string,
-    category: string,
-    unit: string,
-    dailyQty?: number    // 省略可能
-  }]
-}
-```
+AppState の型定義は `docs/data-model.md` を参照。
 
 ### 2.3 MasterData（`masterData.js`）
 
@@ -108,33 +101,40 @@ storage.reset() → localStorage.removeItem
   category: string,
   unit: string,
   target: string,                        // バッジ表示用
+  note: string,                          // 補足説明（アコーディオン内）
   calc: (params, days) => number,        // 必要量を計算
   isNeeded: (params) => boolean          // この品目が必要か
 }
 ```
+
+**`STARTER_IDS`**: スターターセット品目IDのSet。8品目。
 
 **`buildCalcParams(data)`**: `storage.get()` の戻り値を計算パラメータに変換する。
 
 ```js
 // 戻り値
 {
-  adults: number,          // 成人（高齢者を含む）
-  children: number,        // 子ども（3〜17歳）
-  infants: number,         // 乳幼児（0〜2歳）
-  elderly: number,         // 高齢者（65歳以上）
-  females: number,         // 全年齢の女性
-  females_menstrual: number, // 月経対象年齢（12歳以上65歳未満）の女性
+  adults: number,              // 成人（高齢者を含む）
+  children: number,            // 子ども（3〜17歳）
+  infants: number,             // 乳幼児（0〜2歳）
+  elderly: number,             // 高齢者（65歳以上）
+  females: number,             // 全年齢の女性
+  females_menstrual: number,   // 月経対象年齢（12歳以上65歳未満）の女性
   totalPeople: number,
   pets: number
 }
 ```
 
-**`getCombinedMasterList(customItems)`**: デフォルトマスターとカスタム品目を結合して返す。
+**`getFilteredMasterList(customItems, settings)`**: stockLevel と hiddenMasterIds を考慮してフィルタ済みリストを返す。stock.js / todo.js / home.js はすべてこれを使う。
+
+**`getCombinedMasterList(customItems)`**: デフォルトマスター＋カスタム品目を結合して返す（フィルタなし）。
 
 ### 2.4 UI（`ui.js`）
 
 - `showToast(message, type)`: 2.5秒後に自動消去するトースト通知
 - `showConfirm(message, options)`: `Promise<boolean>` を返す確認ダイアログ
+- `toHalfWidthNumber(str)`: 全角数字・小数点を半角に変換
+- `handleNumberInput(e)`: 数値入力フィールドのバリデーション（グローバル委譲）
 
 ### 2.5 ページ間のデータ受け渡し
 
@@ -142,7 +142,7 @@ storage.reset() → localStorage.removeItem
 
 | キー | 型 | 用途 |
 |---|---|---|
-| `newItemFromTodo` | JSON | stock → register: `{ masterId, name, unit }` |
+| `newItemFromTodo` | JSON | todo / stock → register: `{ masterId, name, unit }` |
 | `editItemId` | string | stock → register: 編集対象の stockItem.id |
 
 ---
@@ -153,11 +153,14 @@ storage.reset() → localStorage.removeItem
 [くらし方設定] → storage.save(profiles, pets)
                         ↓
 [備蓄リスト]   → storage.get()
-               → buildCalcParams(data)   → CalcParams
-               → getCombinedMasterList() → MasterList
-               → item.calc(params, days) → 必要量
-               → stockById 集計          → 現在量
+               → buildCalcParams(data)         → CalcParams
+               → getFilteredMasterList(...)    → MasterList（フィルタ済み）
+               → item.calc(params, days)       → 必要量
+               → stockById 集計                → 現在量
                → 達成率 = 現在量 / 必要量
+
+[びちくえ！]   → 同上 → 不足リスト・期限リストを生成
+[ホーム]       → 同上 → 達成率・優先アクション・アラートを表示
 ```
 
 ---
@@ -175,16 +178,14 @@ storage.reset() → localStorage.removeItem
 | `adults` | `ageGroup === '成人'` の人数 ＋ `elderly` |
 | `elderly` | `ageGroup === '高齢者'` の人数 |
 | `females` | `gender === '女性'` の全員 |
-| `females_menstrual` | `gender === '女性'` かつ `ageGroup` が `'子ども'`（12歳以上の代理）または `'成人'` の人数 |
+| `females_menstrual` | `gender === '女性'` かつ `ageGroup` が `'子ども'` または `'成人'` の人数 |
 | `totalPeople` | `profiles.length` |
-| `pets` | `data.pets.count` |
+| `pets` | `data.pets.entries` の count 合計（後方互換: `data.pets.count` も参照） |
 
-> **設計注記 — 高齢者の adults への加算について**  
+> **設計注記 — 高齢者の adults への加算について**
 > 高齢者は `elderly` にカウントされるとともに `adults` にも加算する。
-> これにより `staple_food`（成人・子ども向け主食）の `calc` が高齢者分を含める。
-> 一方 `elderly_food`（おかゆ等）は高齢者の嗜好・咀嚼補助品であり、
-> 主食の**代替**ではなく**追加**として計上する設計とする。
-> ただし高齢者が全量おかゆに移行している場合はカスタム品目で対応する。
+> これにより `staple_food`（主食）の `calc` が高齢者分を含める。
+> `elderly_food`（おかゆ等）は主食の代替ではなく追加品として計上する。
 
 ### 4.2 各品目の計算式
 
@@ -194,7 +195,7 @@ storage.reset() → localStorage.removeItem
 |---|---|---|
 | 水 | `totalPeople × 3 × days` L | 1人1日3L（内閣府基準） |
 | 主食（レトルト等） | `(adults + children) × 3 × days` 食 | 1人1日3食 |
-| 副食（缶詰等） | `Math.ceil((adults + children) × days × 1.5)` 食分 | 1食に0.5缶想定、シェアを考慮 |
+| 副食（缶詰等） | `Math.ceil((adults + children) × days × 1.5)` 食分 | シェアを考慮し1.5食分/人/日 |
 | 粉ミルク・液体ミルク | `infants × days` 日分 | 乳幼児1人1日分 |
 | おかゆ・介護食 | `elderly × 3 × days` 食 | 高齢者1人1日3食 |
 | お菓子類 | `totalPeople × Math.ceil(days / 3)` 袋 | 3日に1袋（ストレス緩和用） |
@@ -261,46 +262,41 @@ storage.reset() → localStorage.removeItem
 
 ---
 
-## 5. カテゴリ構成
+## 5. デザインシステム
 
-| カテゴリ | 含む品目 |
-|---|---|
-| 食品・飲料 | 水、主食、副食、粉ミルク、おかゆ、お菓子 |
-| 衛生用品 | トイレ系、清潔保持用品、生理用品 |
-| 医療・医薬 | 救急箱、常備薬、体温計 |
-| 生活用品 | 調理・照明・情報収集・その他日用品 |
-| 防災装備 | 頭部保護・救難信号用品 |
-| 書類・現金 | 重要書類、現金 |
-| ペット用品 | ペットフード、トイレ用品 |
+### 5.1 カラーテーマ（Theme C: グレースレート × アンバー）
 
----
+```css
+--c-primary:    #5C6B7A;   /* スレートブルー（ヘッダー・ボタン） */
+--c-accent:     #D4A853;   /* アンバー（アクセント） */
+--c-bg:         #EEECEA;   /* ウォームグレー（背景） */
+--c-surface:    #FFFFFF;   /* カード・フォーム背景 */
+--c-text:       #2C2C2C;   /* 本文テキスト */
+--c-text-muted: #6B7280;   /* 補助テキスト */
+--c-danger:     #D9534F;   /* 危険・エラー */
+--c-warning:    #E67E22;   /* 警告・期限間近 */
+--c-success:    #5CB85C;   /* 達成・完了 */
+```
 
-## 6. UI 設計
-
-### 6.1 ナビゲーション
+### 5.2 ナビゲーション
 
 - **ヘッダー**: ページタイトルを動的表示（Router が更新）
 - **ボトムナビ**: ホーム / くらし方 / 備蓄リスト / 設定 の4タブ
-- **グリッドメニュー**（ホームのみ）: 主要4ページへのショートカット
+- **グリッドメニュー**（ホームのみ）: くらし方・備蓄リスト・びちくえ！・設定・使い方
 
-### 6.2 備蓄リスト
+### 5.3 コンポーネント規則
 
-- `<details>` / `<summary>` でアコーディオン表示
-- 期限切れ（赤）・期限間近（橙）の視覚フィードバック
-- プログレスバーは3段階（赤 `is-low` / 橙 `is-medium` / 緑 `is-sufficient`）
-
-### 6.3 フォームのアクセシビリティ
-
-- `showConfirm` は `role="dialog"` `aria-modal="true"` を付与する
-- ラジオボタンは `<label>` でラベルと関連付け、タップ領域を確保する
+- CSS クラス名は BEM 記法（`block__element--modifier`）に準拠
+- カラー・スペーシングは `:root` CSS変数を使う
+- コンポーネント固有スタイルは `css/additions.css` に追記
 
 ---
 
-## 7. 既知の制約・将来の拡張ポイント
+## 6. 既知の制約・将来の拡張ポイント
 
 | 制約 | 将来の対応策 |
 |---|---|
 | `localStorage` はブラウザ・デバイスをまたいで共有できない | クラウド同期（Supabase等）の導入 |
-| ペット種別を区別できない | `pets` を `[{ type, count }]` の配列に変更 |
 | テストコードがない | Vitest + jsdom によるユニットテストの追加 |
-| PWA 未対応 | manifest.json + Service Worker の実装 |
+| ユーザー入力値を innerHTML に直接埋め込んでいる箇所がある | XSS対策としてエスケープ関数の適用 |
+| Capacitor 未対応 | iOS/Android アプリ化（Capacitor）の導入 |
