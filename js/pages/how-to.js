@@ -114,32 +114,36 @@ export const howToPage = {
 
 /* ── STEP 1: counter ───────────────────────── */
 .m-counter      {
-  background: var(--c-surface); border-radius: 10px;
-  padding: 10px 14px; margin-bottom: 10px;
+  padding: 10px 0; margin-bottom: 10px;
   display: flex; align-items: center; gap: 12px;
-  box-shadow: var(--shadow-sm);
 }
 .m-counter__btn {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--c-bg); border: 1px solid var(--c-border);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--c-surface); border: 1.5px solid var(--c-border);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; color: var(--c-primary-dk);
+  font-size: 18px; font-weight: 700; color: var(--c-text-2);
 }
-.m-counter__val { font-size: 22px; font-weight: 800; color: var(--c-primary-dk); flex: 1; text-align: center; }
+.m-counter__val { font-size: 26px; font-weight: 800; color: var(--c-primary-dk); flex: 1; text-align: center; }
 .m-counter__unit{ font-size: 13px; color: var(--c-text-muted); }
 .m-profile      {
-  background: var(--c-surface-2);
+  background: var(--c-surface);
   border-radius: 10px; padding: 11px 12px; margin-bottom: 8px;
   border-left: 3px solid var(--c-accent);
+  box-shadow: var(--shadow-sm);
 }
-.m-profile__title { font-size: 10px; font-weight: 700; letter-spacing: .07em; color: var(--c-accent); margin-bottom: 8px; text-transform: uppercase; }
-.m-radio-group  { display: flex; gap: 5px; margin-bottom: 7px; }
+.m-profile__title { font-size: 12px; font-weight: 700; color: var(--c-text-2); }
+/* gender: セグメントコントロール風 2択 */
+.m-radio-group  {
+  display: flex; gap: 0; margin-bottom: 7px;
+  background: var(--c-bg); border-radius: 9999px; padding: 3px;
+  border: 1px solid var(--c-border);
+}
 .m-radio        {
-  flex: 1; text-align: center; padding: 6px 4px;
-  border-radius: 8px; font-size: 11px; font-weight: 600;
-  background: var(--c-surface); border: 1.5px solid var(--c-border); color: var(--c-text-2);
+  flex: 1; text-align: center; padding: 7px 4px;
+  border-radius: 9999px; font-size: 12px; font-weight: 600;
+  color: var(--c-text-muted);
 }
-.m-radio--on    { border-color: var(--c-accent); background: var(--c-primary-lt); color: var(--c-primary-dk); }
+.m-radio--on    { background: var(--c-primary-dk); color: #fff; box-shadow: var(--shadow-sm); }
 .m-age-group    { display: flex; gap: 4px; }
 
 /* ── STEP 2: register ───────────────────────── */
@@ -235,10 +239,10 @@ export const howToPage = {
       <div class="mock-body">
         <div class="m-ls-section">
           <div class="m-ls-label">一緒に住んでいる人数</div>
-          <div class="m-counter">
+          <div class="m-counter" style="justify-content:center;">
             <div class="m-counter__btn">−</div>
-            <div class="m-counter__val">2</div>
-            <div class="m-counter__unit">人</div>
+            <span style="font-size:28px;font-weight:800;color:var(--c-primary-dk);margin:0 20px;">2</span>
+            <span style="font-size:13px;color:var(--c-text-muted);margin-right:16px;">人</span>
             <div class="m-counter__btn">＋</div>
           </div>
         </div>
